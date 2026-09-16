@@ -1,0 +1,14 @@
+{
+  "name": "lunova-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Lunova - AI-Powered Proposal Response Agent",
+  "workspaces": [
+    "frontend"
+  ],
+  "scripts": {
+    "lint": "echo \"Linting workspaces...\"",
+    "test": "echo \"Running workspace tests...\""
+  },
+  "devDependencies": {}
+}

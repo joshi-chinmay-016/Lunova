@@ -1,0 +1,67 @@
+{
+  "contract_version": "1.0",
+  "proposal_id": "prop-sample-0001",
+  "status": "SUCCESS",
+  "requirements": [
+    {
+      "requirement_id": "req-001",
+      "category": "TECHNICAL",
+      "description": "Must provide normalized REST APIs with OAuth2 authentication",
+      "priority": "HIGH"
+    },
+    {
+      "requirement_id": "req-002",
+      "category": "TECHNICAL",
+      "description": "Vector search and retrieval must enforce tenant data segregation",
+      "priority": "HIGH"
+    },
+    {
+      "requirement_id": "req-003",
+      "category": "SECURITY",
+      "description": "System must support role-based access control and detailed audit logging",
+      "priority": "MEDIUM"
+    }
+  ],
+  "missing_information": [],
+  "retrieved_sources": [
+    {
+      "source_id": "kb-sample-doc-001",
+      "title": "Technical Capabilities Overview",
+      "section": "Section 1: Authentication & API Standards",
+      "relevance_score": 0.94
+    },
+    {
+      "source_id": "kb-sample-doc-001",
+      "title": "Technical Capabilities Overview",
+      "section": "Section 2: Multi-Tenant Architecture & Data Isolation",
+      "relevance_score": 0.96
+    }
+  ],
+  "generated_response": {
+    "executive_summary": "Lunetron is pleased to provide this proposal response. Our platform provides enterprise-grade normalized REST APIs, strict tenant vector segregation, and end-to-end auditability.",
+    "draft_email_body": "Dear Procurement Lead,\n\nThank you for sharing your enterprise RFP specification. Lunetron is fully equipped to meet your integration and security requirements.\n\nOur system exposes standards-compliant REST endpoints secured via OAuth2, guarantees strict tenant vector segregation, and maintains complete append-only audit logs.\n\nWe welcome the opportunity to discuss next steps.\n\nSincerely,\nLunetron Proposal Team",
+    "requirement_responses": [
+      {
+        "requirement_id": "req-001",
+        "response": "Lunetron exposes standards-compliant REST endpoints secured via OAuth2 bearer tokens.",
+        "grounded_in": ["kb-sample-doc-001"]
+      },
+      {
+        "requirement_id": "req-002",
+        "response": "Lunetron strictly enforces tenant isolation across all relational tables and vector searches using immutable company_id scoping.",
+        "grounded_in": ["kb-sample-doc-001"]
+      }
+    ]
+  },
+  "clarification_questions": [],
+  "confidence": {
+    "overall_score": 0.95,
+    "grounding_score": 0.98,
+    "requires_human_attention": false
+  },
+  "warnings": [],
+  "processing_metadata": {
+    "processed_at": "2026-09-16T10:05:00Z",
+    "duration_ms": 2150
+  }
+}

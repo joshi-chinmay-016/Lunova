@@ -1,0 +1,27 @@
+{
+  "contract_version": "1.0",
+  "proposal_id": "prop-sample-0001",
+  "company": {
+    "company_id": "lunetron",
+    "company_name": "Lunetron"
+  },
+  "email": {
+    "message_id": "msg-sample-test-101",
+    "thread_id": "thread-sample-test-101",
+    "sender": "procurement@example-enterprise.com",
+    "recipients": [
+      "proposals@lunetron.com"
+    ],
+    "subject": "RFP: Enterprise Automation Platform Integration",
+    "body": "Dear Lunetron Team,\n\nPlease review our attached RFP specification for our upcoming enterprise platform modernization initiative.\n\nWe look forward to receiving your response.\n\nBest regards,\nProcurement Lead",
+    "received_at": "2026-09-16T10:00:00Z"
+  },
+  "attachments": [
+    {
+      "attachment_id": "att-sample-001",
+      "filename": "RFP_Requirements_Spec.pdf",
+      "mime_type": "application/pdf",
+      "extracted_content": "Enterprise RFP Specification v1.2\n\n1. Executive Summary: The client requires an intelligent proposal and workflow processing solution.\n2. Technical Requirement A: Must provide normalized REST APIs with OAuth2 authentication.\n3. Technical Requirement B: Vector search and retrieval must enforce tenant data segregation.\n4. Security Requirement: System must support role-based access control and detailed audit logging."
+    }
+  ]
+}
