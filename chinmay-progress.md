@@ -1,7 +1,8 @@
 # Chinmay's Progress — Lunova
 
 ## Current Phase
-Phase 1 — AI Intelligence Module Foundation
+Phase 1 — AI Intelligence Module Foundation  
+Status: Completed + Foundation Refinement
 
 ---
 
@@ -16,53 +17,65 @@ Phase 1 — AI Intelligence Module Foundation
 - Documented modular intelligence structure (`extraction`, `retrieval`, `generation`, `evaluation`, `providers`).
 - Documented provider abstraction direction.
 
-### Phase 1
-- Created intelligence package structure (`backend/intelligence/`).
-- Added module boundaries with clear responsibilities and interfaces.
-- Added minimal provider abstractions (`LLMProvider`, `EmbeddingProvider`, `MockLLMProvider`, `MockEmbeddingProvider`).
-- Added mock intelligence service (`IntelligenceService`) orchestrating the internal pipeline.
-- Added initial intelligence unit tests (`backend/tests/intelligence/test_foundation.py`).
-- Added intelligence README (`backend/intelligence/README.md`).
+### Phase 1 & Foundation Refinement
+- Split intelligence models by responsibility (`models/proposal.py`, `extraction.py`, `retrieval.py`, `generation.py`, `evaluation.py`, `result.py`).
+- Added stage interfaces for inversion of control (`Extractor`, `Retriever`, `Generator`, `Evaluator`).
+- Added intelligence-specific domain exceptions (`IntelligenceError` hierarchy).
+- Added constants and status enums (`IntelligenceStatus`, `ConfidenceLevel`, thresholds).
+- Added configurable intelligence settings (`config.py`).
+- Set default embedding dimension to `3072` (configurable via `IntelligenceConfig`).
+- Added lightweight, non-sensitive logging (`logger.py`).
+- Added prompt versioning placeholders (`prompts/README.md`, `prompts/versions.md`).
+- Added knowledge fixture documentation (`fixtures/knowledge/README.md`).
+- Strengthened tenant isolation tests with multi-tenant rejection checks.
+- Updated architecture documentation and ADR 0007 ("Deterministic before Generative", modular monolith rationale).
 
 ---
 
 ## Not Implemented Yet
-- Proposal extraction (Phase 2)
-- RAG
-- Embeddings
+- Real proposal extraction (Phase 2)
+- Real RAG
+- Real vector embeddings
 - Knowledge ingestion
 - LLM response generation
-- Confidence evaluation
+- Confidence evaluation algorithms
 - Production contracts
 - Gmail integration
 - End-to-end platform integration
 
 ---
 
-## Next Phase
-Phase 2 — Proposal Understanding / Requirement Extraction
+## Current Boundary
+
+Phase 1 is complete.  
+Next action: Sync with Lokesh before Phase 2.
 
 ---
 
-## Important Integration Notes
-- Intelligence code is primarily under `backend/intelligence/`.
-- Platform code is primarily under `backend/app/`.
-- Detailed AI contracts are intentionally deferred until Lunetron provides real requirements and sample proposals.
-- AI must not invent unsupported company-specific claims.
-- Retrieval must always be company-scoped.
+## Waiting From Lokesh
+
+- Normalized `ProposalInput` structure
+- `company_id` propagation
+- proposal / thread / message ID handling
+- attachment normalization
+- AI result consumption
+- platform constraints
 
 ---
 
 ## Files Primarily Owned by Chinmay
 - `backend/intelligence/`
 - `backend/tests/intelligence/`
-- relevant AI fixtures (`fixtures/proposals/`, `fixtures/ai-results/`)
+- relevant AI fixtures (`fixtures/proposals/`, `fixtures/knowledge/`, `fixtures/ai-results/`)
 - intelligence architecture documentation (`docs/architecture/intelligence.md`, `docs/decisions/0007-intelligence-module-boundary.md`)
 
 ---
 
 ## Shared Files Changed
-- None (Phase 0 and Phase 1 remained strictly isolated to AI documentation, intelligence package foundation, and AI test suites without modifying platform, domain, or frontend code).
+- `chinmay-progress.md`
+- `fixtures/knowledge/README.md`
+- `docs/architecture/intelligence.md`
+- `docs/decisions/0007-intelligence-module-boundary.md`
 
 ---
 

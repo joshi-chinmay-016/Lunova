@@ -69,3 +69,5 @@ storage/
 *~
 .DS_Store
 Thumbs.db
+
+powershell.cmd
