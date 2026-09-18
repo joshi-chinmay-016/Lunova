@@ -44,50 +44,96 @@ The current MVP focuses strictly on a minimal, high-leverage vertical slice:
 
 Lunova is built as a **Modular Monolith** rather than distributed microservices. This provides low operational overhead, rapid developer iteration, unified end-to-end typing, and zero distributed system latency while maintaining clean domain boundaries.
 
-```
-Incoming Email (Lunetron)
-         │
-         ▼
- ┌───────────────────────┐
- │    Email Ingestion    │ (Normalized Email Adapter)
- └──────────┬────────────┘
-            │
-            ▼
- ┌───────────────────────┐
- │  Proposal Management  │ (Lifecycle: RECEIVED -> PROCESSING)
- └──────────┬────────────┘
-            │  (ProposalInput Contract)
-            ▼
- ┌───────────────────────┐
- │ Requirement Analysis  │ (AI Extraction & Structuring)
- └──────────┬────────────┘
-            │
-            ▼
- ┌───────────────────────┐
- │  Knowledge Retrieval  │ (Company-Scoped pgvector RAG)
- └──────────┬────────────┘
-            │
-            ▼
- ┌───────────────────────┐
- │  Response Generation  │ (Drafting + Grounding + Confidence Scoring)
- └──────────┬────────────┘
-            │  (ProposalAnalysisResult Contract)
-            ▼
- ┌───────────────────────┐
- │     Human Review      │ (Approve / Edit / Reject Workflow)
- └──────────┬────────────┘
-            │
-            ▼
- ┌───────────────────────┐
- │    Email Response     │ (Dispatch Approved Response)
- └──────────┬────────────┘
-            │
-            ▼
- ┌───────────────────────┐
- │    Audit / History    │ (Immutable Log of Inputs, AI & Human Actions)
- └───────────────────────┘
-```
+```mermaid
 
+flowchart TD
+
+subgraph group_platform["Platform Domains"]
+  node_email_ingestion["Email Ingestion"]
+  node_proposal_management["Proposal Management"]
+  node_company_context["Company Context"]
+  node_email_domain["Email Domain"]
+end
+
+subgraph group_intelligence["AI Intelligence"]
+  node_intelligence_service["Intelligence Service<br/>[service.py]"]
+  node_requirement_extraction["Requirement Extraction"]
+  node_knowledge_retrieval["Knowledge Retrieval"]
+  node_response_generation["Response Generation"]
+  node_grounding_evaluation["Grounding Evaluation"]
+end
+
+subgraph group_review_delivery["Review Delivery"]
+  node_review_workflow["Review Workflow"]
+  node_email_dispatch["Email Dispatch"]
+  node_audit_history["Audit History"]
+end
+
+subgraph group_persistence["Persistence Contracts"]
+  node_proposal_contract["Proposal Contracts"]
+  node_knowledge_store[("Knowledge Store")]
+  node_proposal_store[("Proposal Store")]
+end
+
+node_incoming_email(("Incoming Email"))
+node_human_reviewer(("Human Reviewer"))
+node_llm_service["LLM Provider"]
+node_embedding_service["Embedding Provider"]
+
+node_incoming_email -->|"sends email"| node_email_ingestion
+node_email_ingestion -->|"normalizes message"| node_email_domain
+node_email_domain -->|"creates proposal"| node_proposal_management
+node_proposal_management -->|"resolves tenant"| node_company_context
+node_proposal_management -->|"submits context"| node_intelligence_service
+node_intelligence_service -->|"extracts requirements"| node_requirement_extraction
+node_intelligence_service -->|"retrieves sources"| node_knowledge_retrieval
+node_intelligence_service -->|"generates draft"| node_response_generation
+node_intelligence_service -->|"evaluates grounding"| node_grounding_evaluation
+node_response_generation -.->|"requests completion"| node_llm_service
+node_knowledge_retrieval -.->|"embeds queries"| node_embedding_service
+node_knowledge_retrieval -->|"reads knowledge"| node_knowledge_store
+node_proposal_management -->|"stores lifecycle"| node_proposal_store
+node_proposal_management -->|"uses input contract"| node_proposal_contract
+node_intelligence_service -->|"returns analysis"| node_proposal_contract
+node_intelligence_service -->|"submits draft"| node_review_workflow
+node_human_reviewer -->|"reviews draft"| node_review_workflow
+node_review_workflow -->|"dispatches approval"| node_email_dispatch
+node_email_dispatch -->|"sends response"| node_incoming_email
+node_review_workflow -->|"records decision"| node_audit_history
+node_proposal_management -->|"records lifecycle"| node_audit_history
+node_audit_history -->|"persists history"| node_proposal_store
+
+click node_email_ingestion "https://github.com/joshi-chinmay-016/lunova/tree/dev/backend/app/infrastructure/email"
+click node_proposal_management "https://github.com/joshi-chinmay-016/lunova/tree/dev/backend/app/domain/proposal"
+click node_company_context "https://github.com/joshi-chinmay-016/lunova/tree/dev/backend/app/domain/company"
+click node_email_domain "https://github.com/joshi-chinmay-016/lunova/tree/dev/backend/app/domain/email"
+click node_intelligence_service "https://github.com/joshi-chinmay-016/lunova/blob/dev/backend/intelligence/service.py"
+click node_requirement_extraction "https://github.com/joshi-chinmay-016/lunova/tree/dev/backend/intelligence/extraction"
+click node_knowledge_retrieval "https://github.com/joshi-chinmay-016/lunova/tree/dev/backend/intelligence/retrieval"
+click node_response_generation "https://github.com/joshi-chinmay-016/lunova/tree/dev/backend/intelligence/generation"
+click node_grounding_evaluation "https://github.com/joshi-chinmay-016/lunova/tree/dev/backend/intelligence/evaluation"
+click node_review_workflow "https://github.com/joshi-chinmay-016/lunova/tree/dev/backend/app/domain/review"
+click node_email_dispatch "https://github.com/joshi-chinmay-016/lunova/tree/dev/backend/app/infrastructure/email"
+click node_audit_history "https://github.com/joshi-chinmay-016/lunova/tree/dev/backend/app/domain/audit"
+click node_proposal_contract "https://github.com/joshi-chinmay-016/lunova/tree/dev/contracts"
+click node_knowledge_store "https://github.com/joshi-chinmay-016/lunova/tree/dev/backend/app/infrastructure/database"
+click node_proposal_store "https://github.com/joshi-chinmay-016/lunova/tree/dev/backend/app/infrastructure/database"
+
+classDef toneNeutral fill:#f8fafc,stroke:#334155,stroke-width:1.5px,color:#0f172a
+classDef toneBlue fill:#dbeafe,stroke:#2563eb,stroke-width:1.5px,color:#172554
+classDef toneAmber fill:#fef3c7,stroke:#d97706,stroke-width:1.5px,color:#78350f
+classDef toneMint fill:#dcfce7,stroke:#16a34a,stroke-width:1.5px,color:#14532d
+classDef toneRose fill:#ffe4e6,stroke:#e11d48,stroke-width:1.5px,color:#881337
+classDef toneIndigo fill:#e0e7ff,stroke:#4f46e5,stroke-width:1.5px,color:#312e81
+classDef toneTeal fill:#ccfbf1,stroke:#0f766e,stroke-width:1.5px,color:#134e4a
+class node_email_ingestion,node_proposal_management,node_company_context,node_email_domain,node_human_reviewer toneBlue
+class node_intelligence_service,node_requirement_extraction,node_knowledge_retrieval,node_response_generation,node_grounding_evaluation toneAmber
+class node_review_workflow,node_email_dispatch,node_audit_history toneMint
+class node_proposal_contract,node_knowledge_store,node_proposal_store toneRose
+class node_incoming_email,node_llm_service,node_embedding_service toneIndigo
+
+
+```
 ---
 
 ## 4. Repository Structure
