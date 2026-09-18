@@ -18,6 +18,7 @@ from .logger import (
     log_retrieval_attempted,
     log_stage_completed,
 )
+from .models.extraction import ExtractionResult
 from .models.proposal import ProposalContext
 from .models.result import IntelligenceResult
 from .providers.embedding import EmbeddingProvider
@@ -45,10 +46,11 @@ class IntelligenceService:
         self.embedding_provider = embedding_provider or MockEmbeddingProvider()
 
         # Stage interfaces with sensible defaults
-        self.extractor: Extractor = extractor or RequirementExtractor()
+        self.extractor: Extractor = extractor or RequirementExtractor(llm_provider=self.llm_provider)
         self.retriever: Retriever = retriever or KnowledgeRetriever()
         self.generator: Generator = generator or ResponseGenerator(llm_provider=self.llm_provider)
         self.evaluator: Evaluator = evaluator or GroundingEvaluator()
+
 
     def analyze_proposal(self, context: ProposalContext) -> IntelligenceResult:
         """Execute the end-to-end intelligence pipeline on a normalized proposal.
@@ -71,7 +73,24 @@ class IntelligenceService:
 
         # Stage 1: Extraction
         stage_start = time.perf_counter()
-        requirements = self.extractor.extract(context)
+        extraction_output = self.extractor.extract(context)
+        if isinstance(extraction_output, ExtractionResult):
+            requirements = extraction_output.requirements
+            missing_info = [
+                {"field": m.field, "reason": m.reason, "importance": m.importance}
+                for m in extraction_output.missing_information
+            ]
+            clarifications = [
+                {"text": a.text, "reason": a.reason}
+                for a in extraction_output.ambiguities
+            ]
+            extraction_metadata = extraction_output.metadata
+        else:
+            requirements = extraction_output
+            missing_info = []
+            clarifications = []
+            extraction_metadata = {}
+
         log_stage_completed("extraction", context.proposal_id, (time.perf_counter() - stage_start) * 1000)
 
         # Stage 2: Tenant-Scoped Knowledge Retrieval
@@ -113,15 +132,16 @@ class IntelligenceService:
             company_id=context.company_id,
             status=IntelligenceStatus.SUCCESS.value,
             requirements=requirements,
-            missing_information=[],
+            missing_information=missing_info,
             retrieved_sources=sources,
             generated_response=draft,
-            clarification_questions=[],
+            clarification_questions=clarifications,
             confidence=confidence,
             warnings=[],
             processing_metadata={
                 "duration_ms": total_duration_ms,
                 "provider": self.llm_provider.provider_name,
                 "model": self.llm_provider.model_name,
+                **extraction_metadata,
             },
         )

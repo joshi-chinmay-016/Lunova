@@ -1,0 +1,18 @@
+{
+  "contract_version": "1.0",
+  "proposal_id": "prop-ambiguous-003",
+  "company": {
+    "company_id": "lunetron",
+    "company_name": "Lunetron"
+  },
+  "email": {
+    "message_id": "msg-ambig-003",
+    "thread_id": "thread-ambig-003",
+    "sender": "founder@stealth-startup.com",
+    "recipients": ["proposals@lunetron.com"],
+    "subject": "Urgent Platform Delivery Requirement",
+    "body": "Hello,\n\nWe need the platform deployed quickly and it should be highly scalable. Cost should be reasonable, and it must support a massive number of concurrent interactions without slowing down.\n\nSend us a quote soon.",
+    "received_at": "2026-09-18T11:00:00Z"
+  },
+  "attachments": []
+}

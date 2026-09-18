@@ -6,24 +6,24 @@ This module houses the AI-powered proposal understanding and response generation
 
 ---
 
-## Current Status: Phase 1 (Foundation Refinement Complete)
+## Current Status: Phase 2 — Gemini-Powered Proposal Understanding & Requirement Extraction
 
-The intelligence foundation establishes package structure, internal interfaces, decoupled pipeline orchestration, domain exception taxonomy, and pluggable provider abstractions.
+Phase 2 establishes real proposal understanding and structured requirement extraction powered by Google Gemini (via the modern `google-genai` SDK), while maintaining full provider neutrality, offline testability, strict anti-hallucination guarantees, and clean integration contracts for platform development.
 
 ### Module Structure
 
 ```
 backend/intelligence/
-├── models/         # Normalized internal models (ProposalContext, ExtractedRequirement, RetrievedSource, GeneratedDraft, ConfidenceMetrics, IntelligenceResult)
+├── models/         # Normalized models (ProposalContext, ExtractedRequirement, MissingInformation, Ambiguity, ExtractionResult, etc.)
 ├── interfaces/     # Stage abstractions (Extractor, Retriever, Generator, Evaluator)
-├── extraction/     # Proposal understanding & requirement extraction
-├── retrieval/      # Tenant-scoped company knowledge retrieval (pgvector)
+├── extraction/     # Proposal understanding & requirement extraction (RequirementExtractor)
+├── retrieval/      # Tenant-scoped company knowledge retrieval (pgvector placeholder)
 ├── generation/     # Grounded proposal responses & clarification questions
 ├── evaluation/     # Grounding evaluation, confidence scoring & warnings
-├── providers/      # Pluggable LLM & embedding provider abstractions
-├── prompts/        # Centralized versioned prompts and roadmap
-├── config.py       # Central module configuration (configurable embedding dimension)
-├── constants.py    # Enums for statuses, priorities, confidence thresholds
+├── providers/      # Pluggable LLM & embedding providers (GeminiProvider, MockLLMProvider, etc.)
+├── prompts/        # Centralized versioned prompts (extraction_v1, versions.md)
+├── config.py       # Central module configuration (Gemini settings, safety bounds, embedding dimension)
+├── constants.py    # Requirement categories, priorities, importance levels, status enums
 ├── exceptions.py   # Domain-specific intelligence exception hierarchy
 ├── logger.py       # Non-sensitive operational logging utility
 └── service.py      # IntelligenceService orchestrating stages via dependency injection
@@ -31,66 +31,113 @@ backend/intelligence/
 
 ---
 
-## Embedding Vector Configuration
+## Provider Architecture & Gemini Integration
 
-- **Configured Default**: `3072` dimensions (defined centrally in `backend/intelligence/config.py`).
-- **Configurable**: The embedding dimension can be overridden at runtime via `IntelligenceConfig`.
-- **Pre-Production Notice**: The configured dimension is currently 3072. Before production RAG/vector indexing, this value must match the output dimension of the selected embedding model.
-- **Status**: No production embedding integration or pgvector database table exists yet.
+The intelligence layer interacts with LLMs exclusively through the abstract `LLMProvider` protocol:
 
----
+```
+RequirementExtractor
+        ↓
+    LLMProvider (Protocol)
+     ├── GeminiProvider   (Uses google-genai SDK, schema-constrained output)
+     └── MockLLMProvider  (Deterministic, offline, simulated errors/payloads)
+```
 
-## Ownership & Boundaries
-
-### What `backend/intelligence/` Owns
-- Proposal understanding & requirement extraction
-- Tenant-scoped knowledge retrieval
-- Grounded draft and clarification question generation
-- Grounding verification & confidence scoring
-- Provider abstractions (`LLMProvider`, `EmbeddingProvider`)
-- Prompt version management
-
-### What `backend/intelligence/` Does NOT Own
-- Email ingestion or delivery (Gmail API / SMTP)
-- Company CRUD and tenant management
-- Knowledge document file uploads and storage CRUD
-- Proposal database persistence & lifecycle state transitions in PostgreSQL
-- Human approval workflows and audit trail persistence
-- Authentication & authorization
-- Frontend UI components
+- **SDK**: Uses the official `google-genai` Python SDK (`from google import genai`).
+- **Structured Outputs**: Leverages native schema-constrained JSON generation via `types.GenerateContentConfig(response_schema=ProposalExtractionPayload)`.
+- **Secret Protection**: API keys are loaded via environment (`GEMINI_API_KEY`) and are never written to source code, logged, printed in test outputs, or exposed in exceptions.
+- **Provider Independence**: Extraction business logic in `backend/intelligence/extraction/` has zero dependency on the Gemini SDK.
 
 ---
 
-## Important AI Safety & Quality Rules
+## Environment Configuration
+
+Configure options via environment variables or a local `.env` file (copied from `.env.example`):
+
+| Variable | Default | Description |
+| :--- | :--- | :--- |
+| `LLM_PROVIDER` | `mock` | Active LLM provider (`gemini` or `mock`) |
+| `GEMINI_API_KEY` | `None` | Google Gemini API key (kept strictly private) |
+| `GEMINI_MODEL` | `gemini-2.5-flash` | Gemini model name for extraction |
+| `MAX_PROPOSAL_INPUT_CHARS` | `50000` | Input safety limit to prevent uncontrolled token usage |
+| `RUN_LIVE_LLM_TESTS` | `0` | Set to `1` to run opt-in live Gemini integration tests |
+
+---
+
+## Extraction Domain Schema
+
+Extracted requirements are validated using Pydantic models:
+
+- **`ExtractedRequirement`**:
+  - `requirement_id`: e.g. `req-01`
+  - `text`: Cleaned requirement specification
+  - `category`: Canonical category (`functional_requirement`, `technical_requirement`, `security`, `integration`, `compliance`, `deliverable`, `timeline`, `budget`, etc.)
+  - `priority`: `high`, `medium`, or `low`
+  - `explicit`: `True` if explicitly requested; `False` if logically inferred
+  - `evidence`: Verbatim quote from proposal text
+  - `confidence`: Confidence score (0.0 to 1.0)
+- **`MissingInformation`**:
+  - `field`: Missing parameter (e.g. `budget`, `timeline`, `submission_deadline`)
+  - `reason`: Rationale why this information is needed
+  - `importance`: `high`, `medium`, or `low`
+- **`Ambiguity`**:
+  - `text`: Ambiguous phrasing (e.g. "deploy quickly")
+  - `reason`: Why the phrase is ambiguous without manufacturing numbers
+
+---
+
+## Synthetic Proposal Fixtures
+
+Fixtures located in `fixtures/proposals/` provide realistic scenarios for testing:
+
+1. `simple_rfp.json`: Web app for 100 internal users, authentication, dashboard, reporting, 12 weeks.
+2. `technical_rfp.json`: REST APIs, PostgreSQL, AWS/K8s, OAuth2, Salesforce/SAP integration, RBAC.
+3. `ambiguous_rfp.json`: Vague delivery timeline ("quickly") and capacity ("highly scalable"). Tests anti-hallucination.
+4. `incomplete_rfp.json`: Broad request without budget, timeline, users, or integrations. Tests gap detection.
+5. `multi_requirement_rfp.json`: Comprehensive RFP covering 12 distinct requirements across all categories.
+
+---
+
+## Testing Strategy
+
+All standard unit tests run completely offline without API keys or network access:
+
+```powershell
+# Run full intelligence test suite offline:
+pytest backend/tests/intelligence -v
+```
+
+### Optional Live Gemini Smoke Test
+
+If a real `GEMINI_API_KEY` is configured locally:
+
+```powershell
+python scripts/smoke_test_gemini_extraction.py
+```
+
+The script prints safe extraction telemetry (counts and requirement descriptions) while redacting credentials.
+
+---
+
+## Anti-Hallucination & Quality Rules
 
 > [!CAUTION]
-> **The AI must NOT invent company claims**:
-> The AI engine must never fabricate or invent:
-> - Company experience
-> - Previous projects
-> - Client names
-> - Technologies or proprietary stacks
-> - Pricing models or rate cards
-> - Delivery timelines
-> - Certifications or regulatory badges
-> - Capabilities or case studies
-> - Any other company-specific claims
->
-> All statements must be directly supported by the company's retrieved knowledge base or the explicitly provided proposal context. If relevant knowledge cannot be found:
-> 1. Do **not** fabricate.
-> 2. Flag the missing information in `missing_information`.
-> 3. Request clarification or flag for human reviewer attention (`requires_human_attention = true`).
+> **Anti-Hallucination Invariants**:
+> 1. The extractor uses **ONLY** the provided proposal text.
+> 2. The AI must **NEVER** fabricate vendor claims, certifications, past clients, pricing, or team capacity.
+> 3. Numbers and timelines must never be invented from vague language (e.g., "fast" must NOT become "2 days").
+> 4. Inferred requirements must be flagged as `explicit = false`.
+> 5. Verbatim evidence must be preserved for all extracted requirements.
 
 ---
 
-## How to Run Unit Tests
+## Intentionally Unimplemented Components (Deferred to Future Phases)
 
-All intelligence unit tests run completely standalone without requiring database connections, Redis, or external LLM API keys:
-
-```bash
-# From repository root:
-pytest backend/tests/intelligence/ -v
-
-# Or from backend/:
-pytest tests/intelligence/ -v
-```
+The following components are strictly out of scope for Phase 2:
+- **RAG & Knowledge Retrieval**: Deferred to Phase 3.
+- **Embeddings & Vector Chunking**: Deferred to Phase 3 (Gemini embedding model and dimensions will be verified then).
+- **pgvector Tables & Migrations**: Deferred to Phase 3.
+- **Response Generation**: Deferred to Phase 4.
+- **Email Delivery / Ingestion (Gmail/SMTP)**: Owned by Platform (`backend/app/`).
+- **Background Workers / Distributed Queues (Celery/Redis/Kafka)**: Deferred to scaling phase.
+- **Human Review UI**: Owned by Platform/Frontend (`frontend/`).

@@ -17,7 +17,9 @@ from .constants import (
     CONFIDENCE_THRESHOLD_HIGH,
     CONFIDENCE_THRESHOLD_MEDIUM,
     ConfidenceLevel,
+    ImportanceLevel,
     IntelligenceStatus,
+    RequirementCategory,
 )
 from .exceptions import (
     EvaluationError,
@@ -29,12 +31,16 @@ from .exceptions import (
     ProviderError,
     RetrievalError,
 )
+from .extraction import RequirementExtractor
 from .interfaces import Evaluator, Extractor, Generator, Retriever
 from .models import (
+    Ambiguity,
     ConfidenceMetrics,
     ExtractedRequirement,
+    ExtractionResult,
     GeneratedDraft,
     IntelligenceResult,
+    MissingInformation,
     ProposalContext,
     RetrievedSource,
 )
@@ -44,6 +50,11 @@ __all__ = [
     "IntelligenceService",
     "ProposalContext",
     "ExtractedRequirement",
+    "MissingInformation",
+    "Ambiguity",
+    "ExtractionResult",
+    "RequirementExtractor",
+
     "RetrievedSource",
     "GeneratedDraft",
     "ConfidenceMetrics",
@@ -57,6 +68,8 @@ __all__ = [
     "intelligence_config",
     "IntelligenceStatus",
     "ConfidenceLevel",
+    "RequirementCategory",
+    "ImportanceLevel",
     "CONFIDENCE_THRESHOLD_HIGH",
     "CONFIDENCE_THRESHOLD_MEDIUM",
     "IntelligenceError",
