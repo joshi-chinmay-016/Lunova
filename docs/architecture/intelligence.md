@@ -228,3 +228,21 @@ The intelligence architecture is designed with clean seams for future evolution:
 - **Email Ingestion Agnostic**: Consumes normalized inputs; does not depend on Gmail-specific headers or protocols.
 - **Model Agnostic**: Uses abstract provider interfaces (`LLMProvider`, `EmbeddingProvider`) allowing drop-in replacement across OpenAI, Anthropic Claude, Google Gemini, or local models.
 - **Storage Agnostic**: Decoupled from direct database transactions; retrieval interfaces accept tenant queries without coupling extraction or generation to PostgreSQL internals.
+
+---
+
+## 11. Phase 2: Gemini-Powered Proposal Understanding & Structured Extraction
+
+Phase 2 introduces concrete proposal understanding and structured requirement extraction:
+
+```
+Platform Input ──► ProposalContext ──► RequirementExtractor ──► LLMProvider (Gemini / Mock) ──► ExtractionResult
+```
+
+### Key Architectural Characteristics
+1. **Isolated Provider Implementation**: `GeminiProvider` implements `LLMProvider` using modern `google-genai` SDK schema-constrained generation. Business logic in `RequirementExtractor` has zero SDK dependency.
+2. **Schema-Constrained Outputs**: Extraction outputs strictly conform to Pydantic schemas (`ExtractedRequirement`, `MissingInformation`, `Ambiguity`).
+3. **Anti-Hallucination Enforced in Prompts**: Prompt `extraction_v1` strictly forbids inventing vendor capabilities, numbers, or timelines. Inferred items are flagged as `explicit = false`.
+4. **Platform Decoupling**: Platform code (`backend/app/`) remains entirely decoupled from LLM prompts and SDKs, interacting solely via `ProposalContext` and `ExtractionResult`.
+5. **Human Review Mandatory**: All extracted requirements and ambiguities are designed for review in the reviewer UI before proposal drafting.
+

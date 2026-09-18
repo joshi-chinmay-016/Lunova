@@ -1,6 +1,7 @@
 """Mock implementations of LLM and embedding providers for testing and Phase 1 foundation."""
 
-from typing import Any, List, Optional
+from typing import Any, Dict, List, Optional
+
 
 from ..config import DEFAULT_EMBEDDING_DIMENSION
 from .embedding import EmbeddingProvider
@@ -13,11 +14,16 @@ class MockLLMProvider(LLMProvider):
     def __init__(
         self,
         default_response: Optional[str] = None,
+        default_structured_response: Optional[Any] = None,
         model_name: str = "mock-llm-v1",
+        simulate_error: Optional[Exception] = None,
     ) -> None:
         self._default_response = default_response or "Mock generated response text."
+        self._default_structured_response = default_structured_response
         self._model_name = model_name
+        self.simulate_error = simulate_error
         self.call_history: List[str] = []
+        self.structured_call_history: List[Dict[str, Any]] = []
 
     @property
     def provider_name(self) -> str:
@@ -34,8 +40,72 @@ class MockLLMProvider(LLMProvider):
         temperature: float = 0.2,
         **kwargs: Any,
     ) -> str:
+        if self.simulate_error:
+            raise self.simulate_error
         self.call_history.append(prompt)
         return self._default_response
+
+    def generate_structured(
+        self,
+        prompt: str,
+        response_schema: type,
+        system_prompt: Optional[str] = None,
+        temperature: float = 0.2,
+        **kwargs: Any,
+    ) -> Any:
+        self.call_history.append(prompt)
+        self.structured_call_history.append(
+            {
+                "prompt": prompt,
+                "response_schema": response_schema,
+                "system_prompt": system_prompt,
+                "temperature": temperature,
+            }
+        )
+        if self.simulate_error:
+            raise self.simulate_error
+
+        if self._default_structured_response is not None:
+            if isinstance(self._default_structured_response, dict):
+                return response_schema.model_validate(self._default_structured_response)
+            return self._default_structured_response
+
+        # Default fallback for ProposalExtractionPayload or any Pydantic model
+        if hasattr(response_schema, "model_validate"):
+            dummy_data: Dict[str, Any] = {
+                "requirements": [
+                    {
+                        "text": "The platform must provide normalized REST APIs with OAuth2 authentication.",
+                        "category": "technical_requirement",
+                        "priority": "high",
+                        "explicit": True,
+                        "evidence": "Must provide normalized REST APIs with OAuth2 authentication.",
+                        "confidence": 0.98,
+                    }
+                ],
+                "missing_information": [
+                    {
+                        "field": "submission_deadline",
+                        "reason": "No submission deadline was provided in the proposal.",
+                        "importance": "high",
+                    }
+                ],
+                "ambiguities": [
+                    {
+                        "text": "The system must be deployed quickly.",
+                        "reason": "Deployment timeframe 'quickly' lacks a concrete schedule or SLA.",
+                    }
+                ],
+                "summary": "Mock extracted proposal requirements and specifications.",
+            }
+            try:
+                return response_schema.model_validate(dummy_data)
+            except Exception:
+                # If schema fields differ, try creating with empty fields
+                return response_schema()
+
+        return response_schema()
+
 
 
 class MockEmbeddingProvider(EmbeddingProvider):

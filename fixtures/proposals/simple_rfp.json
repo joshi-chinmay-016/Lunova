@@ -1,0 +1,18 @@
+{
+  "contract_version": "1.0",
+  "proposal_id": "prop-simple-001",
+  "company": {
+    "company_id": "lunetron",
+    "company_name": "Lunetron"
+  },
+  "email": {
+    "message_id": "msg-simple-001",
+    "thread_id": "thread-simple-001",
+    "sender": "procurement@client-enterprise.com",
+    "recipients": ["proposals@lunetron.com"],
+    "subject": "RFP: Internal Operations Web Application",
+    "body": "Hi Team,\n\nWe are looking for a web application for 100 internal users. It should include secure user authentication, an administrative dashboard, and automated reporting. We expect delivery within 12 weeks.\n\nPlease share your proposal.\n\nRegards,\nOperations Lead",
+    "received_at": "2026-09-18T09:00:00Z"
+  },
+  "attachments": []
+}

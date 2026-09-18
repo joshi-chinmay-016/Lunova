@@ -1,0 +1,25 @@
+{
+  "contract_version": "1.0",
+  "proposal_id": "prop-multi-005",
+  "company": {
+    "company_id": "lunetron",
+    "company_name": "Lunetron"
+  },
+  "email": {
+    "message_id": "msg-multi-005",
+    "thread_id": "thread-multi-005",
+    "sender": "procurement-board@state-health-network.org",
+    "recipients": ["bids@lunetron.com"],
+    "subject": "RFP-2026-HC: Comprehensive Healthcare Patient Engagement & Analytics System",
+    "body": "Gentlemen,\n\nThe State Health Network invites qualified vendor proposals for an integrated patient portal and clinical intelligence platform. Mandatory requirements are outlined in the attached tender schedule.\n\nResponses are due no later than October 31, 2026 at 17:00 EST.\n\nRespectfully,\nTender Evaluation Board",
+    "received_at": "2026-09-18T12:30:00Z"
+  },
+  "attachments": [
+    {
+      "attachment_id": "att-multi-001",
+      "filename": "Tender_Schedule_Requirements.pdf",
+      "mime_type": "application/pdf",
+      "extracted_content": "State Health Network Tender Requirements Specification:\n\nREQ-01 (Functional): The platform must provide self-service patient appointment booking and automated SMS/email reminders.\nREQ-02 (Functional): Clinicians must have access to a real-time patient triage dashboard with priority queuing.\nREQ-03 (Technical): The application must be developed with a modern responsive web frontend and backend microservices exposed via GraphQL and REST.\nREQ-04 (Technical): The system must support minimum 99.95% uptime SLA with active-passive disaster recovery across separate cloud regions.\nREQ-05 (Integration): Mandatory integration with HL7 FHIR APIs and Epic EHR electronic medical records.\nREQ-06 (Security): All data at rest must be encrypted with AES-256 and in transit with TLS 1.3. Multi-Factor Authentication (MFA) is strictly mandatory for all medical staff.\nREQ-07 (Compliance): The vendor and solution must maintain full HIPAA compliance and possess SOC 2 Type II certification.\nREQ-08 (Support): The vendor must provide 24x7x365 Tier 1-3 technical support with a 15-minute response time for critical Severity 1 incidents.\nREQ-09 (Team): The vendor project team must include a certified PMP Project Manager and at least two senior healthcare integration engineers with 5+ years EHR experience.\nREQ-10 (Timeline): Full pilot deployment must be completed within 16 weeks of contract signing, with general availability within 24 weeks.\nREQ-11 (Budget): Fixed total project implementation budget must not exceed $450,000 USD inclusive of first-year maintenance.\nREQ-12 (Qualification): The proposing firm must have successfully delivered at least three enterprise hospital clinical integration projects in the past 48 months."
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "contract_version": "1.0",
+  "proposal_id": "prop-incomplete-004",
+  "company": {
+    "company_id": "lunetron",
+    "company_name": "Lunetron"
+  },
+  "email": {
+    "message_id": "msg-incomp-004",
+    "thread_id": "thread-incomp-004",
+    "sender": "inquiries@global-retail.net",
+    "recipients": ["sales@lunetron.com"],
+    "subject": "Proposal Request: AI Support Platform",
+    "body": "Please send us a proposal for an AI-powered customer support platform.",
+    "received_at": "2026-09-18T11:45:00Z"
+  },
+  "attachments": []
+}
