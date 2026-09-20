@@ -1,50 +1,46 @@
-# Multi-Tenancy Architecture
+# Multi-Tenancy
 
-This document defines the multi-tenancy model for **Lunova**, outlining the long-term isolation boundaries and the MVP configuration for Lunetron.
+Although the MVP focuses on a single customer (Lunetron), the architecture is designed from day one to support multiple companies (tenants).
 
----
+## Conceptual Model
 
-## 1. Long-Term Multi-Tenant Model
+At the core of the system is the `Company` entity. Almost all other data in the system belongs to a company.
 
-In its mature state, Lunova will serve multiple independent enterprise clients, each operating as a fully isolated tenant:
-
-```
-┌────────────────────────────────────────────────────────┐
-│                      Lunova System                     │
-├───────────────────────────┬────────────────────────────┤
-│         Company A         │         Company B          │
-│  ├── Inbound Email Config │  ├── Inbound Email Config  │
-│  ├── Knowledge Base (RAG) │  ├── Knowledge Base (RAG)  │
-│  ├── Proposals & History  │  ├── Proposals & History   │
-│  ├── Reviewers & Users    │  ├── Reviewers & Users     │
-│  └── Audit Log            │  └── Audit Log             │
-└───────────────────────────┴────────────────────────────┘
+```text
+Company
+ ├── Users (Employees reviewing proposals)
+ ├── Email Configuration (Credentials/tokens for ingestion & sending)
+ ├── Proposals (Received requests and generated drafts)
+ ├── Knowledge Documents (PDFs, docs used for RAG)
+ └── Settings (System preferences, AI tone guidelines)
 ```
 
-Each tenant owns:
-1. **Email Configuration**: Credentials and mailbox filters for their specific proposal inbox.
-2. **Knowledge Base**: Proprietary product documentation, past winning proposals, rate cards, and compliance collateral.
-3. **Proposals & Reviewers**: Proposals submitted to that company, reviewed by authorized internal reviewers.
-4. **Audit Trail**: Tenant-scoped records for compliance and data privacy.
+## Database Architecture
+For the MVP, we will use a **Shared PostgreSQL Database** with logical separation. 
+- There will not be separate databases or schemas per company to keep infrastructure simple.
+- Every relevant table (e.g., `users`, `proposals`, `documents`, `document_chunks`) will have a `company_id` foreign key.
 
----
+## Data Isolation
 
-## 2. MVP Configuration (Lunetron Only)
+### Platform Isolation
+All queries in the backend must explicitly filter by `company_id`. 
+- When an API endpoint is hit, the authenticated user's `company_id` is extracted from their session/token.
+- All database queries append `WHERE company_id = ?` to ensure users cannot see proposals or settings from another company.
 
-For the MVP, multi-tenancy is represented logically through architectural scoping without building company onboarding workflows:
+### AI Knowledge Retrieval Isolation
+This is the most critical isolation boundary. The AI must *never* retrieve knowledge from Company A when generating a proposal for Company B.
 
-- `company_id` is set to `"lunetron"`.
-- All incoming test proposals are tagged with `company_id = "lunetron"`.
-- Knowledge embeddings are tagged with `company_id = "lunetron"`.
+- We are using `pgvector` for embedding storage.
+- The `document_chunks` table will store the vector embeddings and will include a `company_id` column.
+- During the RAG process, the vector similarity search MUST include a hard filter on `company_id`.
 
-> [!IMPORTANT]
-> **RULE 1: Company information must NEVER be hardcoded into AI logic.**
-> Prompts, extraction logic, and response drafting routines must not contain conditionals like `if company == "Lunetron"`. Instead, all contextual parameters (company name, domain specialties, tone guidelines) must be supplied dynamically from tenant configuration and retrieved knowledge documents.
+**Example SQL Concept:**
+```sql
+SELECT content 
+FROM document_chunks 
+WHERE company_id = :current_company_id 
+ORDER BY embedding <-> :query_embedding 
+LIMIT 5;
+```
 
-> [!IMPORTANT]
-> **RULE 2: AI knowledge retrieval must ALWAYS be company-scoped.**
-> Vector similarity searches in `pgvector` must always include a mandatory tenant filter:
-> ```sql
-> WHERE company_id = :target_company_id
-> ```
-> Cross-company document retrieval or un-scoped vector indexing is strictly forbidden by design.
+By enforcing `company_id` at the database level for vector searches, we guarantee that the LLM is only provided context from the correct tenant.
