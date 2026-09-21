@@ -1,91 +1,79 @@
-# System Overview Architecture
+# System Overview
 
-This document describes the high-level system architecture of **Lunova**, detailing both the initial MVP pipeline tailored for Lunetron and the strategic roadmap for future multi-company expansion.
+## Purpose of the System
+The **AI Proposal Agent** is a multi-tenant platform designed to automate and assist in the proposal generation process. It ingests incoming proposal requests via email, processes the requirements using Artificial Intelligence (AI) and Retrieval-Augmented Generation (RAG) against a company's specific knowledge base, and drafts a tailored response. Human reviewers can then edit, approve, or reject the AI-generated proposal before it is sent back to the requester.
 
----
+## MVP Scope
+For the Minimum Viable Product (MVP), the primary focus is on a single customer: **Lunetron**. However, the underlying architecture is designed to be multi-tenant. The MVP will:
+- Ingest emails via a configured email account (initially Gmail API).
+- Extract and understand proposal requirements from the email and its attachments.
+- Retrieve relevant context from Lunetron's knowledge base.
+- Generate a grounded proposal response with source attribution.
+- Provide a web-based UI for users to review, edit, and approve/reject the generated proposal.
+- Send the approved proposal via email.
 
-## 1. MVP Architecture Pipeline
+## Future Scope
+- Onboarding multiple companies/tenants.
+- Allowing each company to manage its own knowledge base and configure its own email providers (e.g., Office 365, IMAP/SMTP).
+- Advanced analytics, varied attachment handling, and complex multi-step approval workflows.
+- Integration with external CRM or ERP systems.
 
-The MVP focuses on automating proposal drafting from incoming emails for **Lunetron** with mandatory human oversight:
+## High-Level Architecture
+The system follows a **Modular Monolith** architecture to keep deployment and development simple, avoiding premature microservices. 
 
+It is divided into two primary logical modules:
+1. **Platform Module:** Handles workflow, state management, UI, persistence, and external communication (email).
+2. **AI Module:** Handles requirement extraction, RAG, response generation, and evaluating confidence.
+
+### Technology Stack
+- **Frontend:** Next.js, TypeScript, TanStack Query, Tailwind CSS, shadcn/ui.
+- **Backend:** FastAPI, Python, Pydantic, SQLAlchemy, Alembic.
+- **Database:** PostgreSQL with `pgvector` for both relational data and vector embeddings.
+
+## End-to-End Workflow & Architecture Diagram
+
+```mermaid
+flowchart TD
+    subgraph External
+        EmailIn[Incoming Email]
+        EmailOut[Outgoing Email]
+    end
+
+    subgraph Platform Module
+        Ingestion[Email Ingestion Service]
+        ProposalManager[Proposal State Manager]
+        ReviewUI[Human Review & Approval UI]
+        EmailSender[Email Sending Service]
+    end
+
+    subgraph AI Module
+        Extraction[Requirement Extraction]
+        RAG[Knowledge Retrieval / RAG]
+        Generator[Response Generation]
+    end
+
+    subgraph Data Store
+        DB[(PostgreSQL)]
+        KB[(pgvector Knowledge Base)]
+    end
+
+    EmailIn -->|Fetch| Ingestion
+    Ingestion -->|Identify Company & Create| ProposalManager
+    ProposalManager -->|Trigger Analysis| Extraction
+    Extraction -->|Query Context| RAG
+    RAG -->|Search| KB
+    RAG -->|Provide Context| Generator
+    Generator -->|Draft Proposal| ProposalManager
+    ProposalManager -->|Update State| DB
+    ProposalManager -->|Present for Review| ReviewUI
+    ReviewUI -->|Approve/Edit| EmailSender
+    EmailSender -->|Send| EmailOut
 ```
-                  ┌──────────────────────────────┐
-                  │    Incoming RFP Email        │
-                  │   (Lunetron Test Inbox)      │
-                  └──────────────┬───────────────┘
-                                 │
-                                 ▼
-                  ┌──────────────────────────────┐
-                  │       Email Ingestion        │  (Gmail Normalized Adapter)
-                  └──────────────┬───────────────┘
-                                 │
-                                 ▼
-                  ┌──────────────────────────────┐
-                  │     Proposal Management      │  (Create Proposal Record, State: RECEIVED)
-                  └──────────────┬───────────────┘
-                                 │
-                                 ▼
-                  ┌──────────────────────────────┐
-                  │     Requirement Analysis     │  (Extract & Structure Requirements)
-                  └──────────────┬───────────────┘
-                                 │
-                                 ▼
-                  ┌──────────────────────────────┐
-                  │ Lunetron Knowledge Retrieval │  (Vector Search scoped to Lunetron)
-                  └──────────────┬───────────────┘
-                                 │
-                                 ▼
-                  ┌──────────────────────────────┐
-                  │     Response Generation      │  (Draft Proposal & Clarifications)
-                  └──────────────┬───────────────┘
-                                 │
-                                 ▼
-                  ┌──────────────────────────────┐
-                  │    Grounding / Confidence    │  (Faithfulness Check & Quality Score)
-                  └──────────────┬───────────────┘
-                                 │
-                                 ▼
-                  ┌──────────────────────────────┐
-                  │         Human Review         │  (UI for Review, Edit, or Reject)
-                  └──────────────┬───────────────┘
-                                 │
-                   [Approved / Edited by Human]
-                                 │
-                                 ▼
-                  ┌──────────────────────────────┐
-                  │        Email Response        │  (Send Response Email to Client)
-                  └──────────────┬───────────────┘
-                                 │
-                                 ▼
-                  ┌──────────────────────────────┐
-                  │       Audit / History        │  (Log Complete Trace for Compliance)
-                  └──────────────────────────────┘
-```
 
----
-
-## 2. Stage Breakdown
-
-1. **Email Ingestion**: Polling or receiving notifications from the development test email inbox. The raw email is normalized into standard fields (sender, subject, body, received timestamp).
-2. **Proposal Management**: The platform creates a new proposal entity tracked in PostgreSQL with unique `proposal_id` and initial state `RECEIVED`.
-3. **Requirement Analysis**: The AI engine parses email content and extracted attachment text to identify discrete technical, commercial, and compliance requirements.
-4. **Lunetron Knowledge Retrieval**: Using semantic similarity in `pgvector` scoped strictly to Lunetron's documents, relevant product sheets, whitepapers, and past proposals are retrieved.
-5. **Response Generation**: The AI constructs a cohesive proposal response, addressing each requirement with cited knowledge.
-6. **Grounding & Confidence Scoring**: The AI evaluates the draft response against retrieved sources to detect hallucination risks, computing grounding and confidence metrics.
-7. **Human Review**: The platform transitions the proposal to `REVIEW_REQUIRED`. A team member reviews extracted requirements, citations, and draft text. Reviewers can approve, edit, or reject the response.
-8. **Email Response**: Upon approval, the platform dispatches the final response via the email adapter back to the client sender.
-9. **Audit / History**: Every lifecycle step, AI confidence score, human edit, and outbound message is saved to an immutable audit log.
-
----
-
-## 3. Comparison: MVP vs. Future Scope
-
-| Dimension | MVP Implementation | Future Target |
-| :--- | :--- | :--- |
-| **Tenant** | Exclusively **Lunetron** (`company_id = "lunetron"`) | Multi-tenant with self-service company onboarding |
-| **Knowledge Base** | Pre-loaded Lunetron internal documents | Dedicated tenant-isolated document management |
-| **Input Channel** | Email only (development inbox) | Multi-channel: Email, Web Portals, Vendor RFPs, APIs |
-| **Email Accounts** | Dedicated dev/test email account | Configurable tenant email credentials / OAuth |
-| **Deployment Mode** | Modular Monolith (Docker Compose) | Modular Monolith / Cloud Container Services |
-| **Execution** | Synchronous / In-process background tasks | Distributed job queue (Celery/Redis) if load demands |
-| **Human Review** | Mandatory for 100% of proposals | Configurable auto-dispatch based on confidence score |
+### Flow Breakdown:
+1. **Email Ingestion:** The Platform fetches new emails and identifies the target Company.
+2. **Proposal Creation:** A new Proposal record is created in the database.
+3. **AI Processing:** The Platform passes the raw data to the AI Module.
+4. **Retrieval & Generation:** The AI Module queries the company's knowledge base and generates a response.
+5. **Human Review:** The Platform updates the proposal state and alerts the user. The user reviews the draft via the UI.
+6. **Dispatch:** Upon approval, the Platform sends the finalized response via email and logs the action.

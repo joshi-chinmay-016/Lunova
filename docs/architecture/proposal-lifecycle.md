@@ -1,84 +1,43 @@
-# Proposal Lifecycle Architecture
+# Proposal Lifecycle
 
-This document specifies the conceptual lifecycle states and state transitions for proposals in **Lunova**.
+The core of the Platform is managing the state of a Proposal as it moves from initial ingestion to final dispatch.
 
----
+## State Definitions
 
-## 1. Happy-Path State Machine
+- **RECEIVED:** The system has successfully ingested the email/request, and a raw proposal record is created.
+- **PROCESSING:** The AI Module is currently analyzing the requirements, querying the knowledge base, and generating a draft.
+- **ANALYZED:** The AI has completed its work, but the proposal hasn't been flagged for human review yet (transitional state, might be bypassed straight to `REVIEW_REQUIRED`).
+- **REVIEW_REQUIRED:** The AI draft is ready. The system is waiting for a human to review, edit, and make a decision.
+- **APPROVED:** The human reviewer has approved the proposal draft.
+- **REJECTED:** The human reviewer has decided the proposal should not be sent (e.g., unqualified lead, invalid request).
+- **SENT:** The final approved proposal has been successfully dispatched via email.
+- **FAILED:** An error occurred at any stage (e.g., AI generation failed, email dispatch failed).
 
-```
-      [Inbound Email]
-             │
-             ▼
-        ┌──────────┐
-        │ RECEIVED │
-        └────┬─────┘
-             │ Email parsed & proposal record created
-             ▼
-       ┌────────────┐
-       │ PROCESSING │
-       └─────┬──────┘
-             │ AI requirement extraction completed
-             ▼
-        ┌──────────┐
-        │ ANALYZED │
-        └────┬─────┘
-             │ RAG retrieval & draft generation completed
-             ▼
-  ┌────────────────────┐
-  │ RESPONSE_GENERATED │
-  └──────────┬─────────┘
-             │ Enters human review queue
-             ▼
-   ┌─────────────────┐
-   │ REVIEW_REQUIRED │
-   └─────────┬───────┘
-             │
-   ┌─────────┼──────────────┐
-   ▼         ▼              ▼
-┌──────────┐ ┌────────┐ ┌──────────┐
-│ APPROVED │ │ EDITED │ │ REJECTED │
-└────┬─────┘ └───┬────┘ └────┬─────┘
-     │           │           │
-     └─────┬─────┘           │
-           │ Sent via email   │ Dropped/archived
-           ▼                 ▼
-       ┌──────┐          ┌────────┐
-       │ SENT │          │ CLOSED │
-       └───┬──┘          └────────┘
-           │ Lifecycle finalized
-           ▼
-       ┌────────┐
-       │ CLOSED │
-       └────────┘
+## State Machine Diagram
+
+```mermaid
+stateDiagram-v2
+    [*] --> RECEIVED : Email Ingested (Platform)
+    
+    RECEIVED --> PROCESSING : Trigger AI
+    
+    PROCESSING --> REVIEW_REQUIRED : AI Success (AI Module)
+    PROCESSING --> FAILED : AI Error
+    
+    REVIEW_REQUIRED --> APPROVED : Human Approves (UI)
+    REVIEW_REQUIRED --> REJECTED : Human Rejects (UI)
+    
+    APPROVED --> SENT : Dispatch Email (Platform)
+    APPROVED --> FAILED : Dispatch Error
+    
+    REJECTED --> [*]
+    SENT --> [*]
+    FAILED --> [*]
 ```
 
----
+## Lifecycle Breakdown
 
-## 2. State Descriptions
-
-| State | Trigger / Definition |
-| :--- | :--- |
-| **`RECEIVED`** | Normalized email has been ingested and a proposal record created in the database. |
-| **`PROCESSING`** | The proposal payload has been handed off to the AI Intelligence Engine for extraction. |
-| **`ANALYZED`** | Requirements have been identified, categorized, and structured. |
-| **`RESPONSE_GENERATED`** | Knowledge retrieval is complete, citations attached, and draft response formulated. |
-| **`REVIEW_REQUIRED`** | Response draft is ready for human verification in the review interface. |
-| **`APPROVED`** | Human reviewer verified the draft without text modifications. |
-| **`EDITED`** | Human reviewer modified the draft response or requirement mappings prior to approval. |
-| **`REJECTED`** | Human reviewer determined the proposal should not be responded to. |
-| **`SENT`** | The approved/edited email response has been successfully dispatched via the email adapter. |
-| **`CLOSED`** | The proposal cycle is finished, and records are frozen in the audit log. |
-
----
-
-## 3. Exception and Review-Triggering States
-
-| State | Cause | Recovery / Human Action |
-| :--- | :--- | :--- |
-| **`FAILED`** | Unrecoverable error in ingestion, parsing, or AI processing. | Reviewer is alerted with the error code; manual retry or file upload is permitted. |
-| **`NEEDS_CLARIFICATION`** | AI identified major gaps in the incoming RFP requirements. | Reviewer can inspect generated clarification questions and email the client. |
-| **`LOW_CONFIDENCE`** | The draft response scored below grounding or confidence thresholds. | Proposal is flagged with a prominent warning badge in `REVIEW_REQUIRED` queue. |
-
-> [!NOTE]
-> Implementation of the formal database state machine, transition guards, and audit triggers will be developed in `backend/app/domain/proposal/`.
+1. **Platform Ownership (Ingestion):** The transition to `RECEIVED` is owned entirely by the Platform's email listener.
+2. **AI Ownership (Generation):** The transition from `RECEIVED` to `PROCESSING` and eventually to `REVIEW_REQUIRED` is where the AI Module does its heavy lifting. The Platform simply awaits the AI Module's result to update the state.
+3. **Human Ownership (Review):** The state rests at `REVIEW_REQUIRED` until a user interacts with the UI. The user can modify the draft multiple times. The state only changes when they explicitly hit "Approve" or "Reject".
+4. **Platform Ownership (Dispatch):** Once `APPROVED`, the Platform takes over again to send the email and move the state to `SENT`.
