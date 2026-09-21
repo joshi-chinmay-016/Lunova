@@ -1,44 +1,54 @@
-# Lunova Backend (`backend`)
+# Lunova Backend Foundation (Phase 1)
 
-FastAPI modular monolith powering the Lunova Proposal Response Agent.
+This repository contains the FastAPI backend for the AI Proposal Agent.
 
-## Architecture
+## Prerequisites
+- Python 3.11+
+- Docker & Docker Compose (for the PostgreSQL + pgvector database)
 
-The backend is organized as a **modular monolith** with a strict boundary between the platform/workflow domain and the AI intelligence engine:
+## Local Development Setup
 
-```
-backend/
-├── app/                  # Platform & Workflow (Owned by Lokesh)
-│   ├── api/              # HTTP routes & dependency injection
-│   ├── core/             # Configuration & security settings
-│   ├── domain/           # Business entities & state machines
-│   │   ├── company/      # Tenant/company configuration (MVP: Lunetron)
-│   │   ├── proposal/     # Proposal aggregate & lifecycle state machine
-│   │   ├── email/        # Normalized email parsing & attachment handling
-│   │   ├── knowledge/    # Document management & lifecycle
-│   │   ├── review/       # Human review decisions (approve, edit, reject)
-│   │   └── audit/        # Immutable audit trail
-│   └── infrastructure/   # External integrations
-│       ├── database/     # SQLAlchemy async engine, Alembic & pgvector
-│       ├── email/        # Gmail API normalized adapter
-│       └── storage/      # Local file storage for documents
-│
-├── intelligence/         # AI Proposal Intelligence (Owned by Chinmay)
-│   ├── extraction/       # Proposal understanding & requirement extraction
-│   ├── retrieval/        # Company-scoped vector search & RAG
-│   ├── generation/       # Proposal response drafting & clarification questions
-│   ├── evaluation/       # Grounding checks, confidence scores, hallucination flags
-│   └── providers/        # LLM & Embedding provider abstractions
-│
-└── tests/
-    ├── domain/           # Platform & domain test suites (Lokesh)
-    └── intelligence/     # AI & RAG evaluation test suites (Chinmay)
-```
+1. **Start the Database**
+   ```bash
+   docker compose up -d
+   ```
+   *This starts a PostgreSQL 16 database with the pgvector extension enabled.*
 
-## Technology Stack
+2. **Setup Environment Variables**
+   ```bash
+   cp .env.example .env
+   ```
+   *Modify the `.env` file if your local setup requires different credentials.*
 
-- **Framework**: FastAPI (Python 3.11+)
-- **Validation**: Pydantic v2
-- **ORM & Migrations**: SQLAlchemy 2.0 (async), Alembic
-- **Database**: PostgreSQL 16 with `pgvector`
-- **Infrastructure Scope**: Strict modular monolith. No Redis, no Celery, no Kafka, no Kubernetes.
+3. **Install Dependencies**
+   ```bash
+   pip install -e .[dev]
+   ```
+
+4. **Run Database Migrations**
+   ```bash
+   alembic upgrade head
+   ```
+
+5. **Start the API Server**
+   ```bash
+   uvicorn app.main:app --reload
+   ```
+
+6. **Run Tests**
+   ```bash
+   pytest
+   ```
+
+## Project Structure
+- `app/`: Core FastAPI application
+  - `api/`: Route definitions
+  - `core/`: Config and database dependencies
+  - `models/`: SQLAlchemy Domain Models
+  - `schemas/`: Pydantic contracts
+  - `repositories/`: Database abstraction
+  - `services/`: Business logic
+- `platform/`: Workflows and non-AI logic (Developer 2)
+- `intelligence/`: RAG, LLM calls, and AI logic (Developer 1)
+- `migrations/`: Alembic database migration scripts
+- `tests/`: Pytest suite
