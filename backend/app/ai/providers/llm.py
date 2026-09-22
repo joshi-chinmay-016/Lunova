@@ -18,7 +18,7 @@ class FakeLLMProvider:
         self.last_kwargs = kwargs
         
         # Simple heuristic to return valid JSON if the prompt looks like it expects JSON
-        if "json" in prompt.lower() or "extract" in prompt.lower():
+        if "respond strictly with a json object" in prompt.lower():
             # A fake JSON string that somewhat matches ExtractedRequirements
             return '''{
                 "summary": "Fake summary",

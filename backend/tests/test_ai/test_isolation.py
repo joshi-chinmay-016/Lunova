@@ -36,11 +36,14 @@ async def test_company_isolation_in_retrieval():
     
     # The statement executed should contain a filter by company_a_id
     stmt = mock_db_session.execute.call_args[0][0]
-    stmt_str = str(stmt.compile(compile_kwargs={"literal_binds": True}))
+    compiled = stmt.compile(compile_kwargs={"literal_binds": False})
+    stmt_str = str(compiled)
     
     # The SQL should clearly have a WHERE clause with the company_id
     assert "document_chunks.company_id =" in stmt_str
-    assert str(company_a_id) in stmt_str
+    
+    # Verify the bound parameter matches company_a_id
+    assert company_a_id in compiled.params.values()
     
     # It must not be vulnerable to leaking other companies
     company_b_id = uuid4()
