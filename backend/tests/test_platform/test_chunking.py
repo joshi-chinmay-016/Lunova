@@ -1,4 +1,4 @@
-from app.ai.rag.chunking import DocumentChunker
+from app.platform.services.chunking import DocumentChunker
 
 def test_document_chunker_basic():
     chunker = DocumentChunker(chunk_size=10, chunk_overlap=2)

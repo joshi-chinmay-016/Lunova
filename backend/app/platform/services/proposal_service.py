@@ -11,15 +11,8 @@ from app.platform.schemas.proposal import ProposalCreate
 from app.platform.schemas.review import ReviewCreate
 from app.core.database import async_session_maker
 
-from app.ai.providers.llm import FakeLLMProvider
-from app.ai.providers.embeddings import FakeEmbeddingProvider
-from app.ai.extraction.service import ExtractionService
-from app.ai.generation.service import GenerationService
-from app.ai.rag.retrieval import RetrievalService
-from app.ai.contracts.requirements import RequirementExtractionInput
-from app.ai.contracts.generation import ProposalGenerationInput
-from app.ai.contracts.retrieval import RetrievalInput
-
+from intelligence.service import IntelligenceService
+from intelligence.models.proposal import ProposalContext
 logger = logging.getLogger(__name__)
 
 class ProposalService:
@@ -47,7 +40,9 @@ class ProposalService:
             proposal_id=proposal.id,
             subject=data.subject,
             body=data.content,
-            direction="INCOMING"
+            direction="INCOMING",
+            sender_address=data.sender_address,
+            recipient_address=data.recipient_address
         )
         db.add(email)
 
@@ -87,42 +82,29 @@ class ProposalService:
                 content = email.body
                 subject = email.subject
 
-                # 1. Extraction
-                llm = FakeLLMProvider()
-                extraction_service = ExtractionService(llm_provider=llm)
-                extraction_input = RequirementExtractionInput(
-                    company_id=company_id,
-                    content=content,
-                    subject=subject
+                # 1. Integration with Intelligence Layer
+                context = ProposalContext(
+                    proposal_id=str(proposal_id),
+                    company_id=str(company_id),
+                    subject=subject or "",
+                    body=content or ""
                 )
-                requirements = await extraction_service.extract_requirements(extraction_input)
                 
+                intelligence_service = IntelligenceService()
+                result = intelligence_service.analyze_proposal(context)
+
                 proposal.status = ProposalStatus.ANALYZED
-                db.add(AuditLog(company_id=company_id, proposal_id=proposal_id, action="ANALYZED", details=f"Confidence: {requirements.confidence}"))
-                await db.commit()
-
-                # 2. RAG Retrieval
-                embeddings = FakeEmbeddingProvider()
-                retrieval_service = RetrievalService(db, embedding_provider=embeddings)
-                retrieval_input = RetrievalInput(company_id=company_id, query=requirements.summary, top_k=3)
-                retrieval_result = await retrieval_service.retrieve(retrieval_input)
-
-                # 3. Generation
-                generation_service = GenerationService(llm_provider=llm)
-                gen_input = ProposalGenerationInput(
-                    company_id=company_id,
-                    extracted_requirements=requirements,
-                    retrieved_context=retrieval_result.chunks
-                )
-                gen_result = await generation_service.generate_proposal(gen_input)
+                db.add(AuditLog(company_id=company_id, proposal_id=proposal_id, action="ANALYZED", details=f"Confidence: {result.confidence.overall_score}"))
 
                 # Save generated proposal as an outgoing email (draft)
                 outgoing_email = Email(
                     company_id=company_id,
                     proposal_id=proposal_id,
                     subject=f"Re: {subject}" if subject else "Proposal Response",
-                    body=gen_result.content,
-                    direction="OUTGOING"
+                    body=result.generated_response,
+                    direction="OUTGOING",
+                    sender_address=email.recipient_address,
+                    recipient_address=email.sender_address
                 )
                 db.add(outgoing_email)
 

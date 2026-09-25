@@ -7,8 +7,8 @@ from app.models.document_chunk import DocumentChunk
 from app.platform.schemas.document import DocumentCreate
 from app.core.database import async_session_maker
 
-from app.ai.providers.embeddings import FakeEmbeddingProvider
-from app.ai.rag.chunking import DocumentChunker
+from intelligence.providers.mock import MockEmbeddingProvider
+from app.platform.services.chunking import DocumentChunker
 
 logger = logging.getLogger(__name__)
 
@@ -50,11 +50,11 @@ class DocumentService:
                 chunks_text = chunker.chunk_text(raw_content)
 
                 # 2. Embedding
-                embedder = FakeEmbeddingProvider()
+                embedder = MockEmbeddingProvider()
                 
                 # We can embed them one by one or batch
                 for i, text in enumerate(chunks_text):
-                    embedding_vector = await embedder.embed_text(text)
+                    embedding_vector = embedder.embed_query(text)
                     
                     chunk = DocumentChunk(
                         document_id=doc.id,

@@ -6,6 +6,8 @@ export const metadata: Metadata = {
   description: 'Automated proposal analysis and response generation system initially for Lunetron',
 };
 
+import Providers from './providers';
+
 export default function RootLayout({
   children,
 }: {
@@ -13,8 +15,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body style={{ margin: 0, fontFamily: 'system-ui, -apple-system, sans-serif' }}>
-        {children}
+      <body style={{ margin: 0, fontFamily: 'system-ui, -apple-system, sans-serif', backgroundColor: '#f9fafb' }}>
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );

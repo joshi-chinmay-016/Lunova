@@ -5,12 +5,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from app.core.database import get_db
-from app.api.dependencies.auth import get_current_company, get_current_user
+from app.api.dependencies.auth import get_current_active_user, RoleChecker
+from app.auth.schemas import AuthenticatedUser
+from app.models.user import UserRole
 from app.platform.schemas.proposal import ProposalCreate, ProposalResponse
 from app.platform.schemas.review import ReviewCreate, ReviewResponse
 from app.platform.services.proposal_service import ProposalService
 from app.models.review import Review
-from app.models.proposal import Proposal
 from app.models.proposal import Proposal
 
 router = APIRouter(prefix="/proposals", tags=["Proposals"])
@@ -19,17 +20,17 @@ router = APIRouter(prefix="/proposals", tags=["Proposals"])
 async def create_proposal(
     data: ProposalCreate,
     db: AsyncSession = Depends(get_db),
-    company_id: UUID = Depends(get_current_company)
+    current_user: AuthenticatedUser = Depends(get_current_active_user)
 ):
-    return await ProposalService.create_proposal(db, data, company_id)
+    return await ProposalService.create_proposal(db, data, current_user.company_id)
 
 
 @router.get("", response_model=List[ProposalResponse])
 async def list_proposals(
     db: AsyncSession = Depends(get_db),
-    company_id: UUID = Depends(get_current_company)
+    current_user: AuthenticatedUser = Depends(get_current_active_user)
 ):
-    stmt = select(Proposal).filter(Proposal.company_id == company_id).order_by(Proposal.created_at.desc())
+    stmt = select(Proposal).filter(Proposal.company_id == current_user.company_id).order_by(Proposal.created_at.desc())
     result = await db.execute(stmt)
     proposals = result.scalars().all()
     return proposals
@@ -39,9 +40,9 @@ async def list_proposals(
 async def get_proposal(
     proposal_id: UUID,
     db: AsyncSession = Depends(get_db),
-    company_id: UUID = Depends(get_current_company)
+    current_user: AuthenticatedUser = Depends(get_current_active_user)
 ):
-    proposal = await ProposalService.get_proposal(db, proposal_id, company_id)
+    proposal = await ProposalService.get_proposal(db, proposal_id, current_user.company_id)
     if not proposal:
         raise HTTPException(status_code=404, detail="Proposal not found")
     return proposal
@@ -52,16 +53,16 @@ async def process_proposal(
     proposal_id: UUID,
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
-    company_id: UUID = Depends(get_current_company)
+    current_user: AuthenticatedUser = Depends(RoleChecker([UserRole.ADMIN]))
 ):
-    proposal = await ProposalService.get_proposal(db, proposal_id, company_id)
+    proposal = await ProposalService.get_proposal(db, proposal_id, current_user.company_id)
     if not proposal:
         raise HTTPException(status_code=404, detail="Proposal not found")
     
     if proposal.status != "RECEIVED":
         raise HTTPException(status_code=400, detail="Proposal is already processing or processed")
 
-    background_tasks.add_task(ProposalService.process_proposal_bg, proposal_id, company_id)
+    background_tasks.add_task(ProposalService.process_proposal_bg, proposal_id, current_user.company_id)
     return {"detail": "Processing started"}
 
 
@@ -70,11 +71,10 @@ async def approve_proposal(
     proposal_id: UUID,
     data: ReviewCreate,
     db: AsyncSession = Depends(get_db),
-    company_id: UUID = Depends(get_current_company),
-    user_id: UUID = Depends(get_current_user)
+    current_user: AuthenticatedUser = Depends(RoleChecker([UserRole.ADMIN]))
 ):
     try:
-        return await ProposalService.approve_proposal(db, proposal_id, company_id, data, user_id)
+        return await ProposalService.approve_proposal(db, proposal_id, current_user.company_id, data, current_user.id)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -84,11 +84,10 @@ async def reject_proposal(
     proposal_id: UUID,
     data: ReviewCreate,
     db: AsyncSession = Depends(get_db),
-    company_id: UUID = Depends(get_current_company),
-    user_id: UUID = Depends(get_current_user)
+    current_user: AuthenticatedUser = Depends(RoleChecker([UserRole.ADMIN]))
 ):
     try:
-        return await ProposalService.reject_proposal(db, proposal_id, company_id, data, user_id)
+        return await ProposalService.reject_proposal(db, proposal_id, current_user.company_id, data, current_user.id)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -97,12 +96,12 @@ async def reject_proposal(
 async def get_proposal_reviews(
     proposal_id: UUID,
     db: AsyncSession = Depends(get_db),
-    company_id: UUID = Depends(get_current_company)
+    current_user: AuthenticatedUser = Depends(get_current_active_user)
 ):
-    proposal = await ProposalService.get_proposal(db, proposal_id, company_id)
+    proposal = await ProposalService.get_proposal(db, proposal_id, current_user.company_id)
     if not proposal:
         raise HTTPException(status_code=404, detail="Proposal not found")
 
-    stmt = select(Review).filter(Review.proposal_id == proposal_id, Review.company_id == company_id).order_by(Review.created_at.desc())
+    stmt = select(Review).filter(Review.proposal_id == proposal_id, Review.company_id == current_user.company_id).order_by(Review.created_at.desc())
     result = await db.execute(stmt)
     return result.scalars().all()
