@@ -5,6 +5,11 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
     DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/lunova"
     
+    # Auth Settings
+    JWT_SECRET_KEY: str = "supersecretkey_for_development_only"
+    JWT_ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+
     # AI Settings
     LLM_PROVIDER: str = "fake" # or "gemini", "openai"
     LLM_MODEL: str = "default-model"
