@@ -71,3 +71,6 @@ storage/
 Thumbs.db
 
 powershell.cmd
+# Next.js generated TypeScript files
+next-env.d.ts
+*.tsbuildinfo

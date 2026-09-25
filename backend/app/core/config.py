@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     LLM_MODEL: str = "default-model"
     EMBEDDING_PROVIDER: str = "fake"
     EMBEDDING_MODEL: str = "text-embedding-3-small"
+    EMBEDDING_DIMENSION: int = 1536 # Explicit dimension configuration
     CHUNK_SIZE: int = 1000
     CHUNK_OVERLAP: int = 200
     RETRIEVAL_TOP_K: int = 5

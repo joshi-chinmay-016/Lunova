@@ -24,10 +24,6 @@ async def test_company_isolation_in_proposal_retrieval():
 @pytest.mark.asyncio
 async def test_auth_dependency_missing_token():
     with pytest.raises(HTTPException) as excinfo:
-        # FastAPI's Depends(oauth2_scheme) normally throws 401 when missing,
-        # but if we call the dependency directly with None or empty, it should raise.
-        # But actually oauth2_scheme raises 401. If we test our function, token is required.
-        # We can just simulate passing an empty token to get_current_active_user.
         await get_current_active_user(token="")
     assert excinfo.value.status_code == 401
 
@@ -42,7 +38,6 @@ async def test_auth_dependency_valid_token():
     user_id = uuid4()
     company_id = uuid4()
     
-    # Generate a valid token
     valid_token = JWTService.create_access_token(
         subject=str(user_id),
         company_id=str(company_id),
@@ -53,3 +48,26 @@ async def test_auth_dependency_valid_token():
     assert str(user.id) == str(user_id)
     assert str(user.company_id) == str(company_id)
     assert user.role == "MEMBER"
+
+def test_company_isolation_in_proposal_context():
+    from intelligence.service import IntelligenceService
+    from intelligence.models.proposal import ProposalContext
+    import uuid
+
+    company_a_id = str(uuid.uuid4())
+    company_b_id = str(uuid.uuid4())
+
+    context_a = ProposalContext(
+        proposal_id=str(uuid.uuid4()),
+        company_id=company_a_id,
+        subject="Request",
+        body="Body"
+    )
+
+    service = IntelligenceService()
+    result_a = service.analyze_proposal(context_a)
+
+    # Ensure company_b_id is never present in the retrieved sources
+    for source in result_a.retrieved_sources:
+        assert company_b_id not in source.source_id
+        assert company_b_id not in source.title

@@ -8,6 +8,8 @@ class ProposalCreate(BaseModel):
     title: Optional[str] = None
     content: str
     subject: Optional[str] = None
+    sender_address: str
+    recipient_address: str
 
 class ProposalResponse(BaseModel):
     id: UUID

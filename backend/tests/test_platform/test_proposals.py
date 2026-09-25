@@ -15,7 +15,9 @@ async def test_create_proposal():
     data = ProposalCreate(
         title="Test Proposal",
         content="We need a CRM.",
-        subject="Request for Proposal"
+        subject="Request for Proposal",
+        sender_address="client@example.com",
+        recipient_address="vendor@lunova.ai"
     )
     
     proposal = await ProposalService.create_proposal(mock_db, data, company_id)
