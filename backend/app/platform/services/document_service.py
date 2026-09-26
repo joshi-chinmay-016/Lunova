@@ -50,11 +50,18 @@ class DocumentService:
                 chunks_text = chunker.chunk_text(raw_content)
 
                 # 2. Embedding
-                embedder = MockEmbeddingProvider()
+                from app.core.config import settings
+                if settings.EMBEDDING_PROVIDER == "gemini":
+                    from intelligence.providers.gemini_embedding import GeminiEmbeddingProvider
+                    embedder = GeminiEmbeddingProvider()
+                elif settings.EMBEDDING_PROVIDER == "mock" and settings.ENVIRONMENT != "production":
+                    embedder = MockEmbeddingProvider()
+                else:
+                    raise ValueError(f"Unsupported or missing EMBEDDING_PROVIDER: {settings.EMBEDDING_PROVIDER}")
                 
                 # We can embed them one by one or batch
                 for i, text in enumerate(chunks_text):
-                    embedding_vector = embedder.embed_query(text)
+                    embedding_vector = embedder.embed_texts([text])[0]
                     
                     chunk = DocumentChunk(
                         document_id=doc.id,
