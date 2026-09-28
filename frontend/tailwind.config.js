@@ -6,46 +6,53 @@ module.exports = {
     './components/**/*.{js,ts,jsx,tsx,mdx}',
     './features/**/*.{js,ts,jsx,tsx,mdx}',
   ],
-  darkMode: 'class',
   theme: {
     extend: {
       colors: {
-        background: '#070a13',
-        foreground: '#f1f5f9',
-        brand: {
-          50: '#eef2ff',
-          100: '#e0e7ff',
-          200: '#c7d2fe',
-          300: '#a5b4fc',
-          400: '#818cf8',
-          500: '#6366f1',
-          600: '#4f46e5',
-          700: '#4338ca',
-          800: '#3730a3',
-          900: '#312e81',
-          cyan: '#06b6d4',
-          emerald: '#10b981',
-          purple: '#8b5cf6',
-          rose: '#f43f5e',
-          amber: '#f59e0b',
+        canvas: '#F4F5F7',
+        surface: {
+          DEFAULT: '#FFFFFF',
+          secondary: '#EEF0F3',
+          tertiary: '#E5E8EC',
         },
-      },
-      animation: {
-        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        'spin-slow': 'spin 20s linear infinite',
-        'float': 'float 6s ease-in-out infinite',
-        'glow': 'glow 2.5s ease-in-out infinite alternate',
-      },
-      keyframes: {
-        float: {
-          '0%, 100%': { transform: 'translateY(0px)' },
-          '50%': { transform: 'translateY(-10px)' },
+        border: {
+          subtle: '#E2E5E9',
+          strong: '#D1D5DB',
         },
-        glow: {
-          '0%': { filter: 'drop-shadow(0 0 15px rgba(99, 102, 241, 0.4))' },
-          '100%': { filter: 'drop-shadow(0 0 30px rgba(6, 182, 212, 0.7))' },
+        primary: {
+          50: '#eff6ff',
+          100: '#dbeafe',
+          200: '#bfdbfe',
+          300: '#93c5fd',
+          400: '#60a5fa',
+          500: '#3b82f6',
+          600: '#2563eb',
+          700: '#1d4ed8',
+          800: '#1e40af',
+          900: '#1e3a8a',
         },
+        content: {
+          primary: '#1F2937',
+          secondary: '#6B7280',
+          muted: '#9CA3AF',
+        }
       },
+      fontFamily: {
+        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
+        mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'monospace'],
+      },
+      boxShadow: {
+        'clay-card': '0 1px 3px rgba(15, 23, 42, 0.04), 0 8px 24px -4px rgba(15, 23, 42, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.95)',
+        'clay-hover': '0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 12px 28px -4px rgba(15, 23, 42, 0.09), inset 0 1px 0 rgba(255, 255, 255, 1)',
+        'clay-elevated': '0 10px 30px -4px rgba(15, 23, 42, 0.10), 0 4px 12px -2px rgba(15, 23, 42, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.95)',
+        'clay-button': '0 2px 4px rgba(37, 99, 235, 0.2), 0 4px 12px -2px rgba(37, 99, 235, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
+        'clay-inset': 'inset 0 1px 3px rgba(15, 23, 42, 0.06), inset 0 1px 2px rgba(15, 23, 42, 0.04)',
+      },
+      borderRadius: {
+        'xl': '0.75rem',
+        '2xl': '1rem',
+        '3xl': '1.25rem',
+      }
     },
   },
   plugins: [],

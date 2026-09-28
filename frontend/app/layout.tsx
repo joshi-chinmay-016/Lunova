@@ -1,13 +1,14 @@
 import type { Metadata } from 'next';
 import React from 'react';
 import './globals.css';
+import Providers from './providers';
+import { AppShell } from '@/components/layout/AppShell';
 
 export const metadata: Metadata = {
-  title: 'Lunova | 3D AI-Powered Proposal Response Nexus',
-  description: 'Autonomous 3D Neural Proposal Agent & Verification Studio for RFPs',
+  title: 'Lunova | AI Proposal Intelligence Platform',
+  description:
+    'Enterprise AI proposal response & proposal intelligence platform with evidence grounding, requirement extraction, and human review.',
 };
-
-import Providers from './providers';
 
 export default function RootLayout({
   children,
@@ -15,11 +16,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
-      <body className="bg-[#070a13] text-slate-100 min-h-screen selection:bg-indigo-500 selection:text-white">
-
+    <html lang="en">
+      <body className="bg-[#F4F5F7] text-gray-900 min-h-screen selection:bg-blue-600 selection:text-white antialiased">
         <Providers>
-          {children}
+          <AppShell>{children}</AppShell>
         </Providers>
       </body>
     </html>

@@ -1,132 +1,231 @@
 'use client';
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { useProposals } from '../../features/proposals/api';
-import { setAuthToken } from '../../services/api';
-import { Sparkles, ArrowLeft, ShieldCheck, KeyRound } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { useProposals } from '@/hooks/useProposals';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { Card, CardContent } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { ErrorState } from '@/components/ui/ErrorState';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { RecentProposalsTable } from '@/components/dashboard/RecentProposalsTable';
+import { NewProposalModal } from '@/components/proposals/NewProposalModal';
+import { Search, Plus, Filter, FileSpreadsheet, RotateCcw } from 'lucide-react';
 
 export default function ProposalsPage() {
-  const [tokenInput, setTokenInput] = useState('');
-  const [hasToken, setHasToken] = useState(false);
-  const { data: proposals, isLoading, error } = useProposals();
+  const { data: proposals, isLoading, error, refetch } = useProposals();
 
-  const handleSetToken = (token?: string) => {
-    const val = token || tokenInput;
-    setAuthToken(val);
-    setHasToken(true);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [customerFilter, setCustomerFilter] = useState('ALL');
+  const [sortBy, setSortBy] = useState<'deadline' | 'created_at' | 'title'>('deadline');
+  const [isNewModalOpen, setIsNewModalOpen] = useState(false);
+
+  // Extract unique customers
+  const customers = useMemo(() => {
+    if (!proposals) return [];
+    return Array.from(new Set(proposals.map((p) => p.customer))).sort();
+  }, [proposals]);
+
+  // Filter and sort proposals
+  const filteredProposals = useMemo(() => {
+    if (!proposals) return [];
+
+    return proposals
+      .filter((p) => {
+        const matchesSearch =
+          !search ||
+          p.title.toLowerCase().includes(search.toLowerCase()) ||
+          p.customer.toLowerCase().includes(search.toLowerCase()) ||
+          p.owner.toLowerCase().includes(search.toLowerCase());
+
+        const matchesStatus = statusFilter === 'ALL' || p.status === statusFilter;
+        const matchesCustomer = customerFilter === 'ALL' || p.customer === customerFilter;
+
+        return matchesSearch && matchesStatus && matchesCustomer;
+      })
+      .sort((a, b) => {
+        if (sortBy === 'deadline') {
+          return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
+        }
+        if (sortBy === 'created_at') {
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        }
+        return a.title.localeCompare(b.title);
+      });
+  }, [proposals, search, statusFilter, customerFilter, sortBy]);
+
+  const handleResetFilters = () => {
+    setSearch('');
+    setStatusFilter('ALL');
+    setCustomerFilter('ALL');
+    setSortBy('deadline');
   };
 
-  const handleSetDemoToken = () => {
-    // Generate a dev token structure
-    const demoToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkZXYtdXNlciIsImNvbXBhbnlfaWQiOiJsdW5ldHJvbiIsInJvbGUiOiJhZG1pbiJ9.mock';
-    setTokenInput(demoToken);
-    handleSetToken(demoToken);
-  };
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          title="Proposals"
+          description="Manage and review incoming proposal requests."
+        />
+        <Card className="p-4">
+          <Skeleton className="h-10 w-full mb-4" />
+          <Skeleton className="h-64 w-full" />
+        </Card>
+      </div>
+    );
+  }
+
+  if (error || !proposals) {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          title="Proposals"
+          description="Manage and review incoming proposal requests."
+        />
+        <ErrorState
+          title="Unable to load proposals"
+          message="Something went wrong while retrieving your proposals. You can try reloading."
+          onRetry={() => refetch()}
+        />
+      </div>
+    );
+  }
+
+  const statusOptions = [
+    { value: 'ALL', label: 'All Statuses' },
+    { value: 'NEW', label: 'New' },
+    { value: 'ANALYZING', label: 'Analyzing' },
+    { value: 'AI_DRAFTED', label: 'AI Drafted' },
+    { value: 'UNDER_REVIEW', label: 'Under Review' },
+    { value: 'APPROVED', label: 'Approved' },
+    { value: 'REJECTED', label: 'Rejected' },
+  ];
+
+  const customerOptions = [
+    { value: 'ALL', label: 'All Customers' },
+    ...customers.map((c) => ({ value: c, label: c })),
+  ];
+
+  const sortOptions = [
+    { value: 'deadline', label: 'Sort by: Deadline (Soonest)' },
+    { value: 'created_at', label: 'Sort by: Date Received' },
+    { value: 'title', label: 'Sort by: Title (A-Z)' },
+  ];
+
+  const hasActiveFilters = search || statusFilter !== 'ALL' || customerFilter !== 'ALL';
 
   return (
-    <div className="min-h-screen bg-[#070a13] text-slate-100 p-6 cyber-grid">
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Navigation back to 3D Nexus */}
-        <div className="flex items-center justify-between">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 border border-white/10 text-xs font-mono text-cyan-400 hover:text-white transition-colors"
+    <div className="space-y-6">
+      {/* Page Header */}
+      <PageHeader
+        title="Proposals"
+        description="Manage, analyze, and review incoming enterprise proposal requests."
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/' },
+          { label: 'Proposals' },
+        ]}
+        actions={
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => setIsNewModalOpen(true)}
+            leftIcon={<Plus className="w-4 h-4" />}
           >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Back to 3D Neural Nexus</span>
-          </Link>
+            New Proposal
+          </Button>
+        }
+      />
 
-          <div className="flex items-center gap-1.5 text-xs font-mono text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20">
-            <ShieldCheck className="w-3.5 h-3.5" />
-            <span>Tenant: Lunetron</span>
+      {/* Filter and Control Bar */}
+      <Card className="p-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {/* Search */}
+          <div className="lg:col-span-1">
+            <Input
+              placeholder="Search by proposal or client..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              leftIcon={<Search className="w-3.5 h-3.5" />}
+            />
+          </div>
+
+          {/* Status Filter */}
+          <div>
+            <Select
+              options={statusOptions}
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            />
+          </div>
+
+          {/* Customer Filter */}
+          <div>
+            <Select
+              options={customerOptions}
+              value={customerFilter}
+              onChange={(e) => setCustomerFilter(e.target.value)}
+            />
+          </div>
+
+          {/* Sort Selector */}
+          <div>
+            <Select
+              options={sortOptions}
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as any)}
+            />
           </div>
         </div>
 
-        {!hasToken ? (
-          <div className="glass-panel p-8 max-w-md mx-auto rounded-2xl text-center space-y-4 border border-indigo-500/30">
-            <div className="w-12 h-12 rounded-xl bg-indigo-500/10 text-cyan-400 mx-auto flex items-center justify-center">
-              <KeyRound className="w-6 h-6" />
-            </div>
-
-            <h2 className="text-lg font-bold text-white">Database Authentication Token</h2>
-            <p className="text-xs text-slate-400 font-mono">
-              The proposal database table requires a verified JWT token. For automated demo simulation, visit the 3D Nexus or load a dev token below.
-            </p>
-
-            <input
-              type="text"
-              value={tokenInput}
-              onChange={(e) => setTokenInput(e.target.value)}
-              className="w-full bg-slate-950 border border-white/10 p-2.5 rounded-xl text-xs text-slate-200 font-mono focus:outline-none focus:border-cyan-400"
-              placeholder="Paste Bearer JWT here..."
-            />
-
-            <div className="flex flex-col gap-2">
-              <button
-                onClick={() => handleSetToken()}
-                className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2 rounded-xl text-xs font-mono font-semibold transition-colors"
-              >
-                Continue with Token
-              </button>
-
-              <button
-                onClick={handleSetDemoToken}
-                className="w-full bg-slate-900 hover:bg-slate-800 text-cyan-400 border border-cyan-500/30 py-2 rounded-xl text-xs font-mono transition-colors"
-              >
-                Auto-fill Dev Token (Lunetron)
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <h1 className="text-2xl font-bold text-white">Database Proposals</h1>
-
-            {isLoading && <div className="p-8 text-xs font-mono text-slate-400">Querying PostgreSQL database...</div>}
-            {error && (
-              <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-mono">
-                Note: Relational DB query returned: {error.message}. (Use the 3D Nexus tab for live intelligence pipeline execution).
-              </div>
+        {/* Filter status row */}
+        <div className="mt-3 pt-3 border-t border-[#E2E5E9] flex items-center justify-between text-xs text-gray-500">
+          <div className="flex items-center gap-2">
+            <span>
+              Showing <strong className="text-gray-900">{filteredProposals.length}</strong> of{' '}
+              <strong className="text-gray-900">{proposals.length}</strong> proposals
+            </span>
+            {hasActiveFilters && (
+              <span className="text-blue-600 font-medium">Filtered</span>
             )}
-
-            <div className="glass-panel rounded-2xl overflow-hidden">
-              {proposals?.length === 0 || !proposals ? (
-                <div className="p-8 text-center text-xs font-mono text-slate-500 space-y-3">
-                  <p>No relational database rows found for current tenant.</p>
-                  <Link
-                    href="/"
-                    className="inline-flex items-center gap-1.5 text-xs text-cyan-400 font-mono hover:underline"
-                  >
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>Run AI Ingestion Pipeline on 3D Nexus</span>
-                  </Link>
-                </div>
-              ) : (
-                <ul className="divide-y divide-white/5">
-                  {proposals.map((proposal) => (
-                    <li key={proposal.id}>
-                      <Link
-                        href={`/proposals/${proposal.id}`}
-                        className="block hover:bg-slate-900/60 p-4 transition-colors"
-                      >
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-sm font-medium text-cyan-400">{proposal.title || 'Untitled Proposal'}</p>
-                            <p className="text-xs text-slate-500 font-mono">{new Date(proposal.created_at).toLocaleDateString()}</p>
-                          </div>
-                          <span className="px-2.5 py-0.5 rounded text-[10px] font-mono font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                            {proposal.status}
-                          </span>
-                        </div>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
           </div>
+
+          {hasActiveFilters && (
+            <button
+              onClick={handleResetFilters}
+              className="text-xs text-gray-500 hover:text-gray-800 flex items-center gap-1 transition-colors"
+            >
+              <RotateCcw className="w-3 h-3" />
+              <span>Reset filters</span>
+            </button>
+          )}
+        </div>
+      </Card>
+
+      {/* Proposals List Card */}
+      <Card>
+        {filteredProposals.length === 0 ? (
+          <EmptyState
+            icon={FileSpreadsheet}
+            title={hasActiveFilters ? 'No matching proposals' : 'No proposals yet'}
+            description={
+              hasActiveFilters
+                ? 'Try adjusting your search criteria or resetting active filters.'
+                : 'When a proposal arrives, it will appear here.'
+            }
+            actionLabel={hasActiveFilters ? 'Reset Filters' : 'Create Proposal'}
+            onAction={hasActiveFilters ? handleResetFilters : () => setIsNewModalOpen(true)}
+          />
+        ) : (
+          <RecentProposalsTable proposals={filteredProposals} />
         )}
-      </div>
+      </Card>
+
+      {/* New Proposal Modal */}
+      <NewProposalModal isOpen={isNewModalOpen} onClose={() => setIsNewModalOpen(false)} />
     </div>
   );
 }
