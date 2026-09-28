@@ -30,7 +30,7 @@ export default function FutureHorizonRoadmap() {
       lead: 'Chinmay (AI Intelligence)',
       description: 'End-to-end vector pipeline utilizing Gemini embeddings, pgvector tables in PostgreSQL 16, HNSW indexing, and tenant-scoped similarity search.',
       deliverables: [
-        'Real Gemini text-embedding-004 integration with dimension 1536/3072',
+        'Real Gemini gemini-embedding-001 integration with dimension 1536',
         'pgvector PostgreSQL tables with tenant isolation triggers',
         'Dynamic semantic chunking with metadata citation preservation',
         'Company-scoped similarity query optimization under 25ms',
