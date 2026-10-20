@@ -31,16 +31,24 @@ from .exceptions import (
     ProviderError,
     RetrievalError,
 )
+from .document_processing import (
+    AttachmentParser,
+    DocumentPage,
+    DocumentParseStatus,
+    ParsedDocument,
+)
 from .extraction import RequirementExtractor
 from .interfaces import Evaluator, Extractor, Generator, Retriever
 from .models import (
     Ambiguity,
+    AttachmentMetadata,
     ConfidenceMetrics,
     ExtractedRequirement,
     ExtractionResult,
     GeneratedDraft,
     IntelligenceResult,
     MissingInformation,
+    ParsedAttachment,
     ProposalContext,
     RetrievedSource,
 )
@@ -49,6 +57,12 @@ from .service import IntelligenceService
 __all__ = [
     "IntelligenceService",
     "ProposalContext",
+    "AttachmentMetadata",
+    "ParsedAttachment",
+    "AttachmentParser",
+    "ParsedDocument",
+    "DocumentPage",
+    "DocumentParseStatus",
     "ExtractedRequirement",
     "MissingInformation",
     "Ambiguity",

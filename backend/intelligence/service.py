@@ -3,7 +3,7 @@
 import time
 from typing import Optional
 
-from .constants import IntelligenceStatus
+from .constants import CONFIDENCE_THRESHOLD_MEDIUM, IntelligenceStatus
 from .evaluation import GroundingEvaluator
 from .exceptions import InvalidProposalError, MissingCompanyContextError
 from .extraction import RequirementExtractor
@@ -125,19 +125,40 @@ class IntelligenceService:
         )
         log_stage_completed("evaluation", context.proposal_id, (time.perf_counter() - stage_start) * 1000)
 
+        # Determine Dynamic Status
+        # 1. Critical missing evidence / unsupported
+        if not sources and len(requirements) > 0:
+            status = IntelligenceStatus.INSUFFICIENT_EVIDENCE.value
+        # 2. Human review required for low confidence or critical warnings
+        elif confidence.overall_score < CONFIDENCE_THRESHOLD_MEDIUM:
+            status = IntelligenceStatus.REVIEW_REQUIRED.value
+        else:
+            status = IntelligenceStatus.SUCCESS.value
+
+        # Combine clarification questions from extraction and generation
+        all_clarifications = list(clarifications)
+        for g_clar in draft.clarification_questions:
+            q_text = g_clar.get("question")
+            if q_text and not any(c.get("text") == q_text or c.get("question") == q_text for c in all_clarifications):
+                all_clarifications.append(g_clar)
+
+        warnings_list = [f["description"] for f in confidence.validation_findings if f.get("severity") in ("CRITICAL", "HIGH")]
+
         total_duration_ms = int((time.perf_counter() - start_time) * 1000)
 
         return IntelligenceResult(
             proposal_id=context.proposal_id,
             company_id=context.company_id,
-            status=IntelligenceStatus.SUCCESS.value,
+            status=status,
             requirements=requirements,
             missing_information=missing_info,
             retrieved_sources=sources,
             generated_response=draft,
-            clarification_questions=clarifications,
+            clarification_questions=all_clarifications,
+            unsupported_claims=draft.unsupported_claims,
+            validation_findings=confidence.validation_findings,
             confidence=confidence,
-            warnings=[],
+            warnings=warnings_list,
             processing_metadata={
                 "duration_ms": total_duration_ms,
                 "provider": self.llm_provider.provider_name,

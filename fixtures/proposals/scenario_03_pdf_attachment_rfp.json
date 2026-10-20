@@ -1,0 +1,30 @@
+{
+  "contract_version": "1.0",
+  "proposal_id": "scenario-03-pdf-attachment",
+  "company": {
+    "company_id": "novacorp",
+    "company_name": "NovaCorp Solutions"
+  },
+  "email": {
+    "message_id": "msg-scen-03",
+    "thread_id": "thread-scen-03",
+    "sender": "architect@healthcorp.com",
+    "recipients": ["proposals@novacorp.com"],
+    "subject": "RFP: Clinical Document Search System (Specifications Attached)",
+    "body": "Hi NovaCorp,\n\nPlease review our formal RFP specifications in the attached PDF document. The attachment outlines our role-based access control and high-availability requirements.\n\nRegards,\nHealthCorp Enterprise Architecture",
+    "received_at": "2026-10-15T12:00:00Z"
+  },
+  "attachments": [
+    {
+      "filename": "Clinical_Search_Specs.pdf",
+      "content_type": "application/pdf",
+      "extracted_content": "CLINICAL SEARCH SPECIFICATIONS (PDF Extracted Content)\n1. Identity Management: Must support OAuth 2.0 with PKCE and short-lived JWT tokens.\n2. Access Control: Role-based access control must enforce Admin and Reviewer roles at the route boundary.\n3. High Availability: Solution must provide 24/7/365 support for Severity 1 incidents."
+    }
+  ],
+  "expected_behavior": {
+    "scenario": "Email with extracted PDF attachment text",
+    "expected_status": "SUCCESS",
+    "requires_human_attention": false,
+    "expected_attachment_support": true
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "contract_version": "1.0",
+  "proposal_id": "scenario-06-undocumented-price",
+  "company": {
+    "company_id": "novacorp",
+    "company_name": "NovaCorp Solutions"
+  },
+  "email": {
+    "message_id": "msg-scen-06",
+    "thread_id": "thread-scen-06",
+    "sender": "finance@enterprise-client.com",
+    "recipients": ["proposals@novacorp.com"],
+    "subject": "Quote Request: Fixed Price for Enterprise License",
+    "body": "Dear NovaCorp,\n\nWe need an exact fixed quote for 5,000 enterprise agent seats and your hourly professional services rate. Please provide binding pricing and discounts in your reply.\n\nThank you,\nFinance & Procurement",
+    "received_at": "2026-10-15T15:00:00Z"
+  },
+  "attachments": [],
+  "expected_behavior": {
+    "scenario": "Request asking for binding price that is not documented in company knowledge base",
+    "expected_status": "REVIEW_REQUIRED",
+    "requires_human_attention": true,
+    "anti_hallucination_requirement": "AI must NOT fabricate dollar amounts, discounts, or fixed fee quotes. Must flag pricing for discovery review."
+  }
+}

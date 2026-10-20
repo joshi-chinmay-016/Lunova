@@ -123,11 +123,21 @@ class ProposalService:
                 db.add(AuditLog(company_id=company_id, proposal_id=proposal_id, action="ANALYZED", details=f"Confidence: {result.confidence.overall_score}"))
 
                 # Save generated proposal as an outgoing email (draft)
+                draft_body = ""
+                draft_subject = f"Re: {subject}" if subject else "Proposal Response"
+                if result.generated_response:
+                    if hasattr(result.generated_response, "draft_email_body"):
+                        draft_body = result.generated_response.draft_email_body or ""
+                    elif isinstance(result.generated_response, str):
+                        draft_body = result.generated_response
+                    if getattr(result.generated_response, "subject_line", None):
+                        draft_subject = result.generated_response.subject_line
+
                 outgoing_email = Email(
                     company_id=company_id,
                     proposal_id=proposal_id,
-                    subject=f"Re: {subject}" if subject else "Proposal Response",
-                    body=result.generated_response,
+                    subject=draft_subject,
+                    body=draft_body,
                     direction="OUTGOING",
                     sender_address=email.recipient_address,
                     recipient_address=email.sender_address

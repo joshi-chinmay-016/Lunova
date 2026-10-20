@@ -21,6 +21,8 @@ class IntelligenceResult:
     retrieved_sources: List[RetrievedSource] = field(default_factory=list)
     generated_response: Optional[GeneratedDraft] = None
     clarification_questions: List[Dict[str, str]] = field(default_factory=list)
+    unsupported_claims: List[Dict[str, str]] = field(default_factory=list)
+    validation_findings: List[Dict[str, Any]] = field(default_factory=list)
     confidence: Optional[ConfidenceMetrics] = None
     warnings: List[str] = field(default_factory=list)
     processing_metadata: Dict[str, Any] = field(default_factory=dict)

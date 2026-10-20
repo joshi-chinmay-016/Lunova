@@ -11,3 +11,8 @@ class GeneratedDraft:
     executive_summary: str
     draft_email_body: str
     requirement_responses: List[Dict[str, Any]] = field(default_factory=list)
+    clarification_questions: List[Dict[str, str]] = field(default_factory=list)
+    unsupported_claims: List[Dict[str, str]] = field(default_factory=list)
+    evidence_citations: List[str] = field(default_factory=list)
+    subject_line: str = ""
+    metadata: Dict[str, Any] = field(default_factory=dict)

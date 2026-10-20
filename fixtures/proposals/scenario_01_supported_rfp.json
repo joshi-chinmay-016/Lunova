@@ -1,0 +1,25 @@
+{
+  "contract_version": "1.0",
+  "proposal_id": "scenario-01-supported",
+  "company": {
+    "company_id": "novacorp",
+    "company_name": "NovaCorp Solutions"
+  },
+  "email": {
+    "message_id": "msg-scen-01",
+    "thread_id": "thread-scen-01",
+    "sender": "cto@fintech-client.com",
+    "recipients": ["proposals@novacorp.com"],
+    "subject": "Inquiry: Sovereign Knowledge Retrieval with pgvector",
+    "body": "Hello NovaCorp Team,\n\nWe require an enterprise document search system using pgvector and multi-tenant partitioning for our financial analysis team. Can you confirm if your platform provides query-level tenant isolation, AES-256 encryption at rest, and support for PDF/DOCX ingestion?\n\nLooking forward to your proposal.\n\nBest,\nCTO, FinTech Client",
+    "received_at": "2026-10-15T10:00:00Z"
+  },
+  "attachments": [],
+  "expected_behavior": {
+    "scenario": "Fully supported request with direct matches in knowledge base",
+    "expected_status": "SUCCESS",
+    "requires_human_attention": false,
+    "expected_categories": ["technical_requirement", "security"],
+    "expected_cited_sources": ["service_catalogue", "technical_capabilities"]
+  }
+}

@@ -14,8 +14,8 @@ class Settings(BaseSettings):
     LLM_PROVIDER: str = "fake" # or "gemini", "openai"
     LLM_MODEL: str = "default-model"
     EMBEDDING_PROVIDER: str = "fake"
-    EMBEDDING_MODEL: str = "text-embedding-3-small"
-    EMBEDDING_DIMENSION: int = 1536 # Explicit dimension configuration
+    EMBEDDING_MODEL: str = "text-embedding-004"
+    EMBEDDING_DIMENSION: int = 768 # Explicit dimension configuration aligned with Gemini
     CHUNK_SIZE: int = 1000
     CHUNK_OVERLAP: int = 200
     RETRIEVAL_TOP_K: int = 5

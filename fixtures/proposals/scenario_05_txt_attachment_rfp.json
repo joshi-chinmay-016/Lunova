@@ -1,0 +1,29 @@
+{
+  "contract_version": "1.0",
+  "proposal_id": "scenario-05-txt-attachment",
+  "company": {
+    "company_id": "novacorp",
+    "company_name": "NovaCorp Solutions"
+  },
+  "email": {
+    "message_id": "msg-scen-05",
+    "thread_id": "thread-scen-05",
+    "sender": "devops@startup-hub.io",
+    "recipients": ["proposals@novacorp.com"],
+    "subject": "Platform Architecture Inquiry + Tech Stack TXT",
+    "body": "Hi NovaCorp,\n\nAttaching our plain text architecture notes. We need to verify if your vector search supports Google Gemini text-embedding-004 with 768 dimensions.\n\nCheers,\nLead DevOps Engineer",
+    "received_at": "2026-10-15T14:00:00Z"
+  },
+  "attachments": [
+    {
+      "filename": "tech_stack_requirements.txt",
+      "content_type": "text/plain",
+      "extracted_content": "TECH STACK SPECIFICATION:\n- Primary Vector Dimension: Must support 768 dimensions matching Google text-embedding-004.\n- Database: PostgreSQL with pgvector extension.\n- File Size Limits: Must handle document attachments up to 25 MB."
+    }
+  ],
+  "expected_behavior": {
+    "scenario": "Email with plain text attachment",
+    "expected_status": "SUCCESS",
+    "requires_human_attention": false
+  }
+}

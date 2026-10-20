@@ -1,0 +1,24 @@
+{
+  "contract_version": "1.0",
+  "proposal_id": "scenario-02-multiservice",
+  "company": {
+    "company_id": "novacorp",
+    "company_name": "NovaCorp Solutions"
+  },
+  "email": {
+    "message_id": "msg-scen-02",
+    "thread_id": "thread-scen-02",
+    "sender": "procurement@global-bank.com",
+    "recipients": ["proposals@novacorp.com"],
+    "subject": "RFP: Multi-Service Enterprise Modernization and Agentic Workflow Automation",
+    "body": "Dear NovaCorp Team,\n\nWe are looking to engage a technical partner for two initiatives:\n1. Deploy the Atlas agentic workflow engine for automated email request extraction with human approval queues.\n2. Migrate our legacy banking services to containerized Kubernetes on AWS with Prometheus observability and OpenTelemetry.\n\nPlease confirm architectural feasibility across both services.\n\nSincerely,\nProcurement Director",
+    "received_at": "2026-10-15T11:00:00Z"
+  },
+  "attachments": [],
+  "expected_behavior": {
+    "scenario": "Multi-service proposal covering Atlas agentic workflows and cloud modernization",
+    "expected_status": "SUCCESS",
+    "requires_human_attention": false,
+    "expected_categories": ["functional_requirement", "technical_requirement"]
+  }
+}
