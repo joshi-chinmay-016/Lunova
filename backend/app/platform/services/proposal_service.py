@@ -90,7 +90,33 @@ class ProposalService:
                     body=content or ""
                 )
                 
-                intelligence_service = IntelligenceService()
+                from app.core.config import settings
+                if settings.LLM_PROVIDER == "gemini":
+                    from intelligence.providers.gemini import GeminiProvider
+                    llm = GeminiProvider()
+                elif settings.LLM_PROVIDER == "mock" and settings.ENVIRONMENT != "production":
+                    from intelligence.providers.mock import MockLLMProvider
+                    llm = MockLLMProvider()
+                else:
+                    raise ValueError(f"Unsupported or missing LLM_PROVIDER: {settings.LLM_PROVIDER}")
+
+                if settings.EMBEDDING_PROVIDER == "gemini":
+                    from intelligence.providers.gemini_embedding import GeminiEmbeddingProvider
+                    emb = GeminiEmbeddingProvider()
+                elif settings.EMBEDDING_PROVIDER == "mock" and settings.ENVIRONMENT != "production":
+                    from intelligence.providers.mock import MockEmbeddingProvider
+                    emb = MockEmbeddingProvider()
+                else:
+                    raise ValueError(f"Unsupported or missing EMBEDDING_PROVIDER: {settings.EMBEDDING_PROVIDER}")
+
+                from app.platform.services.retriever_service import PlatformRetriever
+                platform_retriever = PlatformRetriever(embedding_provider=emb, top_k=settings.RETRIEVAL_TOP_K)
+
+                intelligence_service = IntelligenceService(
+                    llm_provider=llm,
+                    embedding_provider=emb,
+                    retriever=platform_retriever
+                )
                 result = intelligence_service.analyze_proposal(context)
 
                 proposal.status = ProposalStatus.ANALYZED

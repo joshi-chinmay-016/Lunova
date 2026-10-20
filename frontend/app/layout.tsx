@@ -1,12 +1,14 @@
 import type { Metadata } from 'next';
 import React from 'react';
+import './globals.css';
+import Providers from './providers';
+import { AppShell } from '@/components/layout/AppShell';
 
 export const metadata: Metadata = {
-  title: 'Lunova | AI-Powered Proposal Response Agent',
-  description: 'Automated proposal analysis and response generation system initially for Lunetron',
+  title: 'Lunova | AI Proposal Intelligence Platform',
+  description:
+    'Enterprise AI proposal response & proposal intelligence platform with evidence grounding, requirement extraction, and human review.',
 };
-
-import Providers from './providers';
 
 export default function RootLayout({
   children,
@@ -15,9 +17,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body style={{ margin: 0, fontFamily: 'system-ui, -apple-system, sans-serif', backgroundColor: '#f9fafb' }}>
+      <body className="bg-[#F4F5F7] text-gray-900 min-h-screen selection:bg-blue-600 selection:text-white antialiased">
         <Providers>
-          {children}
+          <AppShell>{children}</AppShell>
         </Providers>
       </body>
     </html>
