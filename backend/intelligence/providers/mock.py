@@ -71,6 +71,122 @@ class MockLLMProvider(LLMProvider):
             return self._default_structured_response
 
         # Default fallback for ProposalExtractionPayload or any Pydantic model
+        if getattr(response_schema, "__name__", "") == "ProposalExtractionPayload":
+            import re
+
+            extracted_reqs: List[Dict[str, Any]] = []
+            prompt_lines = [line.strip() for line in prompt.split("\n") if line.strip()]
+
+            in_body_or_attachments = False
+            for line in prompt_lines:
+                if line.startswith("PROPOSAL BODY:") or line.startswith("ATTACHMENT CONTENTS:"):
+                    in_body_or_attachments = True
+                    continue
+
+                if not in_body_or_attachments:
+                    continue
+
+                # Skip header/format lines
+                if (
+                    line.startswith("#")
+                    or line.startswith("---")
+                    or line.startswith("Analyze the")
+                    or line.startswith("Please analyze")
+                    or line.startswith("##")
+                    or line.startswith("Return only")
+                    or line.startswith("PROPOSAL SUBJECT:")
+                ):
+                    continue
+
+                lower_line = line.lower()
+                # Check for requirement keywords
+                if any(
+                    k in lower_line
+                    for k in [
+                        "must",
+                        "require",
+                        "need",
+                        "should",
+                        "support",
+                        "aes",
+                        "encryption",
+                        "oauth",
+                        "api",
+                        "sla",
+                        "pricing",
+                        "pgvector",
+                        "partition",
+                        "pdf",
+                        "docx",
+                        "acoustic",
+                        "hydrophone",
+                        "transducer",
+                        "firmware",
+                    ]
+                ):
+                    clean_line = re.sub(r"^[-*•\d\.\)\s]+", "", line).strip()
+                    if clean_line.startswith("(") and clean_line.endswith(")"):
+                        clean_line = clean_line[1:-1].strip()
+                    if clean_line.startswith("RFP Attachment:"):
+                        clean_line = clean_line.replace("RFP Attachment:", "").strip()
+
+                    if len(clean_line) > 10 and not clean_line.startswith("Analyze"):
+                        cat = "technical_requirement"
+                        if any(w in lower_line for w in ["price", "cost", "budget", "$", "fee", "rate"]):
+                            cat = "budget"
+                        elif any(w in lower_line for w in ["security", "encryption", "aes", "oauth", "sso"]):
+                            cat = "security"
+                        elif any(w in lower_line for w in ["deliver", "timeline", "deadline", "schedule", "week", "month"]):
+                            cat = "timeline"
+
+                        extracted_reqs.append(
+                            {
+                                "text": clean_line,
+                                "category": cat,
+                                "priority": "high",
+                                "explicit": True,
+                                "evidence": clean_line[:120],
+                                "confidence": 0.95,
+                            }
+                        )
+
+            if not extracted_reqs:
+                extracted_reqs = [
+                    {
+                        "text": "The platform must provide normalized REST APIs with OAuth2 authentication.",
+                        "category": "technical_requirement",
+                        "priority": "high",
+                        "explicit": True,
+                        "evidence": "Must provide normalized REST APIs with OAuth2 authentication.",
+                        "confidence": 0.98,
+                    }
+                ]
+
+            missing_info = [
+                {
+                    "field": "submission_deadline",
+                    "reason": "No submission deadline was provided in the proposal.",
+                    "importance": "high",
+                }
+            ]
+            ambiguities = [
+                {
+                    "text": "The system must be deployed quickly.",
+                    "reason": "Deployment timeframe 'quickly' lacks a concrete schedule or SLA.",
+                }
+            ]
+
+            payload_data = {
+                "requirements": extracted_reqs,
+                "missing_information": missing_info,
+                "ambiguities": ambiguities,
+                "summary": "Mock extracted proposal requirements and specifications.",
+            }
+            try:
+                return response_schema.model_validate(payload_data)
+            except Exception:
+                pass
+
         if hasattr(response_schema, "model_validate"):
             dummy_data: Dict[str, Any] = {
                 "requirements": [
@@ -127,9 +243,25 @@ class MockEmbeddingProvider(EmbeddingProvider):
         return self._dimension
 
     def _generate_vector(self, text: str) -> List[float]:
-        # Generate deterministic float vector based on length and char codes
-        base = float(len(text) % 100) / 100.0
-        return [base] * self._dimension
+        import math
+        import re
+        import zlib
+
+        vec = [0.0] * self._dimension
+        words = re.findall(r"\w+", text.lower())
+        if not words:
+            return vec
+
+        for word in words:
+            # Deterministic hash of word into vector dimension space
+            h = zlib.crc32(word.encode("utf-8")) % self._dimension
+            vec[h] += 1.0
+
+        # L2-normalize
+        norm = math.sqrt(sum(v * v for v in vec))
+        if norm > 0.0:
+            vec = [v / norm for v in vec]
+        return vec
 
     def embed_texts(self, texts: List[str], **kwargs: Any) -> List[List[float]]:
         for text in texts:

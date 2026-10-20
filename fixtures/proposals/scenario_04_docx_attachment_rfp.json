@@ -1,0 +1,29 @@
+{
+  "contract_version": "1.0",
+  "proposal_id": "scenario-04-docx-attachment",
+  "company": {
+    "company_id": "novacorp",
+    "company_name": "NovaCorp Solutions"
+  },
+  "email": {
+    "message_id": "msg-scen-04",
+    "thread_id": "thread-scen-04",
+    "sender": "vendor-management@retail-corp.com",
+    "recipients": ["proposals@novacorp.com"],
+    "subject": "RFP Document for Review (Word Format)",
+    "body": "Good morning,\n\nWe have attached our procurement requirements Word document (Retail_RFP_2026.docx). Please confirm whether your platform can satisfy the automated data redaction and OpenTelemetry tracing constraints specified in Table 3.\n\nThank you,\nRetailCorp Procurement",
+    "received_at": "2026-10-15T13:00:00Z"
+  },
+  "attachments": [
+    {
+      "filename": "Retail_RFP_2026.docx",
+      "content_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "extracted_content": "[Document: Retail_RFP_2026.docx]\nSection 1: Data Governance Requirements\nAll incoming client data must have credentials and PII automatically redacted prior to AI reasoning.\n[Table 3: Observability Constraints]\nMetric | Requirement\nTracing | OpenTelemetry distributed tracing\nLogs | Structured JSON audit logging capturing human approvals"
+    }
+  ],
+  "expected_behavior": {
+    "scenario": "Email with extracted DOCX tables and paragraphs",
+    "expected_status": "SUCCESS",
+    "requires_human_attention": false
+  }
+}

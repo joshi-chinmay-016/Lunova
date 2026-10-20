@@ -1,0 +1,25 @@
+{
+  "contract_version": "1.0",
+  "proposal_id": "scenario-07-missing-timeline",
+  "company": {
+    "company_id": "novacorp",
+    "company_name": "NovaCorp Solutions"
+  },
+  "email": {
+    "message_id": "msg-scen-07",
+    "thread_id": "thread-scen-07",
+    "sender": "product@media-corp.com",
+    "recipients": ["proposals@novacorp.com"],
+    "subject": "Platform RFP: Urgent System Overhaul",
+    "body": "Hello NovaCorp,\n\nWe need to deploy your agentic workflow automation system across 4 business divisions urgently. We didn't specify our launch target date yet, but need to understand your standard onboarding timeline.\n\nBest,\nProduct Director",
+    "received_at": "2026-10-15T16:00:00Z"
+  },
+  "attachments": [],
+  "expected_behavior": {
+    "scenario": "Request with missing client timeline",
+    "expected_status": "SUCCESS",
+    "requires_human_attention": false,
+    "expected_missing_info": ["timeline", "target_launch_date"],
+    "anti_hallucination_requirement": "AI must state standard 6-12 week onboarding and ask for client launch schedule instead of inventing '2 weeks'."
+  }
+}

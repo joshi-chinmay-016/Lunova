@@ -1,0 +1,24 @@
+{
+  "contract_version": "1.0",
+  "proposal_id": "scenario-09-unrelated-email",
+  "company": {
+    "company_id": "novacorp",
+    "company_name": "NovaCorp Solutions"
+  },
+  "email": {
+    "message_id": "msg-scen-09",
+    "thread_id": "thread-scen-09",
+    "sender": "marketing@unsolicited-sales.com",
+    "recipients": ["proposals@novacorp.com"],
+    "subject": "Exclusive Discount on Office Coffee Supplies!",
+    "body": "Hi there,\n\nAre you looking to upgrade your office coffee beans? We offer 30% off our premium espresso blend for commercial offices in downtown Boston. Order now before Friday!\n\nBest regards,\nOffice Cafe Rep",
+    "received_at": "2026-10-15T18:00:00Z"
+  },
+  "attachments": [],
+  "expected_behavior": {
+    "scenario": "Unrelated spam/sales email that is not an RFP or proposal request",
+    "expected_status": "REVIEW_REQUIRED",
+    "requires_human_attention": true,
+    "anti_hallucination_requirement": "AI must NOT fabricate a commercial IT proposal for coffee supplies."
+  }
+}

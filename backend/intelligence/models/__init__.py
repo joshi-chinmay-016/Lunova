@@ -8,11 +8,13 @@ from .extraction import (
     MissingInformation,
 )
 from .generation import GeneratedDraft
-from .proposal import ProposalContext
+from .proposal import AttachmentMetadata, ParsedAttachment, ProposalContext
 from .result import IntelligenceResult
 from .retrieval import RetrievedSource
 
 __all__ = [
+    "AttachmentMetadata",
+    "ParsedAttachment",
     "ProposalContext",
     "ExtractedRequirement",
     "MissingInformation",

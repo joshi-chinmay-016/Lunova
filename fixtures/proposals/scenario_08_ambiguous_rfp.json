@@ -1,0 +1,24 @@
+{
+  "contract_version": "1.0",
+  "proposal_id": "scenario-08-ambiguous",
+  "company": {
+    "company_id": "novacorp",
+    "company_name": "NovaCorp Solutions"
+  },
+  "email": {
+    "message_id": "msg-scen-08",
+    "thread_id": "thread-scen-08",
+    "sender": "founder@stealth-startup.com",
+    "recipients": ["proposals@novacorp.com"],
+    "subject": "Quick Question: Need Fast System",
+    "body": "Hey,\n\nWe need something super fast and scalable that works with data and does automated stuff. Can you send a proposal today?\n\nThanks,\nFounder",
+    "received_at": "2026-10-15T17:00:00Z"
+  },
+  "attachments": [],
+  "expected_behavior": {
+    "scenario": "Vague request requiring multiple clarifications",
+    "expected_status": "CLARIFICATION_NEEDED",
+    "requires_human_attention": true,
+    "expected_ambiguities": ["super fast", "scalable", "automated stuff"]
+  }
+}

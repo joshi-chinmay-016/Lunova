@@ -20,15 +20,37 @@ class ProposalContext:
     company_id: str                           # Mandatory tenant identifier for data isolation (e.g. 'lunetron')
     subject: str                              # Normalized email/proposal subject line
     body: str                                 # Cleaned, normalized proposal text body
-    attachments_text: List[str] = field(default_factory=list)  # Pre-extracted text from RFP PDFs/docs
+    attachments: List[ParsedAttachment] = field(default_factory=list) # Rich parsed attachments (PDF, DOCX, TXT)
+    attachments_text: List[str] = field(default_factory=list)  # Backwards-compatible raw text list
     metadata: Dict[str, Any] = field(default_factory=dict)     # Platform telemetry, sender info, timestamps
+```
+
+### Attachment Parser Interface (`intelligence.AttachmentParser`)
+
+The platform layer can parse raw attachment file bytes directly before context creation:
+
+```python
+from intelligence import AttachmentParser, DocumentParseStatus, ParsedAttachment
+
+parser = AttachmentParser(max_file_size_bytes=10 * 1024 * 1024)
+parsed_doc = parser.parse(file_bytes=b"...", filename="rfp.pdf", content_type="application/pdf")
+
+if parsed_doc.status == DocumentParseStatus.SUCCESS:
+    parsed_att = ParsedAttachment(
+        filename=parsed_doc.filename,
+        content_type=parsed_doc.content_type,
+        extracted_text=parsed_doc.text,
+        status=parsed_doc.status.value,
+        page_count=parsed_doc.page_count,
+        metadata=parsed_doc.metadata,
+    )
 ```
 
 ### Invariants for Platform Ingestion
 1. **`company_id` is strictly mandatory**: The platform must supply a non-empty `company_id`. Missing or blank `company_id` raises `MissingCompanyContextError`.
 2. **`proposal_id` is mandatory**: Missing or blank `proposal_id` raises `InvalidProposalError`.
 3. **Payload size bound**: The sum of characters across `subject`, `body`, and `attachments_text` must not exceed `MAX_PROPOSAL_INPUT_CHARS` (default: 50,000 characters). Exceeding this limit raises `InvalidProposalError`.
-4. **Pre-extracted attachments**: Attachment parsing (PDF/Word/Excel extraction) is executed by the platform before passing text into `attachments_text`.
+4. **Bidirectional sync**: Populating `attachments` automatically populates `attachments_text`, and vice versa.
 
 ---
 
@@ -69,60 +91,41 @@ class ExtractionResult(BaseModel):
     metadata: Dict[str, Any]
 ```
 
-### JSON Serialization Example
-
-```json
-{
-  "proposal_id": "prop-simple-001",
-  "requirements": [
-    {
-      "requirement_id": "req-01",
-      "text": "The solution must provide secure user authentication and an administrative dashboard.",
-      "category": "functional_requirement",
-      "priority": "high",
-      "explicit": true,
-      "evidence": "It should include secure user authentication, an administrative dashboard...",
-      "confidence": 0.98
-    }
-  ],
-  "missing_information": [
-    {
-      "field": "budget",
-      "reason": "No allocated project budget or pricing expectations were provided.",
-      "importance": "high"
-    }
-  ],
-  "ambiguities": [
-    {
-      "text": "Automated reporting",
-      "reason": "Frequency, data sources, and delivery format of reports are not specified."
-    }
-  ],
-  "raw_summary": "Inbound RFP for internal operations web application for 100 users.",
-  "metadata": {
-    "provider": "gemini",
-    "model": "gemini-2.5-flash",
-    "requirement_count": 1,
-    "missing_info_count": 1,
-    "ambiguity_count": 1
-  }
-}
-```
-
 ---
 
 ## 3. Consolidated Pipeline Output: `IntelligenceResult`
 
-When invoking the full `IntelligenceService.analyze_proposal(context)`, the returned object is `IntelligenceResult`.
+When invoking `IntelligenceService.analyze_proposal(context)`, the returned object is `IntelligenceResult`:
 
-In **Phase 2**:
-- `requirements`: Real extracted requirements (`List[ExtractedRequirement]`).
-- `missing_information`: Real detected missing information items (`List[Dict[str, str]]`).
-- `clarification_questions`: Real ambiguous statements needing review (`List[Dict[str, str]]`).
-- `retrieved_sources`: Mocked/stubbed (Phase 3 will implement real tenant-scoped RAG).
-- `generated_response`: Mocked/stubbed (Phase 4 will implement real response generation).
-- `confidence`: Mocked/stubbed (Phase 4 will evaluate grounding score).
-- `status`: `"SUCCESS"`, `"PARTIAL"`, or `"FAILED"`.
+```python
+class IntelligenceResult(BaseModel):
+    proposal_id: str
+    company_id: str
+    status: str                                  # SUCCESS, PARTIAL, FAILED, INSUFFICIENT_EVIDENCE, CLARIFICATION_NEEDED, REVIEW_REQUIRED
+    requirements: List[ExtractedRequirement]
+    missing_information: List[Dict[str, Any]]
+    retrieved_sources: List[RetrievedSource]     # Strictly company-isolated evidence chunks
+    generated_response: Optional[GeneratedDraft] # Structured draft with draft_email_body, citations, etc.
+    clarification_questions: List[Dict[str, Any]]# Ambiguities and actionable clarifying questions
+    unsupported_claims: List[Dict[str, Any]]     # Claims/requirements lacking company evidence
+    validation_findings: List[Dict[str, Any]]    # Evaluator findings (e.g. fabricated price detected)
+    confidence: ConfidenceMetrics                # overall_score, grounding_score, requires_human_attention
+    warnings: List[str]
+    processing_metadata: Dict[str, Any]
+```
+
+### Generated Draft Details (`intelligence.GeneratedDraft`)
+
+```python
+class GeneratedDraft(BaseModel):
+    draft_email_body: str                        # Full generated email response text
+    subject_line: Optional[str] = None           # Recommended email subject (e.g. "Re: RFP - ...")
+    requirement_responses: List[Dict[str, Any]]  # Per-requirement grounding and citations
+    clarification_questions: List[Dict[str, Any]]
+    unsupported_claims: List[Dict[str, Any]]
+    evidence_citations: List[str]                # Document IDs cited as evidence
+    metadata: Dict[str, Any]
+```
 
 ---
 
@@ -135,6 +138,11 @@ In **Phase 2**:
    service = IntelligenceService()  # Uses configured provider (Gemini in prod, Mock in tests)
    result = service.analyze_proposal(context)
    ```
-2. **Database Persistence**: Platform models can serialize `result.requirements`, `result.missing_information`, and `result.clarification_questions` directly into PostgreSQL JSONB columns.
-3. **No Gemini SDK Leakage**: Platform code does NOT need to import `google-genai` or manage LLM prompt templates.
-4. **Mandatory Human Review**: Extraction outputs are designed to be presented to human reviewers on the frontend before any downstream action is finalized.
+2. **Draft Email Persistence**: In `ProposalService`:
+   - Set email body: `result.generated_response.draft_email_body if result.generated_response else ""`
+   - Set email subject: `result.generated_response.subject_line or f"Re: {subject}"`
+3. **Database Persistence**: Platform models can serialize `result.requirements`, `result.retrieved_sources`, `result.unsupported_claims`, and `result.validation_findings` directly into PostgreSQL JSONB columns.
+4. **pgvector Dimension Alignment**: The database vector column and embedding configuration are standardized to `Vector(768)` (Alembic migration `004_align_vector_dimension_768.py`).
+5. **Strict Tenant Isolation**: `KnowledgeRetriever` automatically filters and isolates chunks by `company_id`. No cross-tenant data can ever be retrieved.
+6. **Mandatory Human Review**: If `result.confidence.requires_human_attention` is `True` or `result.status == "REVIEW_REQUIRED"`, the platform blocks automated sending and awaits user approval.
+

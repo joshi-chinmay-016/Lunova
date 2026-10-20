@@ -17,12 +17,11 @@ class DocumentChunk(Base):
     chunk_index = Column(Integer, nullable=False)
     content = Column(String, nullable=False)
 
-    # UNRESOLVED ARCHITECTURE DECISION:
-    # The platform DB currently hardcodes Vector(1536) (typical for text-embedding-3-small).
-    # The Intelligence layer config defaults to 3072 (typical for text-embedding-3-large).
-    # Furthermore, we must determine the exact output dimension of the final Gemini embedding model.
-    # DO NOT migrate this column to 3072 speculatively. Wait until the final Gemini embedding model is chosen.
-    embedding = Column(Vector(1536), nullable=True) # 1536 is typical for OpenAI text-embedding-3-small
+    # RESOLVED ARCHITECTURE DECISION:
+    # Aligned with Gemini text-embedding-004 output dimension of 768.
+    # Matches IntelligenceConfig.embedding_dimension (768) and Alembic migration 004.
+    embedding = Column(Vector(768), nullable=True)
+
     metadata_json = Column(JSONB, nullable=True)
     
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))

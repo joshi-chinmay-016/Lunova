@@ -80,11 +80,11 @@ def test_constants_and_status_values():
     assert ConfidenceLevel.HIGH.value == "HIGH"
 
 
-def test_embedding_config_default_3072():
-    """Verify that the configured default embedding dimension is 3072."""
-    assert DEFAULT_EMBEDDING_DIMENSION == 3072
+def test_embedding_config_default_768():
+    """Verify that the configured default embedding dimension is 768 (Gemini text-embedding-004)."""
+    assert DEFAULT_EMBEDDING_DIMENSION == 768
     config = IntelligenceConfig()
-    assert config.embedding_dimension == 3072
+    assert config.embedding_dimension == 768
 
     # Configurable dimension
     custom_config = IntelligenceConfig(embedding_dimension=1536)
@@ -105,22 +105,22 @@ def test_mock_llm_provider_generation():
     assert provider.call_history[0] == "Test prompt for RFP response"
 
 
-def test_mock_embedding_provider_default_dimension_3072():
-    """Verify that MockEmbeddingProvider uses 3072 dimensions by default without network calls."""
+def test_mock_embedding_provider_default_dimension_768():
+    """Verify that MockEmbeddingProvider uses 768 dimensions by default without network calls."""
     provider = MockEmbeddingProvider()
 
     assert provider.provider_name == "mock"
-    assert provider.dimension == 3072
+    assert provider.dimension == 768
 
     query_vec = provider.embed_query("Enterprise platform integration")
     assert isinstance(query_vec, list)
-    assert len(query_vec) == 3072
+    assert len(query_vec) == 768
 
     texts = ["Document chunk 1", "Document chunk 2"]
     batch_vecs = provider.embed_texts(texts)
     assert len(batch_vecs) == 2
-    assert len(batch_vecs[0]) == 3072
-    assert len(batch_vecs[1]) == 3072
+    assert len(batch_vecs[0]) == 768
+    assert len(batch_vecs[1]) == 768
 
 
 def test_mock_embedding_provider_custom_dimension():
