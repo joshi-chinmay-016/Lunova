@@ -22,6 +22,7 @@ class Email(Base):
     subject = Column(String, nullable=True)
     body = Column(Text, nullable=True)
     message_id = Column(String, nullable=True)
+    thread_id = Column(String, nullable=True, index=True)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
     # Relationships
