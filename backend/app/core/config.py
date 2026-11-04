@@ -1,3 +1,4 @@
+from typing import Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
@@ -19,6 +20,12 @@ class Settings(BaseSettings):
     CHUNK_SIZE: int = 1000
     CHUNK_OVERLAP: int = 200
     RETRIEVAL_TOP_K: int = 5
+
+    # Gmail OAuth & Encryption Settings
+    GMAIL_CLIENT_ID: Optional[str] = None
+    GMAIL_CLIENT_SECRET: Optional[str] = None
+    GMAIL_REDIRECT_URI: str = "http://localhost:8000/api/v1/integrations/gmail/callback"
+    GMAIL_TOKEN_ENCRYPTION_KEY: Optional[str] = None
 
     model_config = SettingsConfigDict(
         env_file=".env",

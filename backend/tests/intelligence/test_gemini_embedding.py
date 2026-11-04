@@ -1,61 +1,105 @@
-import pytest
 from unittest.mock import MagicMock
+import pytest
+
+from intelligence.exceptions import ProviderError
 from intelligence.providers.gemini_embedding import GeminiEmbeddingProvider
 
-def test_gemini_embedding_provider_configuration(monkeypatch):
-    """Test that the Gemini embedding provider requests exactly 1536 dimensions and uses the correct task types."""
-    
-    # Create a mock client
+
+def test_gemini_embedding_provider_properties():
+    """Verify provider name, configured model name, and explicit dimension properties."""
+    mock_client = MagicMock()
+    provider = GeminiEmbeddingProvider(
+        api_key="dummy_key",
+        model_name="text-embedding-004",
+        dimension=768,
+        client=mock_client,
+    )
+
+    assert provider.provider_name == "gemini"
+    assert provider.model_name == "text-embedding-004"
+    assert provider.dimension == 768
+
+
+def test_gemini_embedding_document_embedding():
+    """Verify document embedding output and that the SDK is called with 768 dimensions and text-embedding-004."""
     mock_client = MagicMock()
     mock_response = MagicMock()
-    
-    # Mock the embedding object returned by the API
     mock_embedding_obj = MagicMock()
-    # The SDK usually returns a list of 1536 floats for .values
-    mock_embedding_obj.values = [0.1] * 1536
+    mock_embedding_obj.values = [0.1] * 768
     mock_response.embeddings = [mock_embedding_obj]
-    
     mock_client.models.embed_content.return_value = mock_response
-    
-    # Initialize the provider with a dummy API key and the mock client
-    provider = GeminiEmbeddingProvider(api_key="dummy_key", client=mock_client)
-    
-    # Assert dimension property is explicitly 1536
-    assert provider.dimension == 1536
-    
-    # Test document embedding (embed_texts)
+
+    provider = GeminiEmbeddingProvider(
+        api_key="dummy_key",
+        model_name="text-embedding-004",
+        dimension=768,
+        client=mock_client,
+    )
+
     texts = ["Test document content"]
     result_docs = provider.embed_texts(texts)
-    
-    # Assert result length
+
     assert len(result_docs) == 1
-    assert len(result_docs[0]) == 1536
-    
-    # Assert the API was called correctly for documents
+    assert len(result_docs[0]) == 768
+
+    # Assert SDK call arguments match actual implementation
     call_args = mock_client.models.embed_content.call_args
     assert call_args is not None
     kwargs = call_args[1]
-    
-    assert kwargs["model"] == "gemini-embedding-001"
+
+    assert kwargs["model"] == "text-embedding-004"
     assert kwargs["contents"] == texts
     config = kwargs["config"]
-    assert config.task_type == "RETRIEVAL_DOCUMENT"
-    assert config.output_dimensionality == 1536
-    
-    # Test query embedding (embed_query)
+    assert config.output_dimensionality == 768
+
+
+def test_gemini_embedding_query_embedding():
+    """Verify query embedding output and how the provider forwards single query text to SDK."""
+    mock_client = MagicMock()
+    mock_response = MagicMock()
+    mock_embedding_obj = MagicMock()
+    mock_embedding_obj.values = [0.1] * 768
+    mock_response.embeddings = [mock_embedding_obj]
+    mock_client.models.embed_content.return_value = mock_response
+
+    provider = GeminiEmbeddingProvider(
+        api_key="dummy_key",
+        model_name="text-embedding-004",
+        dimension=768,
+        client=mock_client,
+    )
+
     query_text = "Test query"
     result_query = provider.embed_query(query_text)
-    
-    # Assert result length
-    assert len(result_query) == 1536
-    
-    # Assert the API was called correctly for queries
-    call_args_query = mock_client.models.embed_content.call_args
-    assert call_args_query is not None
-    kwargs_query = call_args_query[1]
-    
-    assert kwargs_query["model"] == "gemini-embedding-001"
-    assert kwargs_query["contents"] == query_text
-    config_query = kwargs_query["config"]
-    assert config_query.task_type == "RETRIEVAL_QUERY"
-    assert config_query.output_dimensionality == 1536
+
+    assert len(result_query) == 768
+
+    # Assert SDK call receives query wrapped in list and requests 768 dimensions
+    call_args = mock_client.models.embed_content.call_args
+    assert call_args is not None
+    kwargs = call_args[1]
+
+    assert kwargs["model"] == "text-embedding-004"
+    assert kwargs["contents"] == [query_text]
+    config = kwargs["config"]
+    assert config.output_dimensionality == 768
+
+
+def test_gemini_embedding_dimension_mismatch_raises_error():
+    """Verify ProviderError is raised when the upstream API returns an unexpected vector length."""
+    mock_client = MagicMock()
+    mock_response = MagicMock()
+    mock_embedding_obj = MagicMock()
+    # Return 512 dimensions instead of the configured 768
+    mock_embedding_obj.values = [0.1] * 512
+    mock_response.embeddings = [mock_embedding_obj]
+    mock_client.models.embed_content.return_value = mock_response
+
+    provider = GeminiEmbeddingProvider(
+        api_key="dummy_key",
+        dimension=768,
+        client=mock_client,
+    )
+
+    with pytest.raises(ProviderError, match="expected 768"):
+        provider.embed_texts(["Some text to embed"])

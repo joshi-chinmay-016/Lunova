@@ -49,6 +49,7 @@ class EmailAccount(Base):
 
     def __init__(self, **kwargs):
         kwargs.setdefault("id", uuid.uuid4())
+        kwargs.setdefault("provider", EmailProvider.GMAIL.value)
         kwargs.setdefault("is_active", True)
         super().__init__(**kwargs)
 

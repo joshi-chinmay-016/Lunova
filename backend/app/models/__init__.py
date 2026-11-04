@@ -8,6 +8,7 @@ from app.models.document import KnowledgeDocument
 from app.models.document_chunk import DocumentChunk
 from app.models.review import Review
 from app.models.audit import AuditLog
+from app.models.oauth_state import OAuthState
 
 __all__ = [
     "Base",
@@ -22,5 +23,6 @@ __all__ = [
     "KnowledgeDocument",
     "DocumentChunk",
     "Review",
-    "AuditLog"
+    "AuditLog",
+    "OAuthState",
 ]
