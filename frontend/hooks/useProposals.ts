@@ -6,7 +6,7 @@ import {
   updateProposal,
   analyzeProposalText,
   approveProposal,
-  rejectProposal
+  rejectProposal,
 } from '@/lib/api/client';
 import { Proposal, CreateProposalPayload } from '@/types/proposal';
 
@@ -29,9 +29,9 @@ export function useProposal(id: string) {
 
 export function useCreateProposal() {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation<Proposal, Error, CreateProposalPayload>({
     mutationFn: (payload: CreateProposalPayload) => createProposal(payload),
-    onSuccess: (newProposal) => {
+    onSuccess: (newProposal: Proposal) => {
       queryClient.invalidateQueries({ queryKey: ['proposals'] });
       queryClient.setQueryData(['proposals', newProposal.id], newProposal);
     },
@@ -40,10 +40,10 @@ export function useCreateProposal() {
 
 export function useUpdateProposal() {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation<Proposal, Error, { id: string; updates: Partial<Proposal> }>({
     mutationFn: ({ id, updates }: { id: string; updates: Partial<Proposal> }) =>
       updateProposal(id, updates),
-    onSuccess: (updated) => {
+    onSuccess: (updated: Proposal) => {
       queryClient.invalidateQueries({ queryKey: ['proposals'] });
       queryClient.setQueryData(['proposals', updated.id], updated);
     },
@@ -52,17 +52,21 @@ export function useUpdateProposal() {
 
 export function useAnalyzeProposal() {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation<
+    any,
+    Error,
+    { proposalId: string; text: string; useGemini?: boolean }
+  >({
     mutationFn: ({
       proposalId,
       text,
-      useGemini = false
+      useGemini = false,
     }: {
       proposalId: string;
       text: string;
       useGemini?: boolean;
     }) => analyzeProposalText(proposalId, text, useGemini),
-    onSuccess: (result, variables) => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['proposals'] });
       queryClient.invalidateQueries({ queryKey: ['proposals', variables.proposalId] });
     },
@@ -71,10 +75,10 @@ export function useAnalyzeProposal() {
 
 export function useApproveProposal() {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation<Proposal, Error, { id: string; notes: string }>({
     mutationFn: ({ id, notes }: { id: string; notes: string }) =>
       approveProposal(id, notes),
-    onSuccess: (updated) => {
+    onSuccess: (updated: Proposal) => {
       queryClient.invalidateQueries({ queryKey: ['proposals'] });
       queryClient.setQueryData(['proposals', updated.id], updated);
     },
@@ -83,10 +87,10 @@ export function useApproveProposal() {
 
 export function useRejectProposal() {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation<Proposal, Error, { id: string; notes: string }>({
     mutationFn: ({ id, notes }: { id: string; notes: string }) =>
       rejectProposal(id, notes),
-    onSuccess: (updated) => {
+    onSuccess: (updated: Proposal) => {
       queryClient.invalidateQueries({ queryKey: ['proposals'] });
       queryClient.setQueryData(['proposals', updated.id], updated);
     },
