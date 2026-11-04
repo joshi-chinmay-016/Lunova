@@ -7,6 +7,7 @@ import {
   analyzeProposalText,
   approveProposal,
   rejectProposal,
+  sendProposal,
 } from '@/lib/api/client';
 import { Proposal, CreateProposalPayload } from '@/types/proposal';
 
@@ -90,6 +91,17 @@ export function useRejectProposal() {
   return useMutation<Proposal, Error, { id: string; notes: string }>({
     mutationFn: ({ id, notes }: { id: string; notes: string }) =>
       rejectProposal(id, notes),
+    onSuccess: (updated: Proposal) => {
+      queryClient.invalidateQueries({ queryKey: ['proposals'] });
+      queryClient.setQueryData(['proposals', updated.id], updated);
+    },
+  });
+}
+
+export function useSendProposal() {
+  const queryClient = useQueryClient();
+  return useMutation<Proposal, Error, string>({
+    mutationFn: (id: string) => sendProposal(id),
     onSuccess: (updated: Proposal) => {
       queryClient.invalidateQueries({ queryKey: ['proposals'] });
       queryClient.setQueryData(['proposals', updated.id], updated);

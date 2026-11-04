@@ -46,6 +46,7 @@ class EmailAccount(Base):
 
     # Relationships
     company = relationship("Company", back_populates="email_accounts")
+    emails = relationship("Email", back_populates="email_account")
 
     def __init__(self, **kwargs):
         kwargs.setdefault("id", uuid.uuid4())

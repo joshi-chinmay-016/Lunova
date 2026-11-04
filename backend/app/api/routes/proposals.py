@@ -71,7 +71,7 @@ async def approve_proposal(
     proposal_id: UUID,
     data: ReviewCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: AuthenticatedUser = Depends(RoleChecker([UserRole.ADMIN]))
+    current_user: AuthenticatedUser = Depends(RoleChecker([UserRole.ADMIN, UserRole.MEMBER]))
 ):
     try:
         return await ProposalService.approve_proposal(db, proposal_id, current_user.company_id, data, current_user.id)
@@ -84,7 +84,7 @@ async def reject_proposal(
     proposal_id: UUID,
     data: ReviewCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: AuthenticatedUser = Depends(RoleChecker([UserRole.ADMIN]))
+    current_user: AuthenticatedUser = Depends(RoleChecker([UserRole.ADMIN, UserRole.MEMBER]))
 ):
     try:
         return await ProposalService.reject_proposal(db, proposal_id, current_user.company_id, data, current_user.id)
@@ -105,3 +105,32 @@ async def get_proposal_reviews(
     stmt = select(Review).filter(Review.proposal_id == proposal_id, Review.company_id == current_user.company_id).order_by(Review.created_at.desc())
     result = await db.execute(stmt)
     return result.scalars().all()
+
+
+@router.post("/{proposal_id}/send", response_model=ProposalResponse)
+async def send_proposal(
+    proposal_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: AuthenticatedUser = Depends(RoleChecker([UserRole.ADMIN, UserRole.MEMBER]))
+):
+    """
+    Dispatches the approved proposal draft email to the client via connected Gmail:
+    - Strictly checks that proposal status is APPROVED
+    - Sends through connected company Gmail account
+    - Updates proposal status to SENT
+    - Records immutable audit log
+    """
+    from app.platform.services.gmail_send_service import GmailSendService
+
+    try:
+        sent_proposal = await GmailSendService.send_approved_proposal(
+            db=db,
+            proposal_id=proposal_id,
+            company_id=current_user.company_id,
+            user_id=current_user.id,
+        )
+        return sent_proposal
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+    except RuntimeError as exc:
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(exc))

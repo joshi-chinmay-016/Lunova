@@ -1,5 +1,5 @@
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependencies.auth import get_current_active_user, RoleChecker
@@ -13,6 +13,8 @@ from app.platform.schemas.email_account import (
     GmailConnectionStatusResponse,
 )
 from app.platform.services.gmail_oauth_service import GmailOAuthService
+from app.platform.services.gmail_sync_service import GmailSyncService
+from app.platform.services.proposal_service import ProposalService
 
 router = APIRouter(prefix="/integrations/gmail", tags=["Integrations - Gmail"])
 
@@ -208,3 +210,42 @@ async def refresh_token(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Token encryption configuration error: {str(exc)}",
         )
+
+
+@router.post(
+    "/sync",
+    summary="Synchronize incoming emails from connected Gmail inbox",
+)
+async def sync_inbox(
+    background_tasks: BackgroundTasks,
+    max_messages: int = Query(10, ge=1, le=50),
+    db: AsyncSession = Depends(get_db),
+    current_user: AuthenticatedUser = Depends(RoleChecker([UserRole.ADMIN, UserRole.MEMBER])),
+):
+    """
+    Manually triggers inbox synchronization from the company's connected Gmail account:
+    - Fetches unread/inbox messages
+    - Extracts body text, HTML, and attachments
+    - Creates Proposal records and schedules background AI analysis
+    - Avoids importing duplicate messages
+    """
+    try:
+        sync_result, created_ids = await GmailSyncService.sync_company_inbox(
+            db=db,
+            company_id=current_user.company_id,
+            max_messages=max_messages,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+    except RuntimeError as exc:
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(exc))
+
+    # Trigger background intelligence pipeline for each newly created proposal
+    for proposal_id in created_ids:
+        background_tasks.add_task(
+            ProposalService.process_proposal_bg,
+            proposal_id,
+            current_user.company_id,
+        )
+
+    return sync_result

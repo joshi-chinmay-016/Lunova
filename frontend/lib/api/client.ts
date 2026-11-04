@@ -133,6 +133,13 @@ export async function rejectProposal(id: string, notes: string): Promise<Proposa
   return await fetchProposalById(res.id || id);
 }
 
+export async function sendProposal(id: string): Promise<Proposal> {
+  const res = await fetchApi(`/proposals/${id}/send`, {
+    method: 'POST',
+  });
+  return await fetchProposalById(res.id || id);
+}
+
 // ==========================================
 // Knowledge Documents API
 // ==========================================

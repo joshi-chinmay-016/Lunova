@@ -31,3 +31,4 @@ class Proposal(Base):
     emails = relationship("Email", back_populates="proposal", cascade="all, delete-orphan")
     reviews = relationship("Review", back_populates="proposal", cascade="all, delete-orphan")
     audit_logs = relationship("AuditLog", back_populates="proposal", cascade="all, delete-orphan")
+    attachments = relationship("EmailAttachment", back_populates="proposal")

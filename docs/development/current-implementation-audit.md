@@ -150,3 +150,4 @@ The domain boundary between Platform and Intelligence is strictly decoupled:
 10. **Phase 11**: Real Lunetron Knowledge Base Ingestion.
 11. **Phase 12**: Quality Verification (`pytest`, `npm run build`, `npm run lint`).
 12. **Phase 13**: End-to-End Acceptance Verification & Final Completion Report.
+

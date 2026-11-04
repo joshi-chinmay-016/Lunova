@@ -9,6 +9,7 @@ import {
   useAnalyzeProposal,
   useApproveProposal,
   useRejectProposal,
+  useSendProposal,
 } from '@/hooks/useProposals';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { ProposalStatusBadge } from '@/components/proposals/ProposalStatusBadge';
@@ -32,6 +33,7 @@ import {
   Clock,
   ShieldCheck,
   AlertTriangle,
+  Send,
 } from 'lucide-react';
 
 export default function ProposalWorkspacePage() {
@@ -44,10 +46,12 @@ export default function ProposalWorkspacePage() {
   const analyzeMutation = useAnalyzeProposal();
   const approveMutation = useApproveProposal();
   const rejectMutation = useRejectProposal();
+  const sendMutation = useSendProposal();
 
   // Modals & confirmation dialog states
   const [isApproveOpen, setIsApproveOpen] = useState(false);
   const [isRejectOpen, setIsRejectOpen] = useState(false);
+  const [isSendOpen, setIsSendOpen] = useState(false);
   const [approvalNotes, setApprovalNotes] = useState('');
   const [rejectionNotes, setRejectionNotes] = useState('');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -130,7 +134,7 @@ export default function ProposalWorkspacePage() {
       });
       setIsApproveOpen(false);
       setApprovalNotes('');
-      showToast('Proposal response formally approved.');
+      showToast('Proposal response formally approved. Ready to send via Gmail.');
     } catch (err: any) {
       alert(`Approval failed: ${err.message}`);
     }
@@ -147,6 +151,16 @@ export default function ProposalWorkspacePage() {
       showToast('Proposal marked as declined.');
     } catch (err: any) {
       alert(`Decline failed: ${err.message}`);
+    }
+  };
+
+  const handleConfirmSend = async () => {
+    try {
+      await sendMutation.mutateAsync(proposal.id);
+      setIsSendOpen(false);
+      showToast('Proposal response sent successfully to client via Gmail.');
+    } catch (err: any) {
+      alert(`Send failed: ${err.message}`);
     }
   };
 
@@ -183,7 +197,7 @@ export default function ProposalWorkspacePage() {
               {analyzeMutation.isPending ? 'Analyzing...' : 'Run AI Analysis'}
             </Button>
 
-            {proposal.status !== 'REJECTED' && (
+            {proposal.status !== 'REJECTED' && proposal.status !== 'APPROVED' && (
               <Button
                 variant="outline"
                 size="sm"
@@ -194,7 +208,7 @@ export default function ProposalWorkspacePage() {
               </Button>
             )}
 
-            {proposal.status !== 'APPROVED' && (
+            {proposal.status !== 'APPROVED' && proposal.status !== 'SENT' && (
               <Button
                 variant="success"
                 size="sm"
@@ -204,6 +218,18 @@ export default function ProposalWorkspacePage() {
                 Approve
               </Button>
             )}
+
+            {proposal.status === 'APPROVED' && (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setIsSendOpen(true)}
+                isLoading={sendMutation.isPending}
+                leftIcon={<Send className="w-3.5 h-3.5" />}
+              >
+                Send via Gmail
+              </Button>
+            )}
           </div>
         }
       />
@@ -211,7 +237,7 @@ export default function ProposalWorkspacePage() {
       {/* Human Review Banner */}
       <HumanReviewBanner status={proposal.status} />
 
-      {/* AI Processing Indeterminate State (Requirement 19) */}
+      {/* AI Processing Indeterminate State */}
       {analyzeMutation.isPending && (
         <div className="p-6 rounded-2xl bg-white border border-blue-200 shadow-clay-card flex items-center gap-4 animate-in fade-in duration-150">
           <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0">
@@ -284,7 +310,7 @@ export default function ProposalWorkspacePage() {
         </div>
       </div>
 
-      {/* Approve Confirmation Modal (Requirement 14) */}
+      {/* Approve Confirmation Modal */}
       <ConfirmDialog
         isOpen={isApproveOpen}
         onClose={() => setIsApproveOpen(false)}
@@ -296,7 +322,7 @@ export default function ProposalWorkspacePage() {
         isLoading={approveMutation.isPending}
       />
 
-      {/* Reject Confirmation Modal (Requirement 14) */}
+      {/* Reject Confirmation Modal */}
       <ConfirmDialog
         isOpen={isRejectOpen}
         onClose={() => setIsRejectOpen(false)}
@@ -306,6 +332,18 @@ export default function ProposalWorkspacePage() {
         confirmLabel="Decline Proposal"
         variant="danger"
         isLoading={rejectMutation.isPending}
+      />
+
+      {/* Send Confirmation Modal */}
+      <ConfirmDialog
+        isOpen={isSendOpen}
+        onClose={() => setIsSendOpen(false)}
+        onConfirm={handleConfirmSend}
+        title="Send Proposal via Gmail?"
+        description="This will dispatch the approved proposal response directly to the prospective client using your connected corporate Gmail account. This action is immutable and logged."
+        confirmLabel="Send Proposal"
+        variant="primary"
+        isLoading={sendMutation.isPending}
       />
     </div>
   );

@@ -4,6 +4,7 @@ from app.models.user import User
 from app.models.proposal import Proposal, ProposalStatus
 from app.models.email import Email, EmailDirection
 from app.models.email_account import EmailAccount, EmailProvider
+from app.models.attachment import EmailAttachment
 from app.models.document import KnowledgeDocument
 from app.models.document_chunk import DocumentChunk
 from app.models.review import Review
@@ -20,6 +21,7 @@ __all__ = [
     "EmailDirection",
     "EmailAccount",
     "EmailProvider",
+    "EmailAttachment",
     "KnowledgeDocument",
     "DocumentChunk",
     "Review",
