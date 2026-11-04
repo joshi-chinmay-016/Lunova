@@ -45,6 +45,12 @@ export const ProposalStatusBadge: React.FC<ProposalStatusBadgeProps> = ({ status
           Rejected
         </Badge>
       );
+    case 'SENT':
+      return (
+        <Badge variant="success" size={size} dot>
+          Sent
+        </Badge>
+      );
     default:
       return (
         <Badge variant="neutral" size={size}>
