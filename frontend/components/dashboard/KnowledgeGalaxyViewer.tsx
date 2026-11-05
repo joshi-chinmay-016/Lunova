@@ -38,7 +38,7 @@ export default function KnowledgeGalaxyViewer() {
   const [metrics, setMetrics] = useState<GraphMetrics>({
     total_documents: 48,
     embedded_vectors: 1284,
-    index_dimension: 1536,
+    index_dimension: 768,
     mean_retrieval_latency_ms: 14.2,
     grounding_accuracy: 0.984,
   });
@@ -63,9 +63,9 @@ export default function KnowledgeGalaxyViewer() {
           { id: 'kb-sec', name: 'Enterprise Security & RBAC', group: 'knowledge', val: 25, color: '#10b981', desc: 'TLS 1.3, AES-256 GCM, OAuth2 / OIDC, SOC2 Type II' },
           { id: 'kb-data', name: 'Multi-Tenant Data Isolation', group: 'knowledge', val: 25, color: '#3b82f6', desc: 'Row-level tenant isolation, pgvector company partitioning' },
           { id: 'kb-compliance', name: 'Regulatory & SLA Guarantees', group: 'knowledge', val: 20, color: '#8b5cf6', desc: '99.95% Uptime, GDPR, HIPAA, Tamper-Evident Audit Trails' },
-          { id: 'vec-chunk-01', name: 'Chunk: OAuth2 JWT Token Flow', group: 'chunk', val: 12, color: '#38bdf8', desc: 'Dim 1536 cosine similarity 0.96' },
-          { id: 'vec-chunk-02', name: 'Chunk: Tenant SQL Scoping Filter', group: 'chunk', val: 12, color: '#60a5fa', desc: 'Dim 1536 cosine similarity 0.94' },
-          { id: 'vec-chunk-03', name: 'Chunk: Append-only Audit Log Stream', group: 'chunk', val: 12, color: '#34d399', desc: 'Dim 1536 cosine similarity 0.91' },
+          { id: 'vec-chunk-01', name: 'Chunk: OAuth2 JWT Token Flow', group: 'chunk', val: 12, color: '#38bdf8', desc: 'Dim 768 cosine similarity 0.96' },
+          { id: 'vec-chunk-02', name: 'Chunk: Tenant SQL Scoping Filter', group: 'chunk', val: 12, color: '#60a5fa', desc: 'Dim 768 cosine similarity 0.94' },
+          { id: 'vec-chunk-03', name: 'Chunk: Append-only Audit Log Stream', group: 'chunk', val: 12, color: '#34d399', desc: 'Dim 768 cosine similarity 0.91' },
         ];
         setNodes(fallbackNodes);
         setSelectedNode(fallbackNodes[0]);
@@ -274,7 +274,7 @@ export default function KnowledgeGalaxyViewer() {
               {simulatedUpload ? (
                 <div className="flex flex-col items-center gap-2">
                   <div className="w-5 h-5 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin" />
-                  <span className="text-xs font-mono text-cyan-300">Chunking & Vectorizing Document (1536-dim)...</span>
+                  <span className="text-xs font-mono text-cyan-300">Chunking & Vectorizing Document (768-dim)...</span>
                 </div>
               ) : (
                 <div className="flex flex-col items-center gap-2">
