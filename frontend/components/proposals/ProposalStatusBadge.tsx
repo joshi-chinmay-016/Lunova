@@ -39,10 +39,28 @@ export const ProposalStatusBadge: React.FC<ProposalStatusBadgeProps> = ({ status
           Approved
         </Badge>
       );
+    case 'SENDING':
+      return (
+        <Badge variant="warning" size={size} dot>
+          Sending...
+        </Badge>
+      );
+    case 'DISPATCH_UNCERTAIN':
+      return (
+        <Badge variant="danger" size={size} dot>
+          Dispatch Uncertain
+        </Badge>
+      );
     case 'REJECTED':
       return (
         <Badge variant="danger" size={size} dot>
           Rejected
+        </Badge>
+      );
+    case 'SENT':
+      return (
+        <Badge variant="success" size={size} dot>
+          Sent
         </Badge>
       );
     default:

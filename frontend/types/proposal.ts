@@ -4,7 +4,10 @@ export type ProposalStatus =
   | 'AI_DRAFTED'
   | 'UNDER_REVIEW'
   | 'APPROVED'
-  | 'REJECTED';
+  | 'SENDING'
+  | 'DISPATCH_UNCERTAIN'
+  | 'REJECTED'
+  | 'SENT';
 
 export type RequirementCategory =
   | 'TECHNICAL'

@@ -21,6 +21,17 @@ class DocumentService:
 
     @staticmethod
     async def ingest_document(db: AsyncSession, data: DocumentCreate, company_id: UUID) -> KnowledgeDocument:
+        # Quarantine enforcement: detect synthetic benchmark fixtures and prevent ingestion into knowledge base
+        quarantine_markers = [
+            "QUARANTINE_STATUS: BENCHMARK_ONLY",
+            "SYNTHETIC BENCHMARK FIXTURE",
+            "SYNTHETIC TEST DATA",
+        ]
+        if data.content and any(marker in data.content for marker in quarantine_markers):
+            raise ValueError(
+                "Document is quarantined as synthetic benchmark data and cannot be ingested into the knowledge base."
+            )
+
         doc = KnowledgeDocument(
             company_id=company_id,
             name=data.name,

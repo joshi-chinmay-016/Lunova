@@ -2,7 +2,8 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 import {
   LayoutDashboard,
@@ -17,7 +18,8 @@ import {
   ChevronDown,
   X,
   ShieldCheck,
-  CheckCircle2
+  CheckCircle2,
+  LogOut,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -55,10 +57,26 @@ const FUTURE_NAV: NavItem[] = [
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, logout } = useAuth();
 
   const isCurrent = (href: string) => {
     if (href === '/') return pathname === '/';
     return pathname.startsWith(href);
+  };
+
+  const displayName = user?.name || 'Sarah Jenkins';
+  const displayRole = user?.role === 'ADMIN' ? 'Admin / Lead Reviewer' : 'Team Member';
+  const initials = displayName
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .substring(0, 2)
+    .toUpperCase();
+
+  const handleLogout = () => {
+    logout();
+    router.push('/login');
   };
 
   const renderNavGroup = (title: string, items: NavItem[]) => (
@@ -191,17 +209,27 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
         {/* Bottom User Bar */}
         <div className="p-3 border-t border-[#E2E5E9] bg-gray-50/60">
-          <div className="flex items-center gap-3 px-2 py-1.5">
-            <div className="w-8 h-8 rounded-full bg-blue-100 border border-blue-200 text-blue-700 font-semibold text-xs flex items-center justify-center">
-              SJ
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold text-gray-900 truncate">Sarah Jenkins</p>
-              <div className="flex items-center gap-1">
-                <ShieldCheck className="w-3 h-3 text-blue-600" />
-                <span className="text-[10px] text-gray-500 truncate">Lead Reviewer</span>
+          <div className="flex items-center justify-between px-2 py-1.5">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-8 h-8 rounded-full bg-blue-100 border border-blue-200 text-blue-700 font-semibold text-xs flex items-center justify-center shrink-0">
+                {initials}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-semibold text-gray-900 truncate">{displayName}</p>
+                <div className="flex items-center gap-1">
+                  <ShieldCheck className="w-3 h-3 text-blue-600 shrink-0" />
+                  <span className="text-[10px] text-gray-500 truncate">{displayRole}</span>
+                </div>
               </div>
             </div>
+            <button
+              onClick={handleLogout}
+              title="Sign Out"
+              aria-label="Sign Out"
+              className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors ml-2 shrink-0"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </aside>

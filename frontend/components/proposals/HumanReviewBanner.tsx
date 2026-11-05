@@ -41,6 +41,34 @@ export const HumanReviewBanner: React.FC<HumanReviewBannerProps> = ({
     );
   }
 
+  if (status === 'DISPATCH_UNCERTAIN') {
+    return (
+      <div className="p-4 rounded-2xl bg-amber-50/90 border border-amber-300 flex items-start gap-3 text-xs shadow-sm">
+        <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+        <div className="space-y-0.5">
+          <p className="font-semibold text-amber-900">Dispatch Outcome Uncertain (Network Timeout)</p>
+          <p className="text-amber-700 leading-relaxed">
+            A network timeout occurred during Gmail dispatch. Automated resending is blocked to prevent accidental duplicate delivery. Please verify out-of-band whether the email was delivered before reconciling.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (status === 'SENDING') {
+    return (
+      <div className="p-4 rounded-2xl bg-indigo-50/80 border border-indigo-200 flex items-start gap-3 text-xs shadow-sm">
+        <Clock className="w-5 h-5 text-indigo-600 shrink-0 mt-0.5 animate-spin" />
+        <div className="space-y-0.5">
+          <p className="font-semibold text-indigo-900">Dispatch in Progress</p>
+          <p className="text-indigo-700 leading-relaxed">
+            The proposal is currently being transmitted to the client via Gmail API. Concurrent actions are locked.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (status === 'UNDER_REVIEW' || status === 'AI_DRAFTED') {
     return (
       <div className="p-4 rounded-2xl bg-blue-50/80 border border-blue-200/80 flex items-start gap-3 text-xs shadow-sm">

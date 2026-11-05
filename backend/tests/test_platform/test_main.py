@@ -15,5 +15,7 @@ def test_models_importable():
     assert "proposals" in Base.metadata.tables
     assert "emails" in Base.metadata.tables
     assert "knowledge_documents" in Base.metadata.tables
+    assert "email_accounts" in Base.metadata.tables
     assert "reviews" in Base.metadata.tables
     assert "audit_logs" in Base.metadata.tables
+    assert "oauth_states" in Base.metadata.tables
