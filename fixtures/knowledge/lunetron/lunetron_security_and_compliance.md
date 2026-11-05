@@ -1,3 +1,7 @@
+<!-- SYNTHETIC BENCHMARK FIXTURE — UNVERIFIED TEST DATA -->
+<!-- QUARANTINE_STATUS: BENCHMARK_ONLY -->
+<!-- WARNING: NOT FOR PRODUCTION INGESTION. DO NOT REPRESENT AS VERIFIED LUNETRON FACTS. -->
+
 # Lunetron — Security, Compliance & Data Governance
 
 ## Compliance Certifications & Standards

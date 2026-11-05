@@ -19,7 +19,11 @@ async def ingest_document(
     db: AsyncSession = Depends(get_db),
     current_user: AuthenticatedUser = Depends(RoleChecker([UserRole.ADMIN]))
 ):
-    doc = await DocumentService.ingest_document(db, data, current_user.company_id)
+    try:
+        doc = await DocumentService.ingest_document(db, data, current_user.company_id)
+    except ValueError as e:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     
     # Process the document directly in background
     background_tasks.add_task(DocumentService.process_document_bg, doc.id, current_user.company_id, data.content)

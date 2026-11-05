@@ -1,3 +1,7 @@
+<!-- SYNTHETIC BENCHMARK FIXTURE — UNVERIFIED TEST DATA -->
+<!-- QUARANTINE_STATUS: BENCHMARK_ONLY -->
+<!-- WARNING: NOT FOR PRODUCTION INGESTION. DO NOT REPRESENT AS VERIFIED LUNETRON FACTS. -->
+
 # Lunetron — Enterprise Case Studies & Reference Engagements
 
 ## Case Study 1: Global Tier-1 Investment Bank
