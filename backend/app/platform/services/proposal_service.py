@@ -11,6 +11,7 @@ from app.models.attachment import EmailAttachment
 from app.platform.schemas.proposal import ProposalCreate
 from app.platform.schemas.review import ReviewCreate
 from app.core.database import async_session_maker
+from app.core.config import settings
 
 from intelligence.service import IntelligenceService
 from intelligence.models.proposal import ProposalContext, ParsedAttachment
@@ -19,6 +20,36 @@ logger = logging.getLogger(__name__)
 
 
 class ProposalService:
+    @staticmethod
+    def get_llm_provider():
+        from app.core.config import settings
+        name = (settings.LLM_PROVIDER or "").strip().lower()
+        if name == "gemini":
+            from intelligence.providers.gemini import GeminiProvider
+            return GeminiProvider()
+        elif name in ("mock", "fake"):
+            if settings.ENVIRONMENT == "production":
+                raise ValueError(f"Mock provider '{settings.LLM_PROVIDER}' is not permitted in production environment.")
+            from intelligence.providers.mock import MockLLMProvider
+            return MockLLMProvider()
+        else:
+            raise ValueError(f"Unsupported or missing LLM_PROVIDER: {settings.LLM_PROVIDER}")
+
+    @staticmethod
+    def get_embedding_provider():
+        from app.core.config import settings
+        name = (settings.EMBEDDING_PROVIDER or "").strip().lower()
+        if name == "gemini":
+            from intelligence.providers.gemini_embedding import GeminiEmbeddingProvider
+            return GeminiEmbeddingProvider()
+        elif name in ("mock", "fake"):
+            if settings.ENVIRONMENT == "production":
+                raise ValueError(f"Mock provider '{settings.EMBEDDING_PROVIDER}' is not permitted in production environment.")
+            from intelligence.providers.mock import MockEmbeddingProvider
+            return MockEmbeddingProvider()
+        else:
+            raise ValueError(f"Unsupported or missing EMBEDDING_PROVIDER: {settings.EMBEDDING_PROVIDER}")
+
     @staticmethod
     async def get_proposal(db: AsyncSession, proposal_id: UUID, company_id: UUID) -> Proposal:
         stmt = select(Proposal).filter(Proposal.id == proposal_id, Proposal.company_id == company_id)
@@ -116,24 +147,8 @@ class ProposalService:
                     attachments=parsed_attachments,
                 )
 
-                from app.core.config import settings
-                if settings.LLM_PROVIDER == "gemini":
-                    from intelligence.providers.gemini import GeminiProvider
-                    llm = GeminiProvider()
-                elif settings.LLM_PROVIDER == "mock" and settings.ENVIRONMENT != "production":
-                    from intelligence.providers.mock import MockLLMProvider
-                    llm = MockLLMProvider()
-                else:
-                    raise ValueError(f"Unsupported or missing LLM_PROVIDER: {settings.LLM_PROVIDER}")
-
-                if settings.EMBEDDING_PROVIDER == "gemini":
-                    from intelligence.providers.gemini_embedding import GeminiEmbeddingProvider
-                    emb = GeminiEmbeddingProvider()
-                elif settings.EMBEDDING_PROVIDER == "mock" and settings.ENVIRONMENT != "production":
-                    from intelligence.providers.mock import MockEmbeddingProvider
-                    emb = MockEmbeddingProvider()
-                else:
-                    raise ValueError(f"Unsupported or missing EMBEDDING_PROVIDER: {settings.EMBEDDING_PROVIDER}")
+                llm = ProposalService.get_llm_provider()
+                emb = ProposalService.get_embedding_provider()
 
                 from app.platform.services.retriever_service import PlatformRetriever
                 platform_retriever = PlatformRetriever(embedding_provider=emb, top_k=settings.RETRIEVAL_TOP_K)

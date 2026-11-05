@@ -12,9 +12,9 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 
     # AI Settings
-    LLM_PROVIDER: str = "fake" # or "gemini", "openai"
+    LLM_PROVIDER: str = "mock" # or "gemini"
     LLM_MODEL: str = "default-model"
-    EMBEDDING_PROVIDER: str = "fake"
+    EMBEDDING_PROVIDER: str = "mock" # or "gemini"
     EMBEDDING_MODEL: str = "text-embedding-004"
     EMBEDDING_DIMENSION: int = 768 # Explicit dimension configuration aligned with Gemini
     CHUNK_SIZE: int = 1000
