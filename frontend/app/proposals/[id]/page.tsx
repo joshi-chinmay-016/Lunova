@@ -18,6 +18,7 @@ import { RequirementAnalysisCard } from '@/components/proposals/RequirementAnaly
 import { SourcesPanel } from '@/components/proposals/SourcesPanel';
 import { ResponseEditor } from '@/components/proposals/ResponseEditor';
 import { HumanReviewBanner } from '@/components/proposals/HumanReviewBanner';
+import { ReconcileDispatchModal } from '@/components/proposals/ReconcileDispatchModal';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -52,6 +53,7 @@ export default function ProposalWorkspacePage() {
   const [isApproveOpen, setIsApproveOpen] = useState(false);
   const [isRejectOpen, setIsRejectOpen] = useState(false);
   const [isSendOpen, setIsSendOpen] = useState(false);
+  const [isReconcileOpen, setIsReconcileOpen] = useState(false);
   const [approvalNotes, setApprovalNotes] = useState('');
   const [rejectionNotes, setRejectionNotes] = useState('');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -197,27 +199,45 @@ export default function ProposalWorkspacePage() {
               {analyzeMutation.isPending ? 'Analyzing...' : 'Run AI Analysis'}
             </Button>
 
-            {proposal.status !== 'REJECTED' && proposal.status !== 'APPROVED' && (
+            {(proposal.status === 'DISPATCH_UNCERTAIN' || proposal.status === 'SENDING') && (
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setIsRejectOpen(true)}
-                className="text-red-700 hover:bg-red-50 hover:border-red-300"
+                onClick={() => setIsReconcileOpen(true)}
+                className="border-amber-400 text-amber-800 hover:bg-amber-50"
+                leftIcon={<AlertTriangle className="w-3.5 h-3.5 text-amber-600" />}
               >
-                Decline
+                Reconcile Dispatch
               </Button>
             )}
 
-            {proposal.status !== 'APPROVED' && proposal.status !== 'SENT' && (
-              <Button
-                variant="success"
-                size="sm"
-                onClick={() => setIsApproveOpen(true)}
-                leftIcon={<CheckCircle className="w-3.5 h-3.5" />}
-              >
-                Approve
-              </Button>
-            )}
+            {proposal.status !== 'REJECTED' &&
+              proposal.status !== 'APPROVED' &&
+              proposal.status !== 'DISPATCH_UNCERTAIN' &&
+              proposal.status !== 'SENDING' && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsRejectOpen(true)}
+                  className="text-red-700 hover:bg-red-50 hover:border-red-300"
+                >
+                  Decline
+                </Button>
+              )}
+
+            {proposal.status !== 'APPROVED' &&
+              proposal.status !== 'SENT' &&
+              proposal.status !== 'DISPATCH_UNCERTAIN' &&
+              proposal.status !== 'SENDING' && (
+                <Button
+                  variant="success"
+                  size="sm"
+                  onClick={() => setIsApproveOpen(true)}
+                  leftIcon={<CheckCircle className="w-3.5 h-3.5" />}
+                >
+                  Approve
+                </Button>
+              )}
 
             {proposal.status === 'APPROVED' && (
               <Button
@@ -344,6 +364,17 @@ export default function ProposalWorkspacePage() {
         confirmLabel="Send Proposal"
         variant="primary"
         isLoading={sendMutation.isPending}
+      />
+
+      {/* Reconcile Uncertain Dispatch Modal */}
+      <ReconcileDispatchModal
+        proposalId={id}
+        isOpen={isReconcileOpen}
+        onClose={() => setIsReconcileOpen(false)}
+        onSuccess={() => {
+          refetch();
+          showToast('Proposal dispatch reconciled successfully.');
+        }}
       />
     </div>
   );

@@ -1,4 +1,5 @@
-import { fetchApi } from '@/services/api';
+import { fetchApi, setAuthToken, getAuthToken } from '@/services/api';
+import { UserProfile, LoginResponse } from '@/types/auth';
 import { Proposal, CreateProposalPayload } from '@/types/proposal';
 import { KnowledgeDocument, UploadDocumentPayload } from '@/types/knowledge';
 import { AnalyticsSummary } from '@/types/analytics';
@@ -136,6 +137,17 @@ export async function rejectProposal(id: string, notes: string): Promise<Proposa
 export async function sendProposal(id: string): Promise<Proposal> {
   const res = await fetchApi(`/proposals/${id}/send`, {
     method: 'POST',
+  });
+  return await fetchProposalById(res.id || id);
+}
+
+export async function reconcileProposal(
+  id: string,
+  payload: { action: 'CONFIRM_DELIVERED' | 'RESET_FOR_RESEND'; notes: string; external_message_id?: string }
+): Promise<Proposal> {
+  const res = await fetchApi(`/proposals/${id}/reconcile`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
   });
   return await fetchProposalById(res.id || id);
 }
@@ -392,4 +404,38 @@ export async function fetchIntegrations(): Promise<IntegrationItem[]> {
       icon: 'Users',
     },
   ];
+}
+
+
+// ==========================================
+// Authentication API
+// ==========================================
+
+export async function loginUser(email: string, password: string): Promise<LoginResponse> {
+  const data: LoginResponse = await fetchApi('/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ email, password }),
+  });
+  if (data?.access_token) {
+    setAuthToken(data.access_token);
+  }
+  return data;
+}
+
+export async function fetchCurrentUser(): Promise<UserProfile> {
+  return await fetchApi('/auth/me');
+}
+
+export async function bootstrapLocalAdmin(): Promise<LoginResponse> {
+  const data: LoginResponse = await fetchApi('/auth/bootstrap', {
+    method: 'POST',
+  });
+  if (data?.access_token) {
+    setAuthToken(data.access_token);
+  }
+  return data;
+}
+
+export function logoutUser(): void {
+  setAuthToken(null);
 }

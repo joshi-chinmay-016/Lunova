@@ -8,6 +8,7 @@ import {
   approveProposal,
   rejectProposal,
   sendProposal,
+  reconcileProposal,
 } from '@/lib/api/client';
 import { Proposal, CreateProposalPayload } from '@/types/proposal';
 
@@ -102,6 +103,29 @@ export function useSendProposal() {
   const queryClient = useQueryClient();
   return useMutation<Proposal, Error, string>({
     mutationFn: (id: string) => sendProposal(id),
+    onSuccess: (updated: Proposal) => {
+      queryClient.invalidateQueries({ queryKey: ['proposals'] });
+      queryClient.setQueryData(['proposals', updated.id], updated);
+    },
+  });
+}
+
+
+export function useReconcileProposal() {
+  const queryClient = useQueryClient();
+  return useMutation<
+    Proposal,
+    Error,
+    {
+      id: string;
+      payload: {
+        action: 'CONFIRM_DELIVERED' | 'RESET_FOR_RESEND';
+        notes: string;
+        external_message_id?: string;
+      };
+    }
+  >({
+    mutationFn: ({ id, payload }) => reconcileProposal(id, payload),
     onSuccess: (updated: Proposal) => {
       queryClient.invalidateQueries({ queryKey: ['proposals'] });
       queryClient.setQueryData(['proposals', updated.id], updated);

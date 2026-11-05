@@ -4,6 +4,8 @@ export type ProposalStatus =
   | 'AI_DRAFTED'
   | 'UNDER_REVIEW'
   | 'APPROVED'
+  | 'SENDING'
+  | 'DISPATCH_UNCERTAIN'
   | 'REJECTED'
   | 'SENT';
 
