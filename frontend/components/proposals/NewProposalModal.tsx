@@ -170,16 +170,16 @@ export const NewProposalModal: React.FC<NewProposalModalProps> = ({ isOpen, onCl
 
         {error && <p className="text-xs text-red-600 font-medium">{error}</p>}
 
-        <div className="pt-3 border-t border-[#E2E5E9] flex items-center justify-end gap-2.5">
-          <Button variant="secondary" size="sm" type="button" onClick={onClose}>
+        <div className="pt-3 border-t border-[#E2E5E9] flex items-center justify-end gap-3">
+          <Button variant="secondary" size="md" type="button" onClick={onClose}>
             Cancel
           </Button>
           <Button
             variant="primary"
-            size="sm"
+            size="md"
             type="submit"
             isLoading={createMutation.isPending}
-            leftIcon={<Sparkles className="w-3.5 h-3.5" />}
+            leftIcon={<Sparkles className="w-4 h-4" />}
           >
             Create Proposal
           </Button>

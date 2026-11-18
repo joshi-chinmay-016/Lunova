@@ -1,8 +1,16 @@
 import type { Metadata } from 'next';
 import React from 'react';
+import { Roboto } from 'next/font/google';
 import './globals.css';
 import Providers from './providers';
 import { AppShell } from '@/components/layout/AppShell';
+
+const roboto = Roboto({
+  weight: ['300', '400', '500', '700', '900'],
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-roboto',
+});
 
 export const metadata: Metadata = {
   title: 'Lunova | AI Proposal Intelligence Platform',
@@ -16,8 +24,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className="bg-[#F4F5F7] text-gray-900 min-h-screen selection:bg-blue-600 selection:text-white antialiased">
+    <html lang="en" className={roboto.variable}>
+      <body className={`${roboto.className} bg-paper text-ink min-h-screen selection:bg-accent-soft selection:text-accent font-sans antialiased`}>
         <Providers>
           <AppShell>{children}</AppShell>
         </Providers>

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 
@@ -10,9 +11,17 @@ export interface AppShellProps {
 
 export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const pathname = usePathname();
+
+  // Public landing page and login page render without the authenticated app shell
+  const isPublicPage = pathname === '/' || pathname === '/login';
+
+  if (isPublicPage) {
+    return <main className="min-h-screen bg-paper">{children}</main>;
+  }
 
   return (
-    <div className="min-h-screen bg-[#F4F5F7] flex">
+    <div className="min-h-screen bg-paper flex">
       {/* Persistent Left Sidebar */}
       <Sidebar
         isOpen={isMobileSidebarOpen}

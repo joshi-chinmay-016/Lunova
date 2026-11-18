@@ -171,14 +171,15 @@ export default function ProposalWorkspacePage() {
         ]}
         badge={<ProposalStatusBadge status={proposal.status} size="md" />}
         actions={
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2.5 flex-wrap">
             {/* Run / Re-run AI Analysis button */}
             <Button
               variant="secondary"
-              size="sm"
+              size="md"
               onClick={handleRunAnalysis}
               isLoading={analyzeMutation.isPending}
-              leftIcon={<Sparkles className="w-3.5 h-3.5 text-blue-600" />}
+              leftIcon={<Sparkles className="w-4 h-4 text-blue-600" />}
+              className="text-xs sm:text-sm font-semibold border-slate-300"
             >
               {analyzeMutation.isPending ? 'Analyzing...' : 'Run AI Analysis'}
             </Button>
@@ -186,9 +187,9 @@ export default function ProposalWorkspacePage() {
             {proposal.status !== 'REJECTED' && (
               <Button
                 variant="outline"
-                size="sm"
+                size="md"
                 onClick={() => setIsRejectOpen(true)}
-                className="text-red-700 hover:bg-red-50 hover:border-red-300"
+                className="text-xs sm:text-sm font-semibold text-rose-700 hover:bg-rose-50 hover:border-rose-300 border-slate-300"
               >
                 Decline
               </Button>
@@ -197,9 +198,10 @@ export default function ProposalWorkspacePage() {
             {proposal.status !== 'APPROVED' && (
               <Button
                 variant="success"
-                size="sm"
+                size="md"
                 onClick={() => setIsApproveOpen(true)}
-                leftIcon={<CheckCircle className="w-3.5 h-3.5" />}
+                leftIcon={<CheckCircle className="w-4 h-4" />}
+                className="text-xs sm:text-sm font-semibold"
               >
                 Approve
               </Button>
@@ -209,7 +211,7 @@ export default function ProposalWorkspacePage() {
       />
 
       {/* Human Review Banner */}
-      <HumanReviewBanner status={proposal.status} />
+      <HumanReviewBanner status={proposal.status} proposalId={proposal.id} />
 
       {/* AI Processing Indeterminate State (Requirement 19) */}
       {analyzeMutation.isPending && (

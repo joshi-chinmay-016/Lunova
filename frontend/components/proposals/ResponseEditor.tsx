@@ -40,6 +40,10 @@ export const ResponseEditor: React.FC<ResponseEditorProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [activeSection, setActiveSection] = useState<'all' | 'summary' | 'technical' | 'plan' | 'requirements'>('all');
 
+  const [draftEmail, setDraftEmail] = useState(
+    initialResponse?.draft_email_body ||
+      'No client-facing email drafted yet. Run AI analysis to synthesize proposal response.'
+  );
   const [execSummary, setExecSummary] = useState(
     initialResponse?.executive_summary ||
       'No executive summary generated yet. Run AI analysis to synthesize proposal response.'
@@ -58,6 +62,7 @@ export const ResponseEditor: React.FC<ResponseEditorProps> = ({
 
   useEffect(() => {
     if (initialResponse) {
+      setDraftEmail(initialResponse.draft_email_body || '');
       setExecSummary(initialResponse.executive_summary || '');
       setTechApproach(initialResponse.technical_approach || '');
       setImplPlan(initialResponse.implementation_plan || '');
@@ -67,6 +72,7 @@ export const ResponseEditor: React.FC<ResponseEditorProps> = ({
 
   const handleSave = async () => {
     const updated: GeneratedProposalResponse = {
+      draft_email_body: draftEmail,
       executive_summary: execSummary,
       technical_approach: techApproach,
       implementation_plan: implPlan,
@@ -108,22 +114,22 @@ export const ResponseEditor: React.FC<ResponseEditorProps> = ({
         </div>
 
         {/* Section view switcher & edit toggle */}
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2.5 flex-wrap">
           <Button
             variant={isEditing ? 'outline' : 'secondary'}
-            size="sm"
+            size="md"
             onClick={() => setIsEditing(!isEditing)}
-            leftIcon={isEditing ? <Eye className="w-3.5 h-3.5" /> : <Edit2 className="w-3.5 h-3.5" />}
+            leftIcon={isEditing ? <Eye className="w-4 h-4" /> : <Edit2 className="w-4 h-4" />}
           >
             {isEditing ? 'Preview Mode' : 'Edit Document'}
           </Button>
 
           <Button
             variant="ghost"
-            size="sm"
+            size="md"
             onClick={onRequestRegenerate}
             title="Re-run AI extraction and response synthesis"
-            leftIcon={<RotateCcw className="w-3.5 h-3.5" />}
+            leftIcon={<RotateCcw className="w-4 h-4" />}
           >
             Regenerate
           </Button>
@@ -132,6 +138,33 @@ export const ResponseEditor: React.FC<ResponseEditorProps> = ({
 
       {/* Editor Body */}
       <CardContent className="space-y-6">
+        {/* Section 0: Client-Facing Response Email Draft */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <h4 className="text-xs font-bold text-gray-900 uppercase tracking-wider">
+              Client-Facing Response Email Draft
+            </h4>
+            <span className="text-[10px] text-gray-400 font-mono">Outbound Communication Channel</span>
+          </div>
+
+          {isEditing ? (
+            <textarea
+              rows={8}
+              value={draftEmail}
+              onChange={(e) => {
+                setDraftEmail(e.target.value);
+                setHasUnsavedChanges(true);
+              }}
+              placeholder="Enter client-facing email response..."
+              className="w-full bg-white text-gray-900 text-xs sm:text-sm rounded-xl border border-[#E2E5E9] p-3.5 leading-relaxed focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 shadow-[inset_0_1px_2px_rgba(15,23,42,0.04)]"
+            />
+          ) : (
+            <div className="p-4 rounded-xl bg-gray-50/70 border border-gray-200 text-xs sm:text-sm text-gray-800 leading-relaxed font-sans whitespace-pre-wrap shadow-[inset_0_1px_2px_rgba(15,23,42,0.02)]">
+              {draftEmail || 'No client-facing email drafted yet.'}
+            </div>
+          )}
+        </div>
+
         {/* Section 1: Executive Summary */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
@@ -275,14 +308,14 @@ export const ResponseEditor: React.FC<ResponseEditorProps> = ({
           <span>All AI responses require human review before client submission.</span>
         </div>
 
-        <div className="flex items-center gap-2.5 justify-end">
+        <div className="flex items-center gap-3 justify-end">
           {hasUnsavedChanges || isEditing ? (
             <Button
               variant="primary"
-              size="sm"
+              size="md"
               onClick={handleSave}
               isLoading={isSaving}
-              leftIcon={<Save className="w-3.5 h-3.5" />}
+              leftIcon={<Save className="w-4 h-4" />}
             >
               Save Draft
             </Button>
@@ -291,9 +324,9 @@ export const ResponseEditor: React.FC<ResponseEditorProps> = ({
               {status !== 'REJECTED' && (
                 <Button
                   variant="outline"
-                  size="sm"
+                  size="md"
                   onClick={onReject}
-                  className="text-red-700 hover:bg-red-50 hover:border-red-300"
+                  className="text-red-700 hover:bg-red-50 hover:border-red-300 border-slate-300"
                 >
                   Decline Proposal
                 </Button>
@@ -302,9 +335,9 @@ export const ResponseEditor: React.FC<ResponseEditorProps> = ({
               {status !== 'APPROVED' && (
                 <Button
                   variant="success"
-                  size="sm"
+                  size="md"
                   onClick={onApprove}
-                  leftIcon={<Check className="w-3.5 h-3.5" />}
+                  leftIcon={<Check className="w-4 h-4" />}
                 >
                   Approve Response
                 </Button>

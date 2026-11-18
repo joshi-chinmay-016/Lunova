@@ -17,7 +17,8 @@ import {
   ChevronDown,
   X,
   ShieldCheck,
-  CheckCircle2
+  CheckCircle2,
+  Globe,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -34,7 +35,7 @@ interface NavItem {
 }
 
 const MAIN_NAV: NavItem[] = [
-  { label: 'Dashboard', href: '/', icon: LayoutDashboard },
+  { label: 'Overview', href: '/dashboard', icon: LayoutDashboard },
   { label: 'Proposals', href: '/proposals', icon: FileSpreadsheet },
   { label: 'Knowledge Base', href: '/knowledge-base', icon: BookOpen },
 ];
@@ -57,7 +58,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const pathname = usePathname();
 
   const isCurrent = (href: string) => {
-    if (href === '/') return pathname === '/';
+    if (href === '/dashboard') return pathname === '/dashboard';
     return pathname.startsWith(href);
   };
 
@@ -187,6 +188,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           {renderNavGroup('Insights', INSIGHTS_NAV)}
           {renderNavGroup('Administration', ADMIN_NAV)}
           {renderNavGroup('Platform Roadmap', FUTURE_NAV)}
+        </div>
+
+        {/* Link back to Public Landing Site */}
+        <div className="px-3 py-2 border-t border-[#E2E5E9]">
+          <Link
+            href="/"
+            onClick={onClose}
+            className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+          >
+            <Globe className="w-3.5 h-3.5 text-blue-600" />
+            <span>Product Website</span>
+          </Link>
         </div>
 
         {/* Bottom User Bar */}
