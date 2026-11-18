@@ -17,6 +17,7 @@ class Company(Base):
     users = relationship("User", back_populates="company", cascade="all, delete-orphan")
     proposals = relationship("Proposal", back_populates="company", cascade="all, delete-orphan")
     emails = relationship("Email", back_populates="company", cascade="all, delete-orphan")
+    email_accounts = relationship("EmailAccount", back_populates="company", cascade="all, delete-orphan")
     documents = relationship("KnowledgeDocument", back_populates="company", cascade="all, delete-orphan")
     reviews = relationship("Review", back_populates="company", cascade="all, delete-orphan")
     audit_logs = relationship("AuditLog", back_populates="company", cascade="all, delete-orphan")

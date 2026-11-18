@@ -293,3 +293,15 @@ All developers must adhere to these 7 architectural invariants:
 - Multi-channel ingestion (web forms, supplier portals, API endpoints, RFP platforms).
 - Multi-provider email support (Microsoft Outlook / Exchange, IMAP).
 - Distributed background execution via Celery / Redis when processing volume demands it.
+
+
+---
+
+## 10. Local Development & Documentation
+
+For comprehensive guides on local testing, setup, architecture, and completion audits:
+
+- **[Local Setup Guide](docs/development/local-setup.md)**: Environment setup, mock provider config, and local execution.
+- **[System Architecture Guide](docs/development/architecture.md)**: State machine, row locking, and quarantine architecture.
+- **[Local Testing Guide](docs/development/local-testing-guide.md)**: Automated test commands and 13-step synthetic RFP walkthrough.
+- **[Local Completion Report](docs/development/local-development-completion-report.md)**: Full verification status and pre-production audit.

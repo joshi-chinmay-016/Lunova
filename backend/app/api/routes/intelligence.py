@@ -83,9 +83,9 @@ async def get_knowledge_graph():
         {"id": "kb-compliance", "name": "Regulatory & SLA Guarantees", "group": "knowledge", "val": 20, "color": "#8b5cf6", "desc": "99.95% Uptime, GDPR, HIPAA, Tamper-Evident Audit Trails"},
         
         # Vector Embedding Chunks
-        {"id": "vec-chunk-01", "name": "Chunk: OAuth2 JWT Token Flow", "group": "chunk", "val": 12, "color": "#38bdf8", "desc": "Dim 1536 cosine similarity 0.96"},
-        {"id": "vec-chunk-02", "name": "Chunk: Tenant SQL Scoping Filter", "group": "chunk", "val": 12, "color": "#60a5fa", "desc": "Dim 1536 cosine similarity 0.94"},
-        {"id": "vec-chunk-03", "name": "Chunk: Append-only Audit Log Stream", "group": "chunk", "val": 12, "color": "#34d399", "desc": "Dim 1536 cosine similarity 0.91"},
+        {"id": "vec-chunk-01", "name": "Chunk: OAuth2 JWT Token Flow", "group": "chunk", "val": 12, "color": "#38bdf8", "desc": "Dim 768 cosine similarity 0.96"},
+        {"id": "vec-chunk-02", "name": "Chunk: Tenant SQL Scoping Filter", "group": "chunk", "val": 12, "color": "#60a5fa", "desc": "Dim 768 cosine similarity 0.94"},
+        {"id": "vec-chunk-03", "name": "Chunk: Append-only Audit Log Stream", "group": "chunk", "val": 12, "color": "#34d399", "desc": "Dim 768 cosine similarity 0.91"},
         {"id": "vec-chunk-04", "name": "Chunk: Disaster Recovery & Replication", "group": "chunk", "val": 10, "color": "#a78bfa", "desc": "RPO 1min, RTO 15min failover"},
         {"id": "vec-chunk-05", "name": "Chunk: REST API Rate Limiting", "group": "chunk", "val": 10, "color": "#f43f5e", "desc": "Token bucket 1000 req/sec per tenant"},
 
@@ -127,7 +127,7 @@ async def get_knowledge_graph():
         "metrics": {
             "total_documents": 48,
             "embedded_vectors": 1284,
-            "index_dimension": 1536,
+            "index_dimension": 768,
             "mean_retrieval_latency_ms": 14.2,
             "grounding_accuracy": 0.984
         }

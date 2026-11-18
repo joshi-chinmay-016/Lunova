@@ -5,7 +5,12 @@ import {
   fetchTeamMembers,
   fetchAIConfiguration,
   updateAIConfiguration,
-  fetchIntegrations
+  fetchIntegrations,
+  fetchGmailStatus,
+  getGmailAuthorizeUrl,
+  disconnectGmail,
+  syncGmailInbox,
+  GmailConnectionStatus,
 } from '@/lib/api/client';
 import { CompanySettings, TeamMember, AIConfiguration, IntegrationItem } from '@/types/settings';
 
@@ -54,5 +59,35 @@ export function useIntegrations() {
   return useQuery<IntegrationItem[]>({
     queryKey: ['settings', 'integrations'],
     queryFn: fetchIntegrations,
+  });
+}
+
+export function useGmailStatus() {
+  return useQuery<GmailConnectionStatus>({
+    queryKey: ['integrations', 'gmail', 'status'],
+    queryFn: fetchGmailStatus,
+  });
+}
+
+export function useDisconnectGmail() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: disconnectGmail,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['settings', 'integrations'] });
+      queryClient.invalidateQueries({ queryKey: ['integrations', 'gmail', 'status'] });
+    },
+  });
+}
+
+export function useSyncGmail() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: syncGmailInbox,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['proposals'] });
+      queryClient.invalidateQueries({ queryKey: ['settings', 'integrations'] });
+      queryClient.invalidateQueries({ queryKey: ['integrations', 'gmail', 'status'] });
+    },
   });
 }

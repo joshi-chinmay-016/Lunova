@@ -4,18 +4,52 @@ from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.models.proposal import Proposal, ProposalStatus
-from app.models.email import Email
+from app.models.email import Email, EmailDirection
 from app.models.review import Review
 from app.models.audit import AuditLog
+from app.models.attachment import EmailAttachment
 from app.platform.schemas.proposal import ProposalCreate
 from app.platform.schemas.review import ReviewCreate
 from app.core.database import async_session_maker
+from app.core.config import settings
 
 from intelligence.service import IntelligenceService
-from intelligence.models.proposal import ProposalContext
+from intelligence.models.proposal import ProposalContext, ParsedAttachment
+
 logger = logging.getLogger(__name__)
 
+
 class ProposalService:
+    @staticmethod
+    def get_llm_provider():
+        from app.core.config import settings
+        name = (settings.LLM_PROVIDER or "").strip().lower()
+        if name == "gemini":
+            from intelligence.providers.gemini import GeminiProvider
+            return GeminiProvider()
+        elif name in ("mock", "fake"):
+            if settings.ENVIRONMENT == "production":
+                raise ValueError(f"Mock provider '{settings.LLM_PROVIDER}' is not permitted in production environment.")
+            from intelligence.providers.mock import MockLLMProvider
+            return MockLLMProvider()
+        else:
+            raise ValueError(f"Unsupported or missing LLM_PROVIDER: {settings.LLM_PROVIDER}")
+
+    @staticmethod
+    def get_embedding_provider():
+        from app.core.config import settings
+        name = (settings.EMBEDDING_PROVIDER or "").strip().lower()
+        if name == "gemini":
+            from intelligence.providers.gemini_embedding import GeminiEmbeddingProvider
+            return GeminiEmbeddingProvider()
+        elif name in ("mock", "fake"):
+            if settings.ENVIRONMENT == "production":
+                raise ValueError(f"Mock provider '{settings.EMBEDDING_PROVIDER}' is not permitted in production environment.")
+            from intelligence.providers.mock import MockEmbeddingProvider
+            return MockEmbeddingProvider()
+        else:
+            raise ValueError(f"Unsupported or missing EMBEDDING_PROVIDER: {settings.EMBEDDING_PROVIDER}")
+
     @staticmethod
     async def get_proposal(db: AsyncSession, proposal_id: UUID, company_id: UUID) -> Proposal:
         stmt = select(Proposal).filter(Proposal.id == proposal_id, Proposal.company_id == company_id)
@@ -29,7 +63,7 @@ class ProposalService:
         proposal = Proposal(
             company_id=company_id,
             title=data.title or "Untitled Proposal",
-            status=ProposalStatus.RECEIVED
+            status=ProposalStatus.RECEIVED,
         )
         db.add(proposal)
         await db.flush()
@@ -40,9 +74,9 @@ class ProposalService:
             proposal_id=proposal.id,
             subject=data.subject,
             body=data.content,
-            direction="INCOMING",
+            direction=EmailDirection.INCOMING,
             sender_address=data.sender_address,
-            recipient_address=data.recipient_address
+            recipient_address=data.recipient_address,
         )
         db.add(email)
 
@@ -51,7 +85,7 @@ class ProposalService:
             company_id=company_id,
             proposal_id=proposal.id,
             action="CREATED",
-            details="Proposal created from input"
+            details="Proposal created from input",
         )
         db.add(audit)
 
@@ -73,7 +107,10 @@ class ProposalService:
                 await db.commit()
 
                 # Get the initial email content
-                stmt = select(Email).filter(Email.proposal_id == proposal_id, Email.direction == "INCOMING").order_by(Email.created_at.asc())
+                stmt = select(Email).filter(
+                    Email.proposal_id == proposal_id,
+                    Email.direction == EmailDirection.INCOMING,
+                ).order_by(Email.created_at.asc())
                 result = await db.execute(stmt)
                 email = result.scalars().first()
                 if not email:
@@ -82,32 +119,36 @@ class ProposalService:
                 content = email.body
                 subject = email.subject
 
+                # Load attachments for this proposal
+                stmt_att = select(EmailAttachment).filter(
+                    EmailAttachment.proposal_id == proposal_id,
+                    EmailAttachment.company_id == company_id,
+                )
+                att_results = (await db.execute(stmt_att)).scalars().all()
+                parsed_attachments = []
+                for att in att_results:
+                    if att.parsing_status == "SUCCESS" and att.extracted_text:
+                        parsed_attachments.append(
+                            ParsedAttachment(
+                                filename=att.filename,
+                                content_type=att.content_type,
+                                extracted_text=att.extracted_text,
+                                status=att.parsing_status,
+                                page_count=att.page_count,
+                            )
+                        )
+
                 # 1. Integration with Intelligence Layer
                 context = ProposalContext(
                     proposal_id=str(proposal_id),
                     company_id=str(company_id),
                     subject=subject or "",
-                    body=content or ""
+                    body=content or "",
+                    attachments=parsed_attachments,
                 )
-                
-                from app.core.config import settings
-                if settings.LLM_PROVIDER == "gemini":
-                    from intelligence.providers.gemini import GeminiProvider
-                    llm = GeminiProvider()
-                elif settings.LLM_PROVIDER == "mock" and settings.ENVIRONMENT != "production":
-                    from intelligence.providers.mock import MockLLMProvider
-                    llm = MockLLMProvider()
-                else:
-                    raise ValueError(f"Unsupported or missing LLM_PROVIDER: {settings.LLM_PROVIDER}")
 
-                if settings.EMBEDDING_PROVIDER == "gemini":
-                    from intelligence.providers.gemini_embedding import GeminiEmbeddingProvider
-                    emb = GeminiEmbeddingProvider()
-                elif settings.EMBEDDING_PROVIDER == "mock" and settings.ENVIRONMENT != "production":
-                    from intelligence.providers.mock import MockEmbeddingProvider
-                    emb = MockEmbeddingProvider()
-                else:
-                    raise ValueError(f"Unsupported or missing EMBEDDING_PROVIDER: {settings.EMBEDDING_PROVIDER}")
+                llm = ProposalService.get_llm_provider()
+                emb = ProposalService.get_embedding_provider()
 
                 from app.platform.services.retriever_service import PlatformRetriever
                 platform_retriever = PlatformRetriever(embedding_provider=emb, top_k=settings.RETRIEVAL_TOP_K)
@@ -115,12 +156,12 @@ class ProposalService:
                 intelligence_service = IntelligenceService(
                     llm_provider=llm,
                     embedding_provider=emb,
-                    retriever=platform_retriever
+                    retriever=platform_retriever,
                 )
                 result = intelligence_service.analyze_proposal(context)
 
                 proposal.status = ProposalStatus.ANALYZED
-                db.add(AuditLog(company_id=company_id, proposal_id=proposal_id, action="ANALYZED", details=f"Confidence: {result.confidence.overall_score}"))
+                db.add(AuditLog(company_id=company_id, proposal_id=proposal_id, action="ANALYZED", details=f"Confidence: {result.confidence.overall_score if result.confidence else 'N/A'}"))
 
                 # Save generated proposal as an outgoing email (draft)
                 draft_body = ""
@@ -138,9 +179,9 @@ class ProposalService:
                     proposal_id=proposal_id,
                     subject=draft_subject,
                     body=draft_body,
-                    direction="OUTGOING",
+                    direction=EmailDirection.OUTGOING,
                     sender_address=email.recipient_address,
-                    recipient_address=email.sender_address
+                    recipient_address=email.sender_address,
                 )
                 db.add(outgoing_email)
 
@@ -168,7 +209,7 @@ class ProposalService:
             proposal_id=proposal_id,
             reviewer_id=user_id,
             comments=review_data.comments,
-            status="APPROVED"
+            status="APPROVED",
         )
         db.add(review)
 
@@ -191,7 +232,7 @@ class ProposalService:
             proposal_id=proposal_id,
             reviewer_id=user_id,
             comments=review_data.comments,
-            status="REJECTED"
+            status="REJECTED",
         )
         db.add(review)
 

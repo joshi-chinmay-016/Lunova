@@ -12,6 +12,8 @@ class ProposalStatus(str, enum.Enum):
     ANALYZED = "ANALYZED"
     REVIEW_REQUIRED = "REVIEW_REQUIRED"
     APPROVED = "APPROVED"
+    SENDING = "SENDING"
+    DISPATCH_UNCERTAIN = "DISPATCH_UNCERTAIN"
     SENT = "SENT"
     FAILED = "FAILED"
     REJECTED = "REJECTED"
@@ -31,3 +33,4 @@ class Proposal(Base):
     emails = relationship("Email", back_populates="proposal", cascade="all, delete-orphan")
     reviews = relationship("Review", back_populates="proposal", cascade="all, delete-orphan")
     audit_logs = relationship("AuditLog", back_populates="proposal", cascade="all, delete-orphan")
+    attachments = relationship("EmailAttachment", back_populates="proposal")
