@@ -6,25 +6,27 @@
 
 :root {
   /* =========================================================================
-     LUNOVA DESIGN TOKENS — "LUNAR OBSERVATORY"
-     Default: Night Side (Dark)
+     LUNOVA DESIGN TOKENS — CRISP ENTERPRISE LIGHT THEME ONLY
      ========================================================================= */
-  --bg: #0D1117;
-  --surface-1: #141A23;
-  --surface-2: #1B2330;
-  --surface-3: #232D3D;
-  --line: #2A3647;
-  --text: #ECE8DF;
-  --text-muted: #8B95A5;
-  --accent: #E8C26A;        /* Moon Gold: 1 primary action per view */
-  --accent-soft: rgba(232, 194, 106, 0.12);
-  --accent-glow: rgba(232, 194, 106, 0.25);
-  --evidence: #4FD1B5;      /* Verified Teal: sources, verified */
-  --evidence-soft: rgba(79, 209, 181, 0.12);
-  --gap: #FF7A66;           /* Eclipse Coral: missing info, errors */
-  --gap-soft: rgba(255, 122, 102, 0.12);
-  --info: #7AA2FF;          /* Dusk Blue: links, subtle info */
-  --info-soft: rgba(122, 162, 255, 0.12);
+  --bg: #F8FAFC;            /* Clean light slate canvas */
+  --surface-1: #FFFFFF;     /* Solid pure white cards */
+  --surface-2: #F1F5F9;     /* Subtle secondary surface */
+  --surface-3: #E2E8F0;     /* Muted border & accent surface */
+  --line: #E2E8F0;          /* Crisp 1px hairline border */
+  --line-strong: #CBD5E1;   /* Defined structural dividers */
+  --text: #0F172A;          /* Deep slate ink — Maximum contrast & zero blur */
+  --text-muted: #475569;    /* Crisp secondary slate */
+  --text-subtle: #64748B;   /* Subtle labels & metadata */
+  --accent: #2563EB;        /* Primary Lunova Blue */
+  --accent-hover: #1D4ED8;  /* Focused blue */
+  --accent-soft: rgba(37, 99, 235, 0.08);
+  --accent-glow: rgba(37, 99, 235, 0.16);
+  --evidence: #0D9488;      /* Verified Teal */
+  --evidence-soft: rgba(13, 148, 136, 0.10);
+  --gap: #E11D48;           /* Missing info / Attention Coral */
+  --gap-soft: rgba(225, 29, 72, 0.10);
+  --info: #2563EB;          /* Dusk Blue */
+  --info-soft: rgba(37, 99, 235, 0.08);
 
   /* Radius & Motion */
   --radius-card: 14px;
@@ -40,24 +42,27 @@
   --duration-deliberate: 520ms;
 }
 
-[data-theme='day'] {
-  /* Day Side (Light Theme) */
-  --bg: #F6F3EC;            /* Warm paper */
+[data-theme='day'], [data-theme='night'] {
+  /* Strictly Light Theme Only — Override any legacy dark variables */
+  --bg: #F8FAFC;
   --surface-1: #FFFFFF;
-  --surface-2: #EFEBE2;
-  --surface-3: #E5E0D5;
-  --line: #DDD7CA;
-  --text: #161B26;
-  --text-muted: #687182;
-  --accent: #B8892B;        /* Darker Moon Gold for AA contrast */
-  --accent-soft: rgba(184, 137, 43, 0.12);
-  --accent-glow: rgba(184, 137, 43, 0.2);
-  --evidence: #1F8F7A;      /* Deep Verified Teal */
-  --evidence-soft: rgba(31, 143, 122, 0.12);
-  --gap: #D9533F;           /* Deep Eclipse Coral */
-  --gap-soft: rgba(217, 83, 63, 0.12);
-  --info: #3B6ACC;          /* Deep Dusk Blue */
-  --info-soft: rgba(59, 106, 204, 0.12);
+  --surface-2: #F1F5F9;
+  --surface-3: #E2E8F0;
+  --line: #E2E8F0;
+  --line-strong: #CBD5E1;
+  --text: #0F172A;
+  --text-muted: #475569;
+  --text-subtle: #64748B;
+  --accent: #2563EB;
+  --accent-hover: #1D4ED8;
+  --accent-soft: rgba(37, 99, 235, 0.08);
+  --accent-glow: rgba(37, 99, 235, 0.16);
+  --evidence: #0D9488;
+  --evidence-soft: rgba(13, 148, 136, 0.10);
+  --gap: #E11D48;
+  --gap-soft: rgba(225, 29, 72, 0.10);
+  --info: #2563EB;
+  --info-soft: rgba(37, 99, 235, 0.08);
 }
 
 * {
@@ -67,8 +72,9 @@
 html {
   scroll-behavior: smooth;
   font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: subpixel-antialiased;
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
@@ -77,23 +83,12 @@ body {
   min-height: 100vh;
   font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   line-height: 1.6;
-  font-size: 14px;
-  transition: background-color 320ms var(--ease-lunova), color 320ms var(--ease-lunova);
+  font-size: 15px;
   position: relative;
   overflow-x: hidden;
-}
-
-/* Subtle Film-Grain Overlay (3% opacity) */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 99999;
-  opacity: 0.035;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Tabular Numerals for metrics, numbers and citations */
@@ -105,20 +100,21 @@ body::before {
   font-family: 'Roboto Mono', monospace;
 }
 
-/* Eyebrow Micro-Label (11-12px, +0.08em tracking) */
+/* Eyebrow Micro-Label */
 .eyebrow {
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--text-muted);
 }
 
-/* Lunar Observatory Hairline Cards */
+/* Crisp Solid Cards — No blurry backdrop filter */
 .lunar-card {
   background-color: var(--surface-1);
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 1px 2px rgba(15, 23, 42, 0.02);
   transition: transform var(--duration-normal) var(--ease-lunova),
               border-color var(--duration-normal) var(--ease-lunova),
               box-shadow var(--duration-normal) var(--ease-lunova);
@@ -128,6 +124,7 @@ body::before {
   background-color: var(--surface-1);
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 1px 2px rgba(15, 23, 42, 0.02);
   transition: transform var(--duration-normal) var(--ease-lunova),
               border-color var(--duration-normal) var(--ease-lunova),
               box-shadow var(--duration-normal) var(--ease-lunova);
@@ -136,50 +133,92 @@ body::before {
 
 .lunar-card-interactive:hover {
   transform: translateY(-2px);
-  border-color: rgba(232, 194, 106, 0.35);
-  box-shadow: 0 4px 20px -2px var(--accent-glow);
+  border-color: var(--accent);
+  box-shadow: 0 6px 20px -4px rgba(37, 99, 235, 0.12);
 }
 
-[data-theme='day'] .lunar-card-interactive:hover {
-  border-color: rgba(184, 137, 43, 0.45);
-  box-shadow: 0 4px 16px -2px rgba(184, 137, 43, 0.15);
+/* Generous Button Base Styles to comfortably hold text */
+.btn-solid-primary {
+  min-height: 46px;
+  padding: 0.65rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  border-radius: 0.75rem;
+  background-color: var(--accent);
+  color: #FFFFFF;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px -2px rgba(37, 99, 235, 0.25);
+  transition: all 150ms ease;
+  cursor: pointer;
 }
 
-/* Custom Scrollbars */
+.btn-solid-primary:hover {
+  background-color: var(--accent-hover);
+  box-shadow: 0 4px 14px -2px rgba(37, 99, 235, 0.35);
+  transform: translateY(-1px);
+}
+
+.btn-solid-secondary {
+  min-height: 46px;
+  padding: 0.65rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  border-radius: 0.75rem;
+  background-color: #FFFFFF;
+  color: var(--text);
+  border: 1.5px solid var(--line);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  white-space: nowrap;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  transition: all 150ms ease;
+  cursor: pointer;
+}
+
+.btn-solid-secondary:hover {
+  background-color: var(--surface-2);
+  border-color: var(--line-strong);
+  color: var(--accent);
+}
+
+/* Custom Crisp Scrollbars */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--surface-1);
+  background: var(--surface-2);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--line);
+  background: var(--line-strong);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
+  background: var(--text-subtle);
 }
 
-/* Focus Visible Moon Gold Ring */
+/* Focus Visible Blue Ring */
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
-/* Pulse / Shimmer Animations for Moon Phases */
+/* Pulse / Shimmer Animations */
 @keyframes moonShimmer {
   0% {
-    opacity: 0.6;
-    filter: drop-shadow(0 0 2px var(--accent));
+    opacity: 0.7;
   }
   50% {
     opacity: 1;
-    filter: drop-shadow(0 0 8px var(--accent));
   }
   100% {
-    opacity: 0.6;
-    filter: drop-shadow(0 0 2px var(--accent));
+    opacity: 0.7;
   }
 }
 
@@ -189,10 +228,10 @@ body::before {
 
 @keyframes eclipsePulse {
   0%, 100% {
-    filter: drop-shadow(0 0 3px var(--gap));
+    opacity: 0.8;
   }
   50% {
-    filter: drop-shadow(0 0 9px var(--gap));
+    opacity: 1;
   }
 }
 

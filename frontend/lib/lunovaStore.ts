@@ -68,29 +68,29 @@ function subscribe(listener: () => void) {
 
 let currentState: LunovaStoreState = {
   settings: {
-    theme: 'night',
+    theme: 'day',
     reducedMotion: false,
     disable3D: false,
     soundEnabled: false,
   },
-  setTheme: (theme: 'night' | 'day') => {
+  setTheme: (_theme: 'night' | 'day') => {
     if (typeof document !== 'undefined') {
-      document.documentElement.setAttribute('data-theme', theme);
+      document.documentElement.setAttribute('data-theme', 'day');
     }
     currentState = {
       ...currentState,
-      settings: { ...currentState.settings, theme },
+      settings: { ...currentState.settings, theme: 'day' },
     };
     notify();
   },
   toggleTheme: () => {
-    const next = currentState.settings.theme === 'night' ? 'day' : 'night';
+    // Keep strictly light theme
     if (typeof document !== 'undefined') {
-      document.documentElement.setAttribute('data-theme', next);
+      document.documentElement.setAttribute('data-theme', 'day');
     }
     currentState = {
       ...currentState,
-      settings: { ...currentState.settings, theme: next },
+      settings: { ...currentState.settings, theme: 'day' },
     };
     notify();
   },
@@ -122,8 +122,8 @@ let currentState: LunovaStoreState = {
     notify();
   },
 
-  proposals: initialProposals,
-  activeProposalId: 'prop-101',
+  proposals: [],
+  activeProposalId: null,
   setActiveProposalId: (id: string | null) => {
     currentState = { ...currentState, activeProposalId: id };
     notify();
@@ -218,7 +218,7 @@ let currentState: LunovaStoreState = {
     notify();
   },
 
-  documents: initialDocuments,
+  documents: [],
   addDocument: (doc: DocumentItem) => {
     currentState = {
       ...currentState,
@@ -272,9 +272,9 @@ let currentState: LunovaStoreState = {
   resetSampleData: () => {
     currentState = {
       ...currentState,
-      proposals: initialProposals,
-      documents: initialDocuments,
-      activeProposalId: 'prop-101',
+      proposals: [],
+      documents: [],
+      activeProposalId: null,
     };
     notify();
   },

@@ -18,18 +18,18 @@ export const ToastContainer: React.FC = () => {
       {toasts.map((toast: any) => (
         <div
           key={toast.id}
-          className="pointer-events-auto p-3.5 rounded-card bg-surface-2 border border-line shadow-2xl text-text text-xs flex items-center justify-between gap-3 animate-in fade-in slide-in-from-bottom-2 duration-200"
+          className="pointer-events-auto p-4 rounded-2xl bg-white border border-slate-200 shadow-xl text-slate-900 text-sm flex items-center justify-between gap-3 animate-in fade-in slide-in-from-bottom-2 duration-200"
         >
-          <div className="flex items-center gap-2.5 min-w-0">
+          <div className="flex items-center gap-3 min-w-0">
             {toast.phase ? (
               <PhaseGlyph phase={toast.phase} size="sm" />
             ) : (
-              <span className="w-2 h-2 rounded-full bg-accent shrink-0" />
+              <span className="w-2.5 h-2.5 rounded-full bg-blue-600 shrink-0" />
             )}
             <div className="truncate">
-              <p className="font-semibold text-text truncate">{toast.title}</p>
+              <p className="font-bold text-slate-900 truncate">{toast.title}</p>
               {toast.message && (
-                <p className="text-[11px] text-text-muted truncate">{toast.message}</p>
+                <p className="text-xs text-slate-600 truncate mt-0.5">{toast.message}</p>
               )}
             </div>
           </div>

@@ -21,11 +21,11 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
 
   useEffect(() => {
     setMounted(true);
-    // Initialize theme attribute on html root
+    // Enforce pure light theme
     if (typeof document !== 'undefined') {
-      document.documentElement.setAttribute('data-theme', settings.theme);
+      document.documentElement.setAttribute('data-theme', 'day');
     }
-  }, [settings.theme]);
+  }, []);
 
   // Public landing page and login page render without the authenticated app shell
   const isPublicPage = pathname === '/' || pathname === '/login';

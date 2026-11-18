@@ -481,7 +481,7 @@ export default function OperationsDashboard() {
             <div>
               <div className="text-xs font-bold text-ink">Company Knowledge Base</div>
               <div className="text-[11px] text-slate">
-                {documents?.length || 5} Verified Documents Indexed
+                {documents?.length ?? 0} Verified Documents Indexed
               </div>
             </div>
           </div>

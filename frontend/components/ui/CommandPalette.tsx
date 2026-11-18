@@ -102,44 +102,50 @@ export const CommandPalette: React.FC = () => {
         <div className="max-h-[380px] overflow-y-auto p-2 space-y-4">
           {/* Quick Actions */}
           <div>
-            <div className="px-3 py-1 text-[10px] font-mono font-semibold uppercase tracking-wider text-text-muted">
+            <div className="px-3 py-1 text-[11px] font-mono font-bold uppercase tracking-wider text-text-muted">
               Quick Actions
             </div>
-            <div className="space-y-0.5">
-              <button
-                onClick={() => {
-                  toggleTheme();
-                  setCommandPaletteOpen(false);
-                  addToast({
-                    title: `Switched to ${settings.theme === 'night' ? 'Day Side' : 'Night Side'}`,
-                    type: 'success',
-                  });
-                }}
-                className="w-full flex items-center justify-between px-3 py-2 rounded-md hover:bg-surface-2 text-xs text-text transition-colors text-left"
-              >
-                <div className="flex items-center gap-2.5">
-                  {settings.theme === 'night' ? (
-                    <Sun className="w-4 h-4 text-accent" />
-                  ) : (
-                    <Moon className="w-4 h-4 text-accent" />
-                  )}
-                  <span>Toggle {settings.theme === 'night' ? 'Day Side (Light)' : 'Night Side (Dark)'} Theme</span>
-                </div>
-                <ArrowRight className="w-3.5 h-3.5 text-text-muted" />
-              </button>
-
+            <div className="space-y-1">
               <button
                 onClick={() => {
                   setCommandPaletteOpen(false);
                   router.push('/dashboard');
                 }}
-                className="w-full flex items-center justify-between px-3 py-2 rounded-md hover:bg-surface-2 text-xs text-text transition-colors text-left"
+                className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl hover:bg-surface-2 text-sm text-text font-medium transition-colors text-left cursor-pointer"
               >
-                <div className="flex items-center gap-2.5">
-                  <Compass className="w-4 h-4 text-accent" />
+                <div className="flex items-center gap-3">
+                  <Compass className="w-4.5 h-4.5 text-accent" />
                   <span>Go to Observatory Dashboard</span>
                 </div>
-                <ArrowRight className="w-3.5 h-3.5 text-text-muted" />
+                <ArrowRight className="w-4 h-4 text-text-muted" />
+              </button>
+
+              <button
+                onClick={() => {
+                  setCommandPaletteOpen(false);
+                  router.push('/proposals');
+                }}
+                className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl hover:bg-surface-2 text-sm text-text font-medium transition-colors text-left cursor-pointer"
+              >
+                <div className="flex items-center gap-3">
+                  <FileText className="w-4.5 h-4.5 text-accent" />
+                  <span>View All Proposals</span>
+                </div>
+                <ArrowRight className="w-4 h-4 text-text-muted" />
+              </button>
+
+              <button
+                onClick={() => {
+                  setCommandPaletteOpen(false);
+                  router.push('/knowledge-base');
+                }}
+                className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl hover:bg-surface-2 text-sm text-text font-medium transition-colors text-left cursor-pointer"
+              >
+                <div className="flex items-center gap-3">
+                  <BookOpen className="w-4.5 h-4.5 text-accent" />
+                  <span>Explore Company Knowledge Base</span>
+                </div>
+                <ArrowRight className="w-4 h-4 text-text-muted" />
               </button>
             </div>
           </div>
