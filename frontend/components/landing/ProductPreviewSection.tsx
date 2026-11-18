@@ -19,33 +19,33 @@ export const ProductPreviewSection: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'draft' | 'requirements' | 'evidence'>('draft');
 
   return (
-    <section className="relative py-24 sm:py-28 lg:py-32 bg-gradient-to-b from-white via-blue-50/25 to-slate-50/20 border-b border-blue-100/70 overflow-hidden">
+    <section className="relative py-14 sm:py-16 lg:py-20 bg-gradient-to-b from-white via-blue-50/25 to-slate-50/20 border-b border-blue-100/70 overflow-hidden">
       {/* Crisp geometric grid (no blur) */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(37,99,235,0.025)_1px,transparent_1px),linear-gradient(to_bottom,rgba(37,99,235,0.025)_1px,transparent_1px)] bg-[size:44px_44px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 lg:mb-16">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 sm:mb-10">
           <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200/90 text-xs font-semibold uppercase tracking-wider text-blue-700 mb-3 shadow-xs">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200/90 text-xs font-semibold uppercase tracking-wider text-blue-700 mb-2.5 shadow-xs">
               <Sparkles className="w-3.5 h-3.5 text-blue-600" />
               <span>Application Experience</span>
             </div>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 mb-3 leading-tight">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-slate-950 mb-2.5 leading-tight">
               Designed for clarity in <span className="text-blue-600">every proposal detail</span>.
             </h2>
-            <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-normal">
+            <p className="text-sm sm:text-base text-slate-800 leading-relaxed font-normal">
               The operational workspace brings RFP requirements, company evidence, and drafted responses into one high-density view.
             </p>
           </div>
 
-          <MagneticButton strength={0.25} className="shrink-0">
+          <MagneticButton strength={0.2} className="shrink-0">
             <Link
               href="/dashboard"
-              className="inline-flex items-center gap-2.5 h-12 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold shadow-md shadow-blue-500/25 hover:shadow-lg transition-all cursor-pointer"
+              className="inline-flex items-center justify-center gap-3 min-h-[50px] px-8 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm sm:text-base font-bold shadow-md shadow-blue-500/25 hover:shadow-lg transition-all cursor-pointer whitespace-nowrap"
             >
               <span>Open Live Dashboard</span>
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className="w-4 h-4 shrink-0" />
             </Link>
           </MagneticButton>
         </div>

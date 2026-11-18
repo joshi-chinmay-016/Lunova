@@ -26,21 +26,21 @@ const PRINCIPLES = [
 
 export const HumanControlSection: React.FC = () => {
   return (
-    <section id="trust" className="relative py-24 sm:py-28 lg:py-32 bg-slate-950 text-white border-b border-slate-900 overflow-hidden">
+    <section id="trust" className="relative py-14 sm:py-16 lg:py-20 bg-slate-950 text-white border-b border-slate-900 overflow-hidden">
       {/* Crisp geometric dark grid with subtle blue accents (no blur) */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(59,130,246,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(59,130,246,0.04)_1px,transparent_1px)] bg-[size:48px_48px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Header */}
-        <div className="max-w-2xl mb-12 lg:mb-16">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-xs font-semibold uppercase tracking-wider text-blue-400 mb-3 shadow-xs">
+        <div className="max-w-2xl mb-8 sm:mb-10">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-xs font-semibold uppercase tracking-wider text-blue-400 mb-2.5 shadow-xs">
             <UserCheck className="w-3.5 h-3.5 text-blue-400" />
             <span>Human Authority &amp; Enterprise Trust</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-white mb-3 leading-tight">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-white mb-2.5 leading-tight">
             The draft is generated. <span className="text-blue-400">The decision is yours.</span>
           </h2>
-          <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-normal">
+          <p className="text-sm sm:text-base text-slate-200 leading-relaxed font-normal">
             Lunova helps prepare the response. Your team remains responsible for reviewing the evidence, resolving missing details, and approving what goes out.
           </p>
         </div>

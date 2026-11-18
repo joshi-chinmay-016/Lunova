@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
-import { useAuth } from '@/hooks/useAuth';
+import { usePathname } from 'next/navigation';
+import { useLunovaStore } from '@/lib/lunovaStore';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
+import { ToastContainer } from '@/components/ui/ToastContainer';
+import { CommandPalette } from '@/components/ui/CommandPalette';
 
 export interface AppShellProps {
   children: React.ReactNode;
@@ -12,57 +14,57 @@ export interface AppShellProps {
 
 export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const pathname = usePathname();
-  const router = useRouter();
-  const { token, isLoading } = useAuth();
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const { settings, setTheme } = useLunovaStore();
+  const [isRailCollapsed, setIsRailCollapsed] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    // Initialize theme attribute on html root
+    if (typeof document !== 'undefined') {
+      document.documentElement.setAttribute('data-theme', settings.theme);
+    }
+  }, [settings.theme]);
 
-  // Public pages that do not require authentication or dashboard shell
+  // Public landing page and login page render without the authenticated app shell
   const isPublicPage = pathname === '/' || pathname === '/login';
 
-  useEffect(() => {
-    if (mounted && !token && !isLoading && !isPublicPage) {
-      router.push('/login');
-    }
-  }, [mounted, token, isLoading, isPublicPage, router]);
-
-  // If on landing page or login page, render children directly without dashboard shell
   if (isPublicPage) {
-    return <main className="min-h-screen bg-transparent">{children}</main>;
-  }
-
-  // Before client hydration or if not authenticated on protected routes, show loading placeholder
-  if (!mounted || !token) {
     return (
-      <div className="min-h-screen bg-[#F4F5F7] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-          <p className="text-xs text-gray-500 font-medium">Authenticating workspace session...</p>
-        </div>
-      </div>
+      <main className="min-h-screen">
+        {children}
+        <ToastContainer />
+      </main>
     );
   }
 
   return (
-    <div className="min-h-screen bg-paper flex">
-      {/* Persistent Left Sidebar */}
+    <div className="min-h-screen bg-bg text-text flex">
+      {/* Collapsible Left Rail */}
       <Sidebar
-        isOpen={isMobileSidebarOpen}
-        onClose={() => setIsMobileSidebarOpen(false)}
+        isCollapsed={isRailCollapsed}
+        onToggleCollapse={() => setIsRailCollapsed(!isRailCollapsed)}
+        isMobileOpen={isMobileOpen}
+        onMobileClose={() => setIsMobileOpen(false)}
       />
 
-      {/* Main App Container */}
-      <div className="flex-1 flex flex-col min-w-0">
-        <Header onOpenMobileMenu={() => setIsMobileSidebarOpen(true)} />
+      {/* Main Observatory Content Viewport */}
+      <div
+        className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+          isRailCollapsed ? 'lg:pl-[68px]' : 'lg:pl-60'
+        }`}
+      >
+        <Header onOpenMobileMenu={() => setIsMobileOpen(true)} />
 
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto animate-in fade-in duration-150">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto animate-in fade-in duration-200">
           {children}
         </main>
       </div>
+
+      {/* Global Overlays */}
+      <ToastContainer />
+      <CommandPalette />
     </div>
   );
 };

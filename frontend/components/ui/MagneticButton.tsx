@@ -14,7 +14,7 @@ export const MagneticButton: React.FC<MagneticButtonProps> = ({
   children,
   className = '',
   onClick,
-  strength = 0.3,
+  strength = 0.2,
 }) => {
   const ref = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -25,8 +25,8 @@ export const MagneticButton: React.FC<MagneticButtonProps> = ({
     const { left, top, width, height } = ref.current.getBoundingClientRect();
     const centerX = left + width / 2;
     const centerY = top + height / 2;
-    const x = (clientX - centerX) * strength;
-    const y = (clientY - centerY) * strength;
+    const x = Math.round((clientX - centerX) * strength);
+    const y = Math.round((clientY - centerY) * strength);
     setPosition({ x, y });
   };
 
@@ -40,9 +40,10 @@ export const MagneticButton: React.FC<MagneticButtonProps> = ({
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       animate={{ x: position.x, y: position.y }}
-      transition={{ type: 'spring', stiffness: 220, damping: 14, mass: 0.15 }}
+      transition={{ type: 'spring', stiffness: 260, damping: 18, mass: 0.1 }}
       onClick={onClick}
-      className={`inline-block ${className}`}
+      className={`inline-flex items-center justify-center ${className}`}
+      style={{ WebkitFontSmoothing: 'subpixel-antialiased' }}
     >
       {children}
     </motion.div>

@@ -14,11 +14,36 @@ export const LandingHero: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(true);
 
   useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.play().catch(() => {
-        // Autoplay fallback handling
-      });
-    }
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.muted = true;
+    const startPlayback = () => {
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => setIsPlaying(true))
+          .catch((err) => {
+            console.warn('Autoplay pending user interaction:', err);
+          });
+      }
+    };
+
+    startPlayback();
+
+    const onUserInteract = () => {
+      startPlayback();
+    };
+
+    window.addEventListener('click', onUserInteract, { once: true, passive: true });
+    window.addEventListener('scroll', onUserInteract, { once: true, passive: true });
+    window.addEventListener('touchstart', onUserInteract, { once: true, passive: true });
+
+    return () => {
+      window.removeEventListener('click', onUserInteract);
+      window.removeEventListener('scroll', onUserInteract);
+      window.removeEventListener('touchstart', onUserInteract);
+    };
   }, []);
 
   const togglePlay = () => {
@@ -33,21 +58,21 @@ export const LandingHero: React.FC = () => {
   };
 
   return (
-    <section className="relative pt-32 pb-24 md:pt-40 md:pb-32 lg:pt-44 lg:pb-36 bg-gradient-to-b from-blue-50/80 via-white to-sky-50/40 border-b border-blue-100/80 overflow-hidden">
+    <section className="relative pt-28 pb-14 sm:pt-32 sm:pb-16 md:pt-36 md:pb-20 bg-gradient-to-b from-blue-50/90 via-sky-50/40 to-slate-50/30 border-b border-blue-100 overflow-hidden">
       {/* Crisp non-blurry geometric background grid */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(37,99,235,0.035)_1px,transparent_1px),linear-gradient(to_bottom,rgba(37,99,235,0.035)_1px,transparent_1px)] bg-[size:48px_48px] pointer-events-none" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(37,99,235,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(37,99,235,0.04)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
 
-      {/* Crisp light blue subtle angular accents (no blur) */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-blue-100/40 via-sky-50/20 to-transparent pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-blue-100/30 via-slate-50/20 to-transparent pointer-events-none" />
+      {/* Crisp light blue subtle geometric corner accents (no blur) */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-blue-100/50 via-sky-50/30 to-transparent pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-blue-100/40 via-slate-50/30 to-transparent pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Asymmetric Editorial Hero Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
           {/* Left Column (7 Cols): Refined, Professional Typography & Action */}
           <div className="lg:col-span-7 space-y-6 z-10">
             {/* Eyebrow Label with alive pulse */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50/90 border border-blue-200/80 text-xs font-semibold text-blue-700 tracking-wide shadow-sm">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50/95 border border-blue-200 text-xs font-bold text-blue-800 tracking-wide shadow-sm">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-600" />
@@ -56,7 +81,7 @@ export const LandingHero: React.FC = () => {
             </div>
 
             {/* Restrained Enterprise Headline */}
-            <h1 className="text-3xl sm:text-4xl md:text-[42px] lg:text-[46px] font-extrabold tracking-tight text-slate-900 leading-[1.15]">
+            <h1 className="text-3xl sm:text-4xl md:text-[42px] lg:text-[46px] font-extrabold tracking-tight text-slate-950 leading-[1.15]">
               Your company&apos;s knowledge.{' '}
               <span className="text-blue-600 block sm:inline">
                 Ready for the next proposal.
@@ -64,31 +89,31 @@ export const LandingHero: React.FC = () => {
             </h1>
 
             {/* Typewriter Accent */}
-            <div className="text-slate-700">
+            <div className="text-slate-800 font-medium">
               <TypewriterText />
             </div>
 
             {/* Professional Supporting Copy */}
-            <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-normal max-w-xl">
+            <p className="text-sm sm:text-base text-slate-800 leading-relaxed font-normal max-w-xl">
               Lunova turns incoming proposal requests into evidence-backed drafts, bringing company knowledge, requirements, and human review into one controlled workflow.
             </p>
 
-            {/* Magnetic Action Buttons */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-3">
-              <MagneticButton strength={0.25}>
+            {/* Magnetic Action Buttons - Larger & Generously Padded to easily hold text */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 pt-2">
+              <MagneticButton strength={0.2}>
                 <Link
                   href="/dashboard"
-                  className="group inline-flex items-center justify-center gap-2.5 h-12 px-7 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm sm:text-base font-bold shadow-md shadow-blue-500/25 hover:shadow-lg transition-all duration-200 cursor-pointer"
+                  className="group inline-flex items-center justify-center gap-3 min-h-[54px] px-8 sm:px-10 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-base font-bold shadow-md shadow-blue-500/25 hover:shadow-lg transition-all duration-200 cursor-pointer whitespace-nowrap"
                 >
                   <span>Explore Lunova</span>
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="w-4.5 h-4.5 group-hover:translate-x-1 transition-transform shrink-0" />
                 </Link>
               </MagneticButton>
 
-              <MagneticButton strength={0.2}>
+              <MagneticButton strength={0.15}>
                 <a
                   href="#how-it-works"
-                  className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-xl bg-white hover:bg-blue-50/60 text-slate-700 hover:text-blue-700 border border-slate-300 hover:border-blue-300 text-sm sm:text-base font-semibold shadow-sm transition-all duration-200 cursor-pointer"
+                  className="inline-flex items-center justify-center gap-2.5 min-h-[54px] px-8 sm:px-10 py-3.5 rounded-xl bg-white hover:bg-blue-50/80 text-slate-800 hover:text-blue-700 border-2 border-slate-200 hover:border-blue-300 text-base font-bold shadow-sm transition-all duration-200 cursor-pointer whitespace-nowrap"
                 >
                   <span>See how it works</span>
                 </a>
@@ -96,8 +121,8 @@ export const LandingHero: React.FC = () => {
             </div>
 
             {/* Trust Micro-Assurance */}
-            <div className="pt-2 flex items-center gap-2 text-xs font-medium text-slate-500">
-              <ShieldCheck className="w-4 h-4 text-blue-600 shrink-0" />
+            <div className="pt-2 flex items-center gap-2 text-xs font-semibold text-slate-700">
+              <ShieldCheck className="w-4.5 h-4.5 text-blue-600 shrink-0" />
               <span>Human review stays in control — Zero ungrounded claims fabricated.</span>
             </div>
           </div>
@@ -107,14 +132,14 @@ export const LandingHero: React.FC = () => {
             {/* Hanging Status Badge with subtle pendulum swing */}
             <div className="hidden sm:flex absolute -top-8 right-8 z-30 flex-col items-center animate-hang origin-top pointer-events-none">
               <div className="w-[1.5px] h-6 bg-gradient-to-b from-blue-300 to-blue-500" />
-              <div className="px-3 py-1 rounded-full bg-white/95 backdrop-blur-sm border border-blue-200/90 text-[10px] font-mono font-bold text-blue-700 shadow-md flex items-center gap-1.5">
+              <div className="px-3.5 py-1 rounded-full bg-white border border-blue-200 text-[10px] font-mono font-bold text-blue-700 shadow-md flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 <span>ACTIVE GROUNDING • LIVE</span>
               </div>
             </div>
 
             {/* Alive Floating Micro-card */}
-            <div className="hidden sm:flex absolute -bottom-6 -left-6 z-30 p-3.5 rounded-2xl bg-white/95 backdrop-blur-md border border-blue-100 shadow-xl items-center gap-3 animate-float transition-transform hover:scale-105">
+            <div className="hidden sm:flex absolute -bottom-6 -left-6 z-30 p-3.5 rounded-2xl bg-white border border-blue-100 shadow-xl items-center gap-3 animate-float transition-transform hover:scale-105">
               <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-200 text-blue-600 flex items-center justify-center shadow-xs">
                 <Sparkles className="w-4.5 h-4.5 text-blue-600" />
               </div>
@@ -124,8 +149,8 @@ export const LandingHero: React.FC = () => {
               </div>
             </div>
 
-            {/* Video Container Card */}
-            <div className="group relative rounded-2xl border-2 border-slate-200/90 hover:border-blue-400/80 bg-slate-900 overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 aspect-[4/3] sm:aspect-[16/11] lg:aspect-[4/5]">
+            {/* Video Container Card - Autoplay Always Running */}
+            <div className="group relative rounded-2xl border-2 border-slate-200 hover:border-blue-400 bg-slate-900 overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 aspect-[4/3] sm:aspect-[16/11] lg:aspect-[4/5]">
               <video
                 ref={videoRef}
                 src={VIDEO_URL}
@@ -133,6 +158,12 @@ export const LandingHero: React.FC = () => {
                 muted
                 loop
                 playsInline
+                preload="auto"
+                onCanPlay={() => {
+                  if (videoRef.current && videoRef.current.paused) {
+                    videoRef.current.play().catch(() => {});
+                  }
+                }}
                 onPlay={() => setIsPlaying(true)}
                 onPause={() => setIsPlaying(false)}
                 className="w-full h-full object-cover opacity-90 transition-opacity"
@@ -158,7 +189,7 @@ export const LandingHero: React.FC = () => {
 
                 <button
                   onClick={togglePlay}
-                  className="p-2.5 rounded-full bg-slate-900/80 hover:bg-blue-600 text-white backdrop-blur-sm border border-white/20 transition-all hover:scale-110 active:scale-95 shadow-md cursor-pointer"
+                  className="p-2.5 rounded-full bg-slate-900/80 hover:bg-blue-600 text-white border border-white/20 transition-all hover:scale-110 active:scale-95 shadow-md cursor-pointer"
                   title={isPlaying ? 'Pause atmosphere' : 'Play atmosphere'}
                   aria-label={isPlaying ? 'Pause video' : 'Play video'}
                 >

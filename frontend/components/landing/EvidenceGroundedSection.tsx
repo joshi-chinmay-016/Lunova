@@ -6,23 +6,23 @@ import { VariableProximity } from './VariableProximity';
 
 export const EvidenceGroundedSection: React.FC = () => {
   return (
-    <section id="evidence" className="relative py-24 sm:py-28 lg:py-32 bg-gradient-to-b from-white via-blue-50/25 to-slate-50/20 border-b border-blue-100/70 overflow-hidden">
+    <section id="evidence" className="relative py-14 sm:py-16 lg:py-20 bg-gradient-to-b from-white via-blue-50/25 to-slate-50/20 border-b border-blue-100/70 overflow-hidden">
       {/* Crisp geometric grid (no blur) */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(37,99,235,0.025)_1px,transparent_1px),linear-gradient(to_bottom,rgba(37,99,235,0.025)_1px,transparent_1px)] bg-[size:44px_44px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Header with VariableProximity interaction */}
-        <div className="max-w-2xl mb-12 lg:mb-16">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200/90 text-xs font-semibold uppercase tracking-wider text-blue-700 mb-3 shadow-xs">
+        <div className="max-w-2xl mb-8 sm:mb-10">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200/90 text-xs font-semibold uppercase tracking-wider text-blue-700 mb-2.5 shadow-xs">
             <BookOpen className="w-3.5 h-3.5 text-blue-600" />
             <span>Company Grounding</span>
           </div>
 
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 mb-3 leading-tight">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-slate-950 mb-2.5 leading-tight">
             Answers grounded in <span className="text-blue-600">what your company knows</span>.
           </h2>
 
-          <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-normal mb-5">
+          <p className="text-sm sm:text-base text-slate-800 leading-relaxed font-normal mb-4">
             Relevant company information should inform each response, and gaps should remain visible instead of being hidden behind confident-sounding language.
           </p>
 
