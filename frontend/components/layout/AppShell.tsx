@@ -1,12 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useLunovaStore } from '@/lib/lunovaStore';
+import { useAuth } from '@/hooks/useAuth';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { ToastContainer } from '@/components/ui/ToastContainer';
 import { CommandPalette } from '@/components/ui/CommandPalette';
+import { Sparkles, ShieldCheck } from 'lucide-react';
 
 export interface AppShellProps {
   children: React.ReactNode;
@@ -14,21 +16,28 @@ export interface AppShellProps {
 
 export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const pathname = usePathname();
-  const { settings, setTheme } = useLunovaStore();
+  const router = useRouter();
+  const { isAuthenticated, isLoading } = useAuth();
   const [isRailCollapsed, setIsRailCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    // Enforce pure light theme
     if (typeof document !== 'undefined') {
       document.documentElement.setAttribute('data-theme', 'day');
     }
   }, []);
 
-  // Public landing page and login page render without the authenticated app shell
+  // Public routes: landing page and login page
   const isPublicPage = pathname === '/' || pathname === '/login';
+
+  // Route Protection & Redirect: if not on public route and not authenticated
+  useEffect(() => {
+    if (mounted && !isLoading && !isAuthenticated && !isPublicPage) {
+      router.replace(`/login?redirect=${encodeURIComponent(pathname)}`);
+    }
+  }, [mounted, isLoading, isAuthenticated, isPublicPage, pathname, router]);
 
   if (isPublicPage) {
     return (
@@ -39,8 +48,29 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
     );
   }
 
+  // Loading state while verifying enterprise JWT session
+  if (!mounted || isLoading || !isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <div className="w-12 h-12 rounded-2xl bg-slate-950 text-white flex items-center justify-center font-display font-bold text-lg shadow-md animate-pulse">
+            <span className="text-emerald-400">L</span>
+          </div>
+          <div className="space-y-1">
+            <h3 className="font-display font-bold text-slate-900 text-sm">
+              Verifying Enterprise JWT Credentials...
+            </h3>
+            <p className="text-xs text-slate-500 font-mono">
+              Redirecting to secure login station if unauthenticated
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-bg text-text flex">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex">
       {/* Collapsible Left Rail */}
       <Sidebar
         isCollapsed={isRailCollapsed}

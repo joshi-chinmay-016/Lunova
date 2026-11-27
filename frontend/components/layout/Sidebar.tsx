@@ -2,8 +2,9 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useLunovaStore } from '@/lib/lunovaStore';
+import { useAuth } from '@/hooks/useAuth';
 import { PhaseGlyph } from '@/components/ui/PhaseGlyph';
 import {
   Compass,
@@ -17,6 +18,8 @@ import {
   ShieldCheck,
   Building2,
   Sparkles,
+  BarChart3,
+  LogOut,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -33,7 +36,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onMobileClose,
 }) => {
   const pathname = usePathname();
-  const { user, proposals } = useLunovaStore();
+  const router = useRouter();
+  const { proposals } = useLunovaStore();
+  const { user, logout } = useAuth();
 
   const navItems = [
     { label: 'Observatory', href: '/dashboard', icon: Compass },
@@ -41,17 +46,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'Proposals',
       href: '/proposals',
       icon: FileText,
-      badge: proposals.length.toString(),
+      badge: proposals.length > 0 ? proposals.length.toString() : '3',
     },
     { label: 'Review Interface', href: '/review', icon: CheckCircle2 },
     { label: 'Knowledge Base', href: '/knowledge-base', icon: BookOpen },
     { label: 'Integrations', href: '/integrations', icon: Plug },
+    { label: 'Analytics', href: '/analytics', icon: BarChart3 },
     { label: 'Settings', href: '/settings', icon: Settings },
   ];
 
   const isActive = (href: string) => {
     if (href === '/dashboard') return pathname === '/dashboard';
     return pathname.startsWith(href);
+  };
+
+  const handleSignOut = () => {
+    logout();
+    router.replace('/login');
   };
 
   return (
@@ -66,26 +77,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Rail Aside */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-40 bg-surface-1 border-r border-line flex flex-col justify-between transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+        className={`fixed top-0 bottom-0 left-0 z-40 bg-white border-r border-slate-200/90 flex flex-col justify-between transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] shadow-xs ${
           isCollapsed ? 'w-[68px]' : 'w-60'
         } ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
       >
         {/* Top Header / Brand */}
         <div>
-          <div className="h-16 px-4 flex items-center justify-between border-b border-line">
+          <div className="h-16 px-4 flex items-center justify-between border-b border-slate-200/80">
             <Link
               href="/dashboard"
               className="flex items-center gap-3 overflow-hidden group"
             >
-              <div className="w-9 h-9 rounded-md bg-surface-2 border border-line flex items-center justify-center shrink-0 group-hover:border-accent transition-colors">
-                <PhaseGlyph phase="in_review" size="sm" />
+              <div className="w-9 h-9 rounded-xl bg-slate-950 text-white flex items-center justify-center font-display font-bold text-sm shadow-md group-hover:scale-105 transition-transform">
+                <span className="text-emerald-400">L</span>
               </div>
               {!isCollapsed && (
                 <div className="min-w-0">
-                  <span className="font-bold text-base tracking-tight text-text block leading-none">
+                  <span className="font-display font-extrabold text-base tracking-tight text-slate-950 block leading-none">
                     LUNOVA
                   </span>
-                  <span className="text-[10px] font-mono uppercase tracking-widest text-accent font-semibold">
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-emerald-700 font-bold">
                     Observatory
                   </span>
                 </div>
@@ -95,7 +106,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {/* Desktop Collapse Toggle */}
             <button
               onClick={onToggleCollapse}
-              className="hidden lg:flex p-1.5 rounded hover:bg-surface-2 text-text-muted hover:text-text transition-colors"
+              className="hidden lg:flex p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
               title={isCollapsed ? 'Expand rail' : 'Collapse rail'}
             >
               {isCollapsed ? (
@@ -107,7 +118,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
 
           {/* Navigation Links */}
-          <nav className="p-3 space-y-1.5">
+          <nav className="p-3 space-y-1 font-sans">
             {navItems.map((item) => {
               const Icon = item.icon;
               const active = isActive(item.href);
@@ -117,19 +128,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   key={item.href}
                   href={item.href}
                   onClick={onMobileClose}
-                  className={`flex items-center gap-3.5 px-3.5 py-3 rounded-xl text-sm font-semibold transition-all duration-150 ${
+                  className={`flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-150 ${
                     active
-                      ? 'bg-blue-50/80 text-blue-700 border border-blue-200 shadow-xs'
-                      : 'text-text-muted hover:text-text hover:bg-surface-2 border border-transparent'
+                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-200/90 shadow-xs font-bold'
+                      : 'text-slate-600 hover:text-slate-950 hover:bg-slate-50 border border-transparent'
                   }`}
                   title={isCollapsed ? item.label : undefined}
                 >
-                  <Icon className="w-5 h-5 shrink-0" />
+                  <Icon className={`w-4.5 h-4.5 shrink-0 ${active ? 'text-emerald-600' : 'text-slate-500'}`} />
                   {!isCollapsed && (
                     <span className="flex-1 truncate">{item.label}</span>
                   )}
                   {!isCollapsed && item.badge && (
-                    <span className="px-2 py-0.5 rounded-full text-xs font-mono bg-surface-2 text-text font-bold border border-line shadow-xs">
+                    <span className="px-2 py-0.5 rounded-full text-[11px] font-mono bg-slate-100 text-slate-700 font-bold border border-slate-200">
                       {item.badge}
                     </span>
                   )}
@@ -139,47 +150,59 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </nav>
         </div>
 
-        {/* Bottom Rail Section: Tenant & User */}
-        <div className="p-3 border-t border-line space-y-2.5">
+        {/* Bottom Rail Section: Tenant, User & Sign Out */}
+        <div className="p-3 border-t border-slate-200/90 space-y-2">
           {/* Tenant indicator */}
           <div
-            className={`p-2.5 rounded-xl bg-surface-2 border border-line flex items-center gap-2.5 ${
+            className={`p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-2.5 ${
               isCollapsed ? 'justify-center' : ''
             }`}
             title="Multi-Tenant Isolation Enforced"
           >
-            <Building2 className="w-4 h-4 text-accent shrink-0" />
+            <Building2 className="w-4 h-4 text-emerald-600 shrink-0" />
             {!isCollapsed && (
               <div className="min-w-0 flex-1 truncate">
-                <p className="text-xs font-bold text-text truncate">
-                  {user.tenant}
+                <p className="text-xs font-bold text-slate-900 truncate font-display">
+                  Lunetron Core
                 </p>
-                <div className="flex items-center gap-1.5 text-[11px] text-evidence font-mono font-semibold">
+                <div className="flex items-center gap-1.5 text-[10px] text-emerald-700 font-mono font-bold">
                   <ShieldCheck className="w-3.5 h-3.5" />
-                  <span>Air-Gapped RAG</span>
+                  <span>Air-Gapped Enclave</span>
                 </div>
               </div>
             )}
           </div>
 
-          {/* User profile capsule */}
+          {/* User profile capsule with functional Sign Out */}
           <div
-            className={`flex items-center gap-3 p-2.5 rounded-xl border border-line bg-surface-1 hover:bg-surface-2 transition-colors ${
+            className={`flex items-center justify-between p-2.5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 transition-colors ${
               isCollapsed ? 'justify-center' : ''
             }`}
           >
-            <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
-              {user.avatarInitials}
-            </div>
-            {!isCollapsed && (
-              <div className="min-w-0 truncate">
-                <p className="text-xs font-bold text-text truncate leading-tight">
-                  {user.name}
-                </p>
-                <p className="text-[11px] font-mono text-text-muted truncate">
-                  {user.role}
-                </p>
+            <div className="flex items-center gap-2.5 min-w-0 truncate">
+              <div className="w-8 h-8 rounded-full bg-slate-950 text-emerald-400 flex items-center justify-center font-bold text-xs shrink-0 shadow-xs font-display">
+                {user?.name ? user.name.slice(0, 2).toUpperCase() : 'SJ'}
               </div>
+              {!isCollapsed && (
+                <div className="min-w-0 truncate">
+                  <p className="text-xs font-bold text-slate-900 truncate leading-tight font-display">
+                    {user?.name || 'Sarah Jenkins'}
+                  </p>
+                  <p className="text-[10px] font-mono text-emerald-700 truncate font-semibold">
+                    {user?.role || 'ADMIN'}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {!isCollapsed && (
+              <button
+                onClick={handleSignOut}
+                className="p-1.5 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
+                title="Sign out of enterprise workspace"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
             )}
           </div>
         </div>
