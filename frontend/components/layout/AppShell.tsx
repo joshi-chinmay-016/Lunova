@@ -2,9 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import { useLunovaStore } from '@/lib/lunovaStore';
 import { useAuth } from '@/hooks/useAuth';
+import { getAuthToken } from '@/services/api';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
+import { ToastContainer } from '@/components/ui/ToastContainer';
+import { CommandPalette } from '@/components/ui/CommandPalette';
+import { Sparkles, ShieldCheck } from 'lucide-react';
 
 export interface AppShellProps {
   children: React.ReactNode;
@@ -13,36 +18,55 @@ export interface AppShellProps {
 export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const pathname = usePathname();
   const router = useRouter();
-  const { token, isLoading } = useAuth();
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const { isAuthenticated, isLoading } = useAuth();
+  const [isRailCollapsed, setIsRailCollapsed] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
+    if (typeof document !== 'undefined') {
+      document.documentElement.setAttribute('data-theme', 'day');
+    }
   }, []);
 
-  // Unprotected routes
-  const isAuthPage = pathname === '/login';
+  // Public routes: landing page and login page
+  const isPublicPage = pathname === '/' || pathname === '/login';
 
+  // Route Protection & Redirect: if not on public route and definitely not authenticated
   useEffect(() => {
-    if (mounted && !token && !isLoading && !isAuthPage) {
-      window.location.replace('/login');
+    const hasToken = typeof window !== 'undefined' ? (!!getAuthToken() || isAuthenticated) : isAuthenticated;
+    if (mounted && !isLoading && !isAuthenticated && !hasToken && !isPublicPage) {
+      router.replace(`/login?redirect=${encodeURIComponent(pathname)}`);
     }
-  }, [mounted, token, isLoading, isAuthPage]);
+  }, [mounted, isLoading, isAuthenticated, isPublicPage, pathname, router]);
 
-  // If on login page, render children directly without dashboard shell
-  if (isAuthPage) {
-    return <>{children}</>;
+  if (isPublicPage) {
+    return (
+      <main className="min-h-screen">
+        {children}
+        <ToastContainer />
+      </main>
+    );
   }
 
-  // Before client hydration or if not authenticated, show consistent loading placeholder
-  if (!mounted || isLoading || !token) {
+  // Loading state while verifying enterprise JWT session
+  if (!mounted || isLoading || (!isAuthenticated && (typeof window !== 'undefined' && !getAuthToken()))) {
     return (
-      <div className="min-h-screen bg-[#F4F5F7] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-          <p className="text-xs text-gray-500 font-medium">Authenticating workspace session...</p>
-          <a href="/login" className="text-xs text-blue-600 font-medium hover:underline mt-1">
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <div className="w-12 h-12 rounded-2xl bg-slate-950 text-white flex items-center justify-center font-display font-bold text-lg shadow-md animate-pulse">
+            <span className="text-emerald-400">L</span>
+          </div>
+          <div className="space-y-1">
+            <h3 className="font-display font-bold text-slate-900 text-sm">
+              Verifying Enterprise JWT Credentials...
+            </h3>
+            <p className="text-xs text-slate-500 font-mono">
+              Redirecting to secure login station if unauthenticated
+            </p>
+          </div>
+          <a href="/login" className="text-xs text-emerald-600 font-medium hover:underline mt-2">
             Sign in with admin credentials &rarr;
           </a>
         </div>
@@ -51,21 +75,31 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   }
 
   return (
-    <div className="min-h-screen bg-[#F4F5F7] flex">
-      {/* Persistent Left Sidebar */}
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex">
+      {/* Collapsible Left Rail */}
       <Sidebar
-        isOpen={isMobileSidebarOpen}
-        onClose={() => setIsMobileSidebarOpen(false)}
+        isCollapsed={isRailCollapsed}
+        onToggleCollapse={() => setIsRailCollapsed(!isRailCollapsed)}
+        isMobileOpen={isMobileOpen}
+        onMobileClose={() => setIsMobileOpen(false)}
       />
 
-      {/* Main App Container */}
-      <div className="flex-1 flex flex-col min-w-0">
-        <Header onOpenMobileMenu={() => setIsMobileSidebarOpen(true)} />
+      {/* Main Observatory Content Viewport */}
+      <div
+        className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+          isRailCollapsed ? 'lg:pl-[68px]' : 'lg:pl-60'
+        }`}
+      >
+        <Header onOpenMobileMenu={() => setIsMobileOpen(true)} />
 
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto animate-in fade-in duration-150">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto animate-in fade-in duration-200">
           {children}
         </main>
       </div>
+
+      {/* Global Overlays */}
+      <ToastContainer />
+      <CommandPalette />
     </div>
   );
 };

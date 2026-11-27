@@ -12,3 +12,9 @@ export interface LoginResponse {
   user: UserProfile;
 }
 
+export interface RegisterPayload {
+  name: string;
+  email: string;
+  password: string;
+  company_name?: string;
+}

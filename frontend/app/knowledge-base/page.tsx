@@ -99,7 +99,7 @@ export default function KnowledgeBasePage() {
         title="Knowledge Base"
         description="Manage company case studies, compliance certifications, and architecture blueprints for evidence-backed generation."
         breadcrumbs={[
-          { label: 'Dashboard', href: '/' },
+          { label: 'Observatory', href: '/dashboard' },
           { label: 'Knowledge Base' },
         ]}
       />
@@ -219,20 +219,20 @@ export default function KnowledgeBasePage() {
 
                       {/* Actions */}
                       <td className="py-3 px-4 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center justify-end gap-1">
+                        <div className="flex items-center justify-end gap-1.5">
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-7 w-7 p-0"
+                            className="h-8.5 w-8.5 p-0 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                             onClick={() => setSelectedDoc(doc)}
                             title="View details"
                           >
-                            <Eye className="w-3.5 h-3.5 text-gray-500" />
+                            <Eye className="w-4 h-4 text-gray-500" />
                           </Button>
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-7 w-7 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                            className="h-8.5 w-8.5 p-0 rounded-lg text-red-600 hover:text-red-700 hover:bg-red-50"
                             onClick={() => {
                               if (confirm(`Remove "${doc.name}" from knowledge base?`)) {
                                 deleteMutation.mutate(doc.id);
@@ -240,7 +240,7 @@ export default function KnowledgeBasePage() {
                             }}
                             title="Delete document"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>
                       </td>

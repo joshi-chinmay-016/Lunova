@@ -1,180 +1,111 @@
 'use client';
 
-import React from 'react';
-import Link from 'next/link';
-import { useProposals } from '@/hooks/useProposals';
-import { KpiCard } from '@/components/dashboard/KpiCard';
-import { RecentProposalsTable } from '@/components/dashboard/RecentProposalsTable';
-import { ActivityFeed } from '@/components/dashboard/ActivityFeed';
-import { UpcomingDeadlines } from '@/components/dashboard/UpcomingDeadlines';
-import { Card, CardHeader, CardContent } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Skeleton } from '@/components/ui/Skeleton';
-import { ErrorState } from '@/components/ui/ErrorState';
-import {
-  FileText,
-  Clock,
-  CheckCircle2,
-  AlertCircle,
-  ArrowRight,
-  Plus,
-  Sparkles,
-} from 'lucide-react';
+import React, { useRef, useEffect } from 'react';
+import { LandingNavbar } from '@/components/landing/LandingNavbar';
+import { LandingHero } from '@/components/landing/LandingHero';
+import { ProblemTransformation } from '@/components/landing/ProblemTransformation';
+import { SignatureMotionSequence } from '@/components/landing/SignatureMotionSequence';
+import { EvidenceGroundedSection } from '@/components/landing/EvidenceGroundedSection';
+import { WorkflowOverview } from '@/components/landing/WorkflowOverview';
+import { HumanControlSection } from '@/components/landing/HumanControlSection';
+import { ProductPreviewSection } from '@/components/landing/ProductPreviewSection';
+import { CapabilitiesSection } from '@/components/landing/CapabilitiesSection';
+import { FinalCTASection } from '@/components/landing/FinalCTASection';
+import { LandingFooter } from '@/components/landing/LandingFooter';
 
-export default function DashboardPage() {
-  const { data: proposals, isLoading, error, refetch } = useProposals();
+const BACKGROUND_VIDEO_URL =
+  'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20261029_084140_0b1278a9-189f-4d9e-9a36-00f6a21e4788.mp4';
 
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        {/* Header skeleton */}
-        <div className="space-y-2">
-          <Skeleton className="h-7 w-64" />
-          <Skeleton className="h-4 w-96" />
-        </div>
+export default function LandingPage() {
+  const bgVideoRef = useRef<HTMLVideoElement>(null);
 
-        {/* KPI Skeletons */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((i) => (
-            <Card key={i} className="p-5 space-y-3">
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-8 w-16" />
-              <Skeleton className="h-3 w-full" />
-            </Card>
-          ))}
-        </div>
+  useEffect(() => {
+    const video = bgVideoRef.current;
+    if (!video) return;
 
-        {/* Content Skeletons */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <Card className="p-6 space-y-4">
-              <Skeleton className="h-5 w-40" />
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-10 w-full" />
-            </Card>
-          </div>
-          <div className="space-y-6">
-            <Card className="p-6 space-y-4">
-              <Skeleton className="h-5 w-32" />
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
-            </Card>
-          </div>
-        </div>
-      </div>
-    );
-  }
+    video.muted = true;
+    const startPlayback = () => {
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // Fallback if browser requires interaction
+        });
+      }
+    };
 
-  if (error || !proposals) {
-    return (
-      <div className="py-12">
-        <ErrorState
-          title="Unable to load proposal dashboard"
-          message="We could not synchronize proposal records from your workspace. Please retry or verify your connection."
-          onRetry={() => refetch()}
-        />
-      </div>
-    );
-  }
+    startPlayback();
 
-  // Calculate metrics
-  const totalProposals = proposals.length;
-  const inProgressCount = proposals.filter(
-    (p) => p.status === 'NEW' || p.status === 'ANALYZING' || p.status === 'AI_DRAFTED'
-  ).length;
-  const underReviewCount = proposals.filter((p) => p.status === 'UNDER_REVIEW').length;
-  const approvedCount = proposals.filter((p) => p.status === 'APPROVED').length;
+    const onUserInteract = () => {
+      startPlayback();
+    };
+
+    window.addEventListener('click', onUserInteract, { once: true, passive: true });
+    window.addEventListener('scroll', onUserInteract, { once: true, passive: true });
+    window.addEventListener('touchstart', onUserInteract, { once: true, passive: true });
+
+    return () => {
+      window.removeEventListener('click', onUserInteract);
+      window.removeEventListener('scroll', onUserInteract);
+      window.removeEventListener('touchstart', onUserInteract);
+    };
+  }, []);
 
   return (
-    <div className="space-y-6">
-      {/* Dashboard Welcome Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-gray-900">
-            Good morning, Sarah
-          </h1>
-          <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
-            Here&apos;s what&apos;s happening with your proposals across active pipeline accounts.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2.5">
-          <Link href="/proposals">
-            <Button variant="secondary" size="sm">
-              View All Proposals
-            </Button>
-          </Link>
-        </div>
+    <div className="relative min-h-screen text-slate-900 font-sans selection:bg-blue-100 selection:text-blue-900 overflow-x-hidden">
+      {/* Background Video Layer — Pure Background Only, Zero Interaction/Click Interference */}
+      <div
+        className="fixed inset-0 pointer-events-none z-0 overflow-hidden"
+        aria-hidden="true"
+      >
+        <video
+          ref={bgVideoRef}
+          src={BACKGROUND_VIDEO_URL}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          className="w-full h-full object-cover object-center scale-[1.02]"
+        />
+        {/* Soft atmospheric overlay scrim — preserves the landscape colors while ensuring high text contrast */}
+        <div className="absolute inset-0 bg-white/70" />
+        <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-transparent to-white/80" />
       </div>
 
-      {/* KPI Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard
-          label="Total Proposals"
-          value={totalProposals}
-          description="Active and archived RFPs"
-          change="+14% this month"
-          trend="up"
-          icon={FileText}
-        />
-        <KpiCard
-          label="In Progress"
-          value={inProgressCount}
-          description="Ingestion & AI drafting"
-          change="3 awaiting extraction"
-          trend="neutral"
-          icon={Clock}
-        />
-        <KpiCard
-          label="Under Review"
-          value={underReviewCount}
-          description="Human verification station"
-          change="Requires SME review"
-          trend="neutral"
-          icon={AlertCircle}
-        />
-        <KpiCard
-          label="Approved"
-          value={approvedCount}
-          description="Signed & ready for submission"
-          change="+$780K win pipeline"
-          trend="up"
-          icon={CheckCircle2}
-        />
-      </div>
+      {/* Main Content Layer — All components untouched, positioned cleanly above background */}
+      <div className="relative z-10">
+        {/* Section A: Navigation */}
+        <LandingNavbar />
 
-      {/* Main Grid: Recent Proposals + Sidebar Widgets */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column (2 Cols): Recent Proposals Table */}
-        <div className="lg:col-span-2 space-y-6">
-          <Card>
-            <CardHeader>
-              <div>
-                <h3 className="text-sm font-bold text-gray-900">Recent Proposals</h3>
-                <p className="text-[11px] text-gray-500">
-                  Latest RFP submissions requiring action or monitoring
-                </p>
-              </div>
-              <Link href="/proposals">
-                <Button variant="ghost" size="sm" className="text-xs">
-                  <span>See all</span>
-                  <ArrowRight className="w-3.5 h-3.5 ml-1" />
-                </Button>
-              </Link>
-            </CardHeader>
+        {/* Section B: Hero Section — Cinematic and Memorable */}
+        <LandingHero />
 
-            <CardContent className="p-0">
-              <RecentProposalsTable proposals={proposals.slice(0, 5)} />
-            </CardContent>
-          </Card>
-        </div>
+        {/* Section C: The Problem and Transformation */}
+        <ProblemTransformation />
 
-        {/* Right Column (1 Col): Deadlines & Activity */}
-        <div className="space-y-6">
-          <UpcomingDeadlines proposals={proposals} />
-          <ActivityFeed />
-        </div>
+        {/* Section D: Signature Animation — Email to Lunova to Response */}
+        <SignatureMotionSequence />
+
+        {/* Section E: Evidence-Based Responses */}
+        <EvidenceGroundedSection />
+
+        {/* Section F: Workflow Overview */}
+        <WorkflowOverview />
+
+        {/* Section G: Human Control */}
+        <HumanControlSection />
+
+        {/* Section H: Product Interface Preview */}
+        <ProductPreviewSection />
+
+        {/* Section I: Capabilities */}
+        <CapabilitiesSection />
+
+        {/* Section J: Final CTA */}
+        <FinalCTASection />
+
+        {/* Section K: Footer */}
+        <LandingFooter />
       </div>
     </div>
   );

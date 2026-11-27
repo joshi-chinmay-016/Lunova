@@ -243,7 +243,7 @@ function SettingsContent() {
         title="Settings & Workspace Configuration"
         description="Manage workspace identity, user permissions, generative parameters, and external data feeds."
         breadcrumbs={[
-          { label: 'Dashboard', href: '/' },
+          { label: 'Observatory', href: '/dashboard' },
           { label: 'Settings' },
         ]}
       />
@@ -345,10 +345,10 @@ function SettingsContent() {
             <CardFooter className="justify-end">
               <Button
                 variant="primary"
-                size="sm"
+                size="md"
                 type="submit"
                 isLoading={company.isUpdating}
-                leftIcon={<Save className="w-3.5 h-3.5" />}
+                leftIcon={<Save className="w-4 h-4" />}
               >
                 Save Profile
               </Button>
@@ -522,10 +522,10 @@ function SettingsContent() {
             <CardFooter className="justify-end">
               <Button
                 variant="primary"
-                size="sm"
+                size="md"
                 type="submit"
                 isLoading={ai.isUpdating}
-                leftIcon={<Save className="w-3.5 h-3.5" />}
+                leftIcon={<Save className="w-4 h-4" />}
               >
                 Save Configuration
               </Button>
@@ -585,20 +585,20 @@ function SettingsContent() {
                   <>
                     <Button
                       variant="secondary"
-                      size="sm"
+                      size="md"
                       onClick={handleSyncInbox}
                       isLoading={syncMutation.isPending}
                       disabled={syncMutation.isPending}
-                      leftIcon={<RefreshCw className={`w-3.5 h-3.5 ${syncMutation.isPending ? 'animate-spin' : ''}`} />}
+                      leftIcon={<RefreshCw className={`w-4 h-4 ${syncMutation.isPending ? 'animate-spin' : ''}`} />}
                     >
                       {syncMutation.isPending ? 'Syncing Inbox...' : 'Sync Inbox'}
                     </Button>
                     <Button
                       variant="ghost"
-                      size="sm"
+                      size="md"
                       onClick={() => setIsDisconnectOpen(true)}
                       className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                      leftIcon={<LogOut className="w-3.5 h-3.5" />}
+                      leftIcon={<LogOut className="w-4 h-4" />}
                     >
                       Disconnect
                     </Button>
@@ -606,10 +606,10 @@ function SettingsContent() {
                 ) : (
                   <Button
                     variant="primary"
-                    size="sm"
+                    size="md"
                     onClick={handleConnectGmail}
                     isLoading={isConnectingGmail}
-                    leftIcon={<ExternalLink className="w-3.5 h-3.5" />}
+                    leftIcon={<ExternalLink className="w-4 h-4" />}
                   >
                     Connect Gmail
                   </Button>

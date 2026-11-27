@@ -1,4 +1,5 @@
-export const API_BASE_URL = 'http://localhost:8000/api/v1';
+export const API_BASE_URL =
+  typeof window !== 'undefined' ? '/api/v1' : 'http://127.0.0.1:8000/api/v1';
 
 const TOKEN_STORAGE_KEY = 'lunova_auth_token';
 let _token: string | null = null;
@@ -7,22 +8,44 @@ export const setAuthToken = (token: string | null) => {
   _token = token;
   if (typeof window !== 'undefined') {
     if (token) {
-      localStorage.setItem(TOKEN_STORAGE_KEY, token);
+      try {
+        localStorage.setItem(TOKEN_STORAGE_KEY, token);
+      } catch {}
+      try {
+        document.cookie = `${TOKEN_STORAGE_KEY}=${encodeURIComponent(token)}; path=/; max-age=604800; SameSite=Lax`;
+      } catch {}
     } else {
-      localStorage.removeItem(TOKEN_STORAGE_KEY);
+      try {
+        localStorage.removeItem(TOKEN_STORAGE_KEY);
+      } catch {}
+      try {
+        document.cookie = `${TOKEN_STORAGE_KEY}=; path=/; max-age=0; SameSite=Lax`;
+      } catch {}
     }
   }
 };
 
 export const getAuthToken = (): string | null => {
+  if (_token) return _token;
+
   if (typeof window !== 'undefined') {
-    const stored = localStorage.getItem(TOKEN_STORAGE_KEY);
-    if (stored) {
-      _token = stored;
-      return stored;
-    }
+    try {
+      const stored = localStorage.getItem(TOKEN_STORAGE_KEY);
+      if (stored) {
+        _token = stored;
+        return _token;
+      }
+    } catch {}
+
+    try {
+      const match = document.cookie.match(new RegExp('(^|;\\s*)' + TOKEN_STORAGE_KEY + '=([^;]*)'));
+      if (match && match[2]) {
+        _token = decodeURIComponent(match[2]);
+        return _token;
+      }
+    } catch {}
   }
-  return _token;
+  return null;
 };
 
 export const fetchApi = async (endpoint: string, options: RequestInit = {}) => {
@@ -40,7 +63,9 @@ export const fetchApi = async (endpoint: string, options: RequestInit = {}) => {
     headers.set('Authorization', `Bearer ${token}`);
   }
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+  const url = `${API_BASE_URL}${endpoint}`;
+
+  const response = await fetch(url, {
     ...options,
     headers,
   });
@@ -72,9 +97,7 @@ export const fetchApi = async (endpoint: string, options: RequestInit = {}) => {
     try {
       const errorData = await response.json();
       message = errorData.detail || message;
-    } catch {
-      // Ignore
-    }
+    } catch {}
     throw new Error(message);
   }
 

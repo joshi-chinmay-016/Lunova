@@ -27,12 +27,25 @@ app = FastAPI(
     openapi_url="/api/v1/openapi.json"
 )
 
+# Comprehensive CORS Configuration for all local development origins
+origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:3001",
+    "http://127.0.0.1:3001",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
+    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$",
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"],
     allow_headers=["*"],
+    expose_headers=["*"],
+    max_age=86400,
 )
 
 app.include_router(auth_router, prefix="/api/v1")
@@ -42,6 +55,6 @@ app.include_router(intelligence_router, prefix="/api/v1")
 app.include_router(integrations_router, prefix="/api/v1")
 
 @app.get("/health")
+@app.get("/api/v1/health")
 async def health_check():
     return {"status": "ok", "project": settings.PROJECT_NAME}
-

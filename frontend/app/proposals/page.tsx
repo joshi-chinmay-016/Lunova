@@ -125,7 +125,7 @@ export default function ProposalsPage() {
         title="Proposals"
         description="Manage, analyze, and review incoming enterprise proposal requests."
         breadcrumbs={[
-          { label: 'Dashboard', href: '/' },
+          { label: 'Observatory', href: '/dashboard' },
           { label: 'Proposals' },
         ]}
         actions={

@@ -38,13 +38,18 @@ class ProposalContext:
 
     proposal_id: str
     company_id: str
-    subject: str
-    body: str
+    subject: str = "Proposal"
+    body: str = ""
+    text: Optional[str] = None
     attachments_text: List[str] = field(default_factory=list)
     attachments: List[ParsedAttachment] = field(default_factory=list)
     metadata: Dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
+        if self.text and not self.body:
+            self.body = self.text
+        if not self.text and self.body:
+            self.text = self.body
         # Sync attachments -> attachments_text
         if self.attachments and not self.attachments_text:
             self.attachments_text = [

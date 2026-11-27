@@ -31,7 +31,7 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, onChange, className
             type="button"
             onClick={() => onChange(tab.id)}
             className={cn(
-              'flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all duration-150',
+              'flex items-center gap-2.5 px-5 py-2.5 min-h-[40px] text-xs sm:text-sm font-semibold rounded-xl transition-all duration-150 whitespace-nowrap cursor-pointer',
               isActive
                 ? 'bg-white text-gray-900 shadow-sm'
                 : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'

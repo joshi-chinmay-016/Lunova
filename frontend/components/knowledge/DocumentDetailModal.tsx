@@ -87,7 +87,7 @@ export const DocumentDetailModal: React.FC<DocumentDetailModalProps> = ({
                   onClose();
                 }
               }}
-              className="text-xs text-red-600 hover:text-red-800 font-medium transition-colors"
+              className="px-4 py-2 min-h-[38px] rounded-xl text-xs text-red-600 hover:text-red-800 hover:bg-red-50 font-semibold transition-colors cursor-pointer inline-flex items-center justify-center whitespace-nowrap"
             >
               Delete Document
             </button>

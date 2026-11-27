@@ -1,57 +1,139 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
+import { getAuthToken } from '@/services/api';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Card, CardHeader, CardContent } from '@/components/ui/Card';
-import { Sparkles, Mail, Lock, ShieldCheck, AlertCircle, ArrowRight, Zap, Check } from 'lucide-react';
+import {
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  ShieldCheck,
+  AlertCircle,
+  ArrowRight,
+  User,
+  Building2,
+  CheckCircle2,
+  Sparkles,
+  Zap,
+  Check,
+} from 'lucide-react';
+import { BorderBeam } from '@/components/ui/BorderBeam';
 
-export default function LoginPage() {
+function AuthForm() {
   const router = useRouter();
-  const { login, isLoggingIn, bootstrap, isBootstrapping, isAuthenticated } = useAuth();
+  const searchParams = useSearchParams();
+  const {
+    login,
+    isLoggingIn,
+    register,
+    isRegistering,
+    bootstrap,
+    isBootstrapping,
+    isAuthenticated,
+    user,
+  } = useAuth();
 
-  const [email, setEmail] = useState('admin@lunetron.com');
-  const [password, setPassword] = useState('lunetron2026!');
+  const initialMode = searchParams.get('mode') === 'signup' ? 'signup' : 'signin';
+  const [mode, setMode] = useState<'signin' | 'signup'>(initialMode);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // Form states - strictly empty defaults to protect privacy
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [companyName, setCompanyName] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [autoFilled, setAutoFilled] = useState(false);
 
-  // If already authenticated, redirect to dashboard
+  // Sync mode if query param changes
+  useEffect(() => {
+    const queryMode = searchParams.get('mode');
+    if (queryMode === 'signup' || queryMode === 'signin') {
+      setMode(queryMode);
+    }
+  }, [searchParams]);
+
+  // If already authenticated and there's a redirect, handle it
   useEffect(() => {
     if (isAuthenticated) {
-      router.replace('/');
+      const redirect = searchParams.get('redirect');
+      if (redirect && redirect !== '/login') {
+        router.replace(redirect);
+      }
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, router, searchParams]);
 
-  const handleLogin = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
     setErrorMsg(null);
+
+    if (!email.trim() || !password) {
+      setErrorMsg('Please enter your work email and password.');
+      return;
+    }
+
     try {
       await login({ email: email.trim(), password });
-      window.location.href = '/';
+      const redirect = searchParams.get('redirect') || '/dashboard';
+      window.location.href = redirect;
     } catch (err: any) {
-      const msg = err?.message || 'Login failed. Please check your credentials.';
-      if (msg.includes('500') || msg.includes('Failed to fetch') || msg.includes('Internal Server Error')) {
-        setErrorMsg(
-          'Database unreachable: PostgreSQL port 5432 is offline. Ensure PostgreSQL or Docker Desktop is running.'
-        );
-      } else {
-        setErrorMsg(msg);
-      }
+      setErrorMsg(err?.message || 'Authentication failed. Please check your email and password.');
+    }
+  };
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg(null);
+
+    if (!name.trim()) {
+      setErrorMsg('Please enter your full name.');
+      return;
+    }
+    if (!email.trim() || !email.includes('@')) {
+      setErrorMsg('Please enter a valid enterprise work email.');
+      return;
+    }
+    if (password.length < 8) {
+      setErrorMsg('Password must be at least 8 characters long for security compliance.');
+      return;
+    }
+    if (password !== confirmPassword) {
+      setErrorMsg('Passwords do not match. Please verify both fields.');
+      return;
+    }
+
+    try {
+      await register({
+        name: name.trim(),
+        email: email.trim(),
+        password,
+        company_name: companyName.trim() || 'Lunetron Technologies',
+      });
+      const redirect = searchParams.get('redirect') || '/dashboard';
+      window.location.href = redirect;
+    } catch (err: any) {
+      setErrorMsg(err?.message || 'Account registration failed. Please try again.');
     }
   };
 
   const handle1ClickLogin = async () => {
     setErrorMsg(null);
     try {
-      // Try bootstrap first, then login fallback
       await bootstrap();
-      window.location.href = '/';
+      const redirect = searchParams.get('redirect') || '/dashboard';
+      window.location.href = redirect;
     } catch (err: any) {
       try {
         await login({ email: 'admin@lunetron.com', password: 'lunetron2026!' });
-        window.location.href = '/';
+        const redirect = searchParams.get('redirect') || '/dashboard';
+        window.location.href = redirect;
       } catch (loginErr: any) {
         const msg = loginErr?.message || '1-Click Login failed.';
         if (msg.includes('500') || msg.includes('Failed to fetch')) {
@@ -73,116 +155,303 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F4F5F7] flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center space-y-2">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-700 to-indigo-500 shadow-md text-white mb-2">
-          <Sparkles className="w-6 h-6" />
-        </div>
-        <h2 className="text-2xl font-black tracking-tight text-gray-900">
-          Lunova Enterprise
+    <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      {/* High-tech dot matrix */}
+      <div className="absolute inset-0 bg-[radial-gradient(#059669_1px,transparent_1px)] [background-size:24px_24px] opacity-[0.06] pointer-events-none" />
+
+      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center space-y-2 relative z-10">
+        <Link href="/" className="inline-flex items-center gap-2.5 mb-2 group">
+          <div className="w-10 h-10 rounded-xl bg-slate-950 text-white flex items-center justify-center font-display font-bold text-base shadow-md group-hover:scale-105 transition-transform">
+            <span className="text-emerald-400">L</span>
+          </div>
+          <span className="text-2xl font-display font-extrabold tracking-tight text-slate-950">
+            Lunova
+          </span>
+          <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-300">
+            v2.4
+          </span>
+        </Link>
+        <h2 className="text-2xl font-display font-bold tracking-tight text-slate-900">
+          {mode === 'signin' ? 'Sign In to Workspace' : 'Create Enterprise Account'}
         </h2>
-        <p className="text-xs text-gray-500 font-medium">
-          AI Proposal Intelligence &amp; Human Review Station
+        <p className="text-xs sm:text-sm text-slate-600 font-sans">
+          Proposal Intelligence &amp; Human Verification Station
         </p>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <Card className="p-6 sm:p-8 shadow-sm border-[#E2E5E9]">
-          <CardHeader className="p-0 pb-6 border-b border-[#E2E5E9]">
-            <div className="space-y-1">
-              <h3 className="text-sm font-bold text-gray-900">Sign in to workspace</h3>
-              <p className="text-xs text-gray-500">
-                Workspace tenant: <span className="font-semibold text-gray-800">Lunetron Technologies</span>
-              </p>
-            </div>
-          </CardHeader>
+      <div className="mt-7 sm:mx-auto sm:w-full sm:max-w-md relative z-10">
+        <div className="relative glass-card rounded-3xl p-6 sm:p-8 shadow-xl border border-slate-200/90 bg-white/95">
+          <BorderBeam size={180} duration={8} colorFrom="#10B981" colorTo="#06B6D4" borderWidth={1.5} />
 
-          <CardContent className="p-0 pt-6 space-y-5">
+          {/* Mode Tabs: Sign In / Create Account */}
+          <div className="flex items-center p-1 rounded-2xl bg-slate-100 border border-slate-200/80 mb-6 text-xs font-display font-bold">
+            <button
+              type="button"
+              onClick={() => {
+                setMode('signin');
+                setErrorMsg(null);
+              }}
+              className={`flex-1 min-h-[44px] px-6 py-2.5 rounded-xl transition-all cursor-pointer text-center text-xs sm:text-sm ${
+                mode === 'signin'
+                  ? 'bg-white text-slate-950 shadow-xs font-bold'
+                  : 'text-slate-500 hover:text-slate-900 font-semibold'
+              }`}
+            >
+              Sign In
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setMode('signup');
+                setErrorMsg(null);
+              }}
+              className={`flex-1 min-h-[44px] px-6 py-2.5 rounded-xl transition-all cursor-pointer text-center text-xs sm:text-sm ${
+                mode === 'signup'
+                  ? 'bg-white text-slate-950 shadow-xs font-bold'
+                  : 'text-slate-500 hover:text-slate-900 font-semibold'
+              }`}
+            >
+              Create Account
+            </button>
+          </div>
+
+          {isAuthenticated && (
+            <div className="mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs flex items-center justify-between">
+              <span className="text-emerald-900 font-medium">
+                Signed in as <strong className="font-mono">{user?.email || 'Active User'}</strong>
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  const redirect = searchParams.get('redirect') || '/dashboard';
+                  window.location.href = redirect;
+                }}
+                className="text-emerald-700 hover:text-emerald-950 font-bold underline cursor-pointer"
+              >
+                Go to Dashboard &rarr;
+              </button>
+            </div>
+          )}
+
+          <div className="space-y-4 font-sans">
             {errorMsg && (
-              <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 flex items-start gap-2.5">
-                <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+              <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-start gap-2.5">
+                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
                 <div className="space-y-0.5">
-                  <p className="font-semibold text-red-900">Authentication Error</p>
+                  <p className="font-bold text-rose-900 font-display">Authentication Notice</p>
                   <p className="leading-relaxed">{errorMsg}</p>
                 </div>
               </div>
             )}
 
-            <form onSubmit={handleLogin} className="space-y-4">
-              <Input
-                label="Work Email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@lunetron.com"
-                leftIcon={<Mail className="w-4 h-4" />}
-              />
+            {/* SIGN IN FORM */}
+            {mode === 'signin' ? (
+              <form onSubmit={handleSignIn} className="space-y-4">
+                <Input
+                  label="Work Email"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="name@company.com"
+                  leftIcon={<Mail className="w-4 h-4 text-slate-400" />}
+                />
 
-              <Input
-                label="Password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••••••"
-                leftIcon={<Lock className="w-4 h-4" />}
-              />
-
-              <Button
-                type="submit"
-                variant="primary"
-                className="w-full"
-                isLoading={isLoggingIn}
-                rightIcon={<ArrowRight className="w-4 h-4" />}
-              >
-                Sign In with Password
-              </Button>
-            </form>
-
-            <div className="relative my-4">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-2 text-gray-400 font-semibold tracking-wider text-[10px]">
-                  Local Development Shortcut
-                </span>
-              </div>
-            </div>
-
-            <Button
-              type="button"
-              variant="secondary"
-              className="w-full border-dashed border-blue-300 bg-blue-50/50 hover:bg-blue-100/50 text-blue-700 font-medium"
-              isLoading={isBootstrapping || isLoggingIn}
-              onClick={handle1ClickLogin}
-              leftIcon={<Zap className="w-4 h-4 text-blue-600" />}
-            >
-              Quick Dev Admin Bootstrap (1-Click)
-            </Button>
-
-            <div className="pt-2 text-[11px] text-gray-600 bg-gray-50 p-3 rounded-xl border border-gray-200/80 space-y-1.5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5 font-semibold text-gray-800">
-                  <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
-                  <span>Local Development Credentials:</span>
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold text-slate-800">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                      <Lock className="w-4 h-4" />
+                    </div>
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Enter your password"
+                      className="w-full pl-10 pr-10 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                      title={showPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={fillCredentials}
-                  className="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1"
+
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="lg"
+                  className="w-full min-h-[50px] px-7 py-3 font-display font-bold text-sm sm:text-base bg-emerald-600 hover:bg-emerald-700 shadow-md cursor-pointer mt-2"
+                  isLoading={isLoggingIn}
+                  rightIcon={<ArrowRight className="w-4 h-4 ml-1" />}
                 >
-                  {autoFilled ? <Check className="w-3 h-3 text-green-600" /> : null}
-                  {autoFilled ? 'Filled!' : 'Fill Fields'}
-                </button>
-              </div>
-              <p>Email: <code className="font-mono font-medium text-gray-900 bg-gray-200/60 px-1 py-0.5 rounded">admin@lunetron.com</code></p>
-              <p>Password: <code className="font-mono font-medium text-gray-900 bg-gray-200/60 px-1 py-0.5 rounded">lunetron2026!</code></p>
+                  Sign In to Workspace
+                </Button>
+              </form>
+            ) : (
+              /* SIGN UP FORM */
+              <form onSubmit={handleSignUp} className="space-y-3.5">
+                <Input
+                  label="Full Name"
+                  type="text"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Sarah Jenkins"
+                  leftIcon={<User className="w-4 h-4 text-slate-400" />}
+                />
+
+                <Input
+                  label="Company / Organization"
+                  type="text"
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                  placeholder="Lunetron Technologies"
+                  leftIcon={<Building2 className="w-4 h-4 text-slate-400" />}
+                />
+
+                <Input
+                  label="Work Email"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="name@company.com"
+                  leftIcon={<Mail className="w-4 h-4 text-slate-400" />}
+                />
+
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold text-slate-800">
+                    Create Password
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                      <Lock className="w-4 h-4" />
+                    </div>
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Minimum 8 characters"
+                      className="w-full pl-10 pr-10 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                      title={showPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold text-slate-800">
+                    Confirm Password
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                      <Lock className="w-4 h-4" />
+                    </div>
+                    <input
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      required
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Re-enter password"
+                      className="w-full pl-10 pr-10 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                      title={showConfirmPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="lg"
+                  className="w-full min-h-[50px] px-7 py-3 font-display font-bold text-sm sm:text-base bg-emerald-600 hover:bg-emerald-700 shadow-md cursor-pointer mt-2"
+                  isLoading={isRegistering}
+                  rightIcon={<ArrowRight className="w-4 h-4 ml-1" />}
+                >
+                  Create Account &amp; Access Dashboard
+                </Button>
+              </form>
+            )}
+
+            <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-500">
+              <span className="flex items-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                Zero Password Exposure
+              </span>
+              <span>Encrypted via Argon2/BCrypt</span>
             </div>
-          </CardContent>
-        </Card>
+
+            {/* 1-Click Dev Admin Bootstrap & Quick Fill */}
+            <div className="pt-2 space-y-2">
+              <Button
+                type="button"
+                variant="secondary"
+                size="md"
+                className="w-full border-dashed border-blue-300 bg-blue-50/60 hover:bg-blue-100/60 text-blue-700 font-medium text-xs cursor-pointer"
+                isLoading={isBootstrapping || isLoggingIn}
+                onClick={handle1ClickLogin}
+                leftIcon={<Zap className="w-3.5 h-3.5 text-blue-600" />}
+              >
+                Quick Dev Admin Bootstrap (1-Click)
+              </Button>
+
+              <div className="text-[11px] text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-200/80 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 font-semibold text-slate-800">
+                    <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Local Development Credentials:</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={fillCredentials}
+                    className="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1 cursor-pointer"
+                  >
+                    {autoFilled ? <Check className="w-3 h-3 text-emerald-600" /> : null}
+                    {autoFilled ? 'Filled!' : 'Fill Fields'}
+                  </button>
+                </div>
+                <p>Email: <code className="font-mono font-medium text-slate-900 bg-slate-200/60 px-1 py-0.5 rounded">admin@lunetron.com</code></p>
+                <p>Password: <code className="font-mono font-medium text-slate-900 bg-slate-200/60 px-1 py-0.5 rounded">lunetron2026!</code></p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-slate-50 flex items-center justify-center font-display text-sm font-bold text-slate-700">
+          Loading Enterprise Portal...
+        </div>
+      }
+    >
+      <AuthForm />
+    </Suspense>
   );
 }

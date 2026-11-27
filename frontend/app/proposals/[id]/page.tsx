@@ -187,14 +187,15 @@ export default function ProposalWorkspacePage() {
         ]}
         badge={<ProposalStatusBadge status={proposal.status} size="md" />}
         actions={
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2.5 flex-wrap">
             {/* Run / Re-run AI Analysis button */}
             <Button
               variant="secondary"
-              size="sm"
+              size="md"
               onClick={handleRunAnalysis}
               isLoading={analyzeMutation.isPending}
-              leftIcon={<Sparkles className="w-3.5 h-3.5 text-blue-600" />}
+              leftIcon={<Sparkles className="w-4 h-4 text-blue-600" />}
+              className="text-xs sm:text-sm font-semibold border-slate-300"
             >
               {analyzeMutation.isPending ? 'Analyzing...' : 'Run AI Analysis'}
             </Button>
@@ -202,10 +203,10 @@ export default function ProposalWorkspacePage() {
             {(proposal.status === 'DISPATCH_UNCERTAIN' || proposal.status === 'SENDING') && (
               <Button
                 variant="outline"
-                size="sm"
+                size="md"
                 onClick={() => setIsReconcileOpen(true)}
                 className="border-amber-400 text-amber-800 hover:bg-amber-50"
-                leftIcon={<AlertTriangle className="w-3.5 h-3.5 text-amber-600" />}
+                leftIcon={<AlertTriangle className="w-4 h-4 text-amber-600" />}
               >
                 Reconcile Dispatch
               </Button>
@@ -217,7 +218,7 @@ export default function ProposalWorkspacePage() {
               proposal.status !== 'SENDING' && (
                 <Button
                   variant="outline"
-                  size="sm"
+                  size="md"
                   onClick={() => setIsRejectOpen(true)}
                   className="text-red-700 hover:bg-red-50 hover:border-red-300"
                 >
@@ -231,21 +232,21 @@ export default function ProposalWorkspacePage() {
               proposal.status !== 'SENDING' && (
                 <Button
                   variant="success"
-                  size="sm"
+                  size="md"
                   onClick={() => setIsApproveOpen(true)}
-                  leftIcon={<CheckCircle className="w-3.5 h-3.5" />}
+                  leftIcon={<CheckCircle className="w-4 h-4" />}
                 >
-                  Approve
+                  Approve Proposal
                 </Button>
               )}
 
             {proposal.status === 'APPROVED' && (
               <Button
                 variant="primary"
-                size="sm"
+                size="md"
                 onClick={() => setIsSendOpen(true)}
                 isLoading={sendMutation.isPending}
-                leftIcon={<Send className="w-3.5 h-3.5" />}
+                leftIcon={<Send className="w-4 h-4" />}
               >
                 Send via Gmail
               </Button>
@@ -255,7 +256,7 @@ export default function ProposalWorkspacePage() {
       />
 
       {/* Human Review Banner */}
-      <HumanReviewBanner status={proposal.status} />
+      <HumanReviewBanner status={proposal.status} proposalId={proposal.id} />
 
       {/* AI Processing Indeterminate State */}
       {analyzeMutation.isPending && (

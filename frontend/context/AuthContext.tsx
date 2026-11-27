@@ -4,12 +4,13 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   loginUser,
+  registerUser,
   fetchCurrentUser,
   bootstrapLocalAdmin,
   logoutUser,
 } from '@/lib/api/client';
 import { getAuthToken } from '@/services/api';
-import { UserProfile, LoginResponse } from '@/types/auth';
+import { UserProfile, LoginResponse, RegisterPayload } from '@/types/auth';
 
 interface AuthContextType {
   token: string | null;
@@ -19,6 +20,8 @@ interface AuthContextType {
   error: Error | null;
   login: (credentials: { email: string; password: string }) => Promise<LoginResponse>;
   isLoggingIn: boolean;
+  register: (payload: RegisterPayload) => Promise<LoginResponse>;
+  isRegistering: boolean;
   bootstrap: () => Promise<LoginResponse>;
   isBootstrapping: boolean;
   logout: () => void;
@@ -64,6 +67,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     },
   });
 
+  const registerMutation = useMutation<LoginResponse, Error, RegisterPayload>({
+    mutationFn: (payload) => registerUser(payload),
+    onSuccess: (data) => {
+      setTokenState(data.access_token);
+      queryClient.setQueryData(['auth', 'me', data.access_token], data.user);
+      queryClient.invalidateQueries();
+    },
+  });
+
   const bootstrapMutation = useMutation<LoginResponse, Error, void>({
     mutationFn: bootstrapLocalAdmin,
     onSuccess: (data) => {
@@ -85,9 +97,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     user: userQuery.data || null,
     isLoading: !isInitialized || (!!token && userQuery.isLoading),
     isAuthenticated: !!token && !userQuery.isError,
-    error: (userQuery.error || loginMutation.error || bootstrapMutation.error) as Error | null,
+    error: (userQuery.error || loginMutation.error || registerMutation.error || bootstrapMutation.error) as Error | null,
     login: loginMutation.mutateAsync,
     isLoggingIn: loginMutation.isPending,
+    register: registerMutation.mutateAsync,
+    isRegistering: registerMutation.isPending,
     bootstrap: bootstrapMutation.mutateAsync,
     isBootstrapping: bootstrapMutation.isPending,
     logout,

@@ -298,7 +298,7 @@ We need a really fast proposal system setup ASAP. It should be super scalable an
             <button
               key={sc.id}
               onClick={() => handleSelectScenario(sc)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
+              className={`px-4 py-2 min-h-[38px] rounded-xl text-xs sm:text-sm font-medium transition-all inline-flex items-center justify-center whitespace-nowrap cursor-pointer ${
                 selectedScenarioId === sc.id
                   ? 'bg-gradient-to-r from-indigo-600 to-cyan-600 text-white shadow-lg shadow-indigo-500/20 font-semibold'
                   : 'bg-slate-900/80 text-slate-400 hover:text-white hover:bg-slate-800 border border-white/5'

@@ -14,6 +14,8 @@ export function useDocuments() {
   });
 }
 
+export const useKnowledge = useDocuments;
+
 export function useUploadDocument() {
   const queryClient = useQueryClient();
   return useMutation({

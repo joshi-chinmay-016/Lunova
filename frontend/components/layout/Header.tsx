@@ -2,10 +2,18 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Menu, Search, Bell, Plus, CheckCircle2, AlertCircle } from 'lucide-react';
+import {
+  Menu,
+  Search,
+  Bell,
+  Plus,
+  Command,
+  Building2,
+} from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { NewProposalModal } from '@/components/proposals/NewProposalModal';
 import { useAuth } from '@/hooks/useAuth';
+import { useLunovaStore } from '@/lib/lunovaStore';
 
 interface HeaderProps {
   onOpenMobileMenu: () => void;
@@ -13,12 +21,14 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ onOpenMobileMenu }) => {
   const router = useRouter();
-  const { user, isAuthenticated } = useAuth();
+  const { user: authUser, isAuthenticated } = useAuth();
+  const { toggleCommandPalette, user: storeUser, proposals, addToast } = useLunovaStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const [backendStatus, setBackendStatus] = useState<'checking' | 'connected' | 'offline'>('checking');
 
-  const userInitials = (user?.name || user?.email || 'AU')
+  const pendingCount = proposals.filter((p: { phase: string }) => p.phase === 'in_review').length;
+
+  const userInitials = (authUser?.name || authUser?.email || 'AU')
     .split(' ')
     .map((n) => n[0])
     .join('')
@@ -37,48 +47,37 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMobileMenu }) => {
       });
   }, []);
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/proposals?search=${encodeURIComponent(searchQuery.trim())}`);
-    }
-  };
-
   return (
     <>
-      <header className="h-16 bg-white border-b border-[#E2E5E9] px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 shadow-[0_1px_2px_rgba(15,23,42,0.03)]">
-        {/* Left Section: Mobile Menu + Search */}
+      <header className="h-16 px-4 sm:px-6 lg:px-8 border-b border-line bg-surface-1 flex items-center justify-between gap-4 sticky top-0 z-30 shadow-xs">
+        {/* Left: Mobile Toggle & Global Search ⌘K Trigger */}
         <div className="flex items-center gap-3 flex-1 max-w-lg">
           <button
             onClick={onOpenMobileMenu}
-            className="lg:hidden p-2 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors"
-            aria-label="Open sidebar"
+            className="lg:hidden p-2.5 rounded-lg hover:bg-surface-2 text-text-muted hover:text-text border border-line transition-colors cursor-pointer"
+            aria-label="Open Navigation"
           >
-            <Menu className="w-5 h-5" />
+            <Menu className="w-4.5 h-4.5" />
           </button>
 
-          {/* Quick Search */}
-          <form onSubmit={handleSearchSubmit} className="relative w-full max-w-sm">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-              <Search className="w-4 h-4" />
+          {/* ⌘K Command Palette Search Bar Trigger */}
+          <button
+            onClick={toggleCommandPalette}
+            className="w-full flex items-center justify-between min-h-[42px] px-4 py-2 rounded-xl bg-surface-2 hover:bg-surface-3 border border-line text-sm text-text-muted hover:text-text transition-all duration-150 group text-left cursor-pointer"
+          >
+            <div className="flex items-center gap-2.5">
+              <Search className="w-4 h-4 text-text-muted group-hover:text-accent transition-colors" />
+              <span className="truncate font-medium">Search proposals, docs, evidence...</span>
             </div>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search proposals, customers, requirements..."
-              className="w-full bg-[#F4F5F7] text-gray-900 placeholder:text-gray-400 text-xs rounded-xl border border-[#E2E5E9] pl-9 pr-8 py-2 transition-all duration-150 focus:outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 shadow-[inset_0_1px_2px_rgba(15,23,42,0.04)]"
-            />
-            <div className="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none">
-              <kbd className="hidden sm:inline-block text-[10px] font-mono text-gray-400 bg-white px-1.5 py-0.5 rounded border border-gray-200">
-                ⌘K
-              </kbd>
+            <div className="flex items-center gap-1 font-mono text-[11px] font-semibold bg-surface-1 px-2 py-0.5 rounded-md border border-line text-text-muted shadow-xs">
+              <Command className="w-3 h-3" />
+              <span>K</span>
             </div>
-          </form>
+          </button>
         </div>
 
-        {/* Right Section: Actions & Profile */}
-        <div className="flex items-center gap-3">
+        {/* Right: Status, Tenant, Notifications, New Proposal, Profile */}
+        <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
           {/* Backend Connection Status Badge */}
           <div
             className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium border bg-[#F8FAFC] border-[#E2E5E9]"
@@ -98,13 +97,28 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMobileMenu }) => {
             </span>
           </div>
 
-          {/* Notification Button */}
+          {/* Tenant Pill */}
+          <div className="hidden md:flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-surface-2 border border-line text-xs font-mono font-semibold text-text">
+            <Building2 className="w-3.5 h-3.5 text-accent" />
+            <span>{storeUser?.tenant || 'Lunetron Technologies'}</span>
+          </div>
+
+          {/* Notification Bell */}
           <button
-            className="relative p-2 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors"
-            aria-label="Notifications"
+            onClick={() =>
+              addToast({
+                title: 'Review Queue Synchronized',
+                message: `${pendingCount} proposals currently require human inspection.`,
+                type: 'default',
+              })
+            }
+            className="relative min-h-[40px] min-w-[40px] flex items-center justify-center p-2 rounded-xl hover:bg-surface-2 text-text-muted hover:text-text border border-line transition-colors cursor-pointer"
+            title={`${pendingCount} proposals in review`}
           >
             <Bell className="w-4 h-4" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-600 rounded-full" />
+            {pendingCount > 0 && (
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-accent" />
+            )}
           </button>
 
           {/* Primary Action: New Proposal */}
@@ -122,10 +136,10 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMobileMenu }) => {
           <div className="h-6 w-px bg-gray-200 hidden sm:block" />
 
           {/* User Profile Mini */}
-          {isAuthenticated && user ? (
+          {isAuthenticated && authUser ? (
             <div
               className="flex items-center gap-2 pl-1 cursor-pointer"
-              title={`${user.name || user.email} (${user.role})`}
+              title={`${authUser.name || authUser.email} (${authUser.role})`}
               onClick={() => router.push('/settings')}
             >
               <div className="w-8 h-8 rounded-full bg-blue-600 text-white font-semibold text-xs flex items-center justify-center shadow-sm">

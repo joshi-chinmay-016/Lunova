@@ -1,101 +1,241 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Space+Grotesk:wght@500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --bg-canvas: #F4F5F7;
-  --surface-card: #FFFFFF;
-  --surface-secondary: #EEF0F3;
-  --surface-tertiary: #E5E8EC;
-  --border-subtle: #E2E5E9;
-  --border-strong: #D1D5DB;
-  --text-primary: #1F2937;
-  --text-secondary: #6B7280;
-  --text-muted: #9CA3AF;
-  --primary-accent: #2563EB;
+  /* =========================================================================
+     LUNOVA NEXT-GEN AI DESIGN TOKENS — GOOGLE AI / REACTBITS TIER
+     ========================================================================= */
+  --bg: #F8FAFC;            /* Clean light slate canvas */
+  --surface-1: #FFFFFF;     /* Solid pure white cards */
+  --surface-2: #F1F5F9;     /* Subtle secondary surface */
+  --surface-3: #E2E8F0;     /* Muted border & accent surface */
+  --line: #E2E8F0;          /* Crisp 1px hairline border */
+  --line-strong: #CBD5E1;   /* Defined structural dividers */
+  --text: #090D16;          /* Deep Obsidian Ink — Maximum contrast */
+  --text-muted: #475569;    /* Crisp secondary slate */
+  --text-subtle: #64748B;   /* Subtle labels & metadata */
+  --accent: #059669;        /* Quantum Emerald */
+  --accent-hover: #047857;
+  --accent-soft: rgba(5, 150, 105, 0.08);
+  --accent-glow: rgba(5, 150, 105, 0.22);
+  --cyan: #0284C7;          /* Electric Cyan */
+  --evidence: #0D9488;      /* Verified Teal */
+  --evidence-soft: rgba(13, 148, 136, 0.10);
+  --gap: #E11D48;           /* Attention Coral */
+  --gap-soft: rgba(225, 29, 72, 0.10);
+  --info: #0284C7;
+  --info-soft: rgba(2, 132, 199, 0.08);
+
+  /* Radius & Motion */
+  --radius-card: 16px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+
+  --ease-lunova: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 120ms;
+  --duration-normal: 200ms;
+  --duration-slow: 320ms;
+  --duration-deliberate: 520ms;
+}
+
+[data-theme='day'], [data-theme='night'] {
+  --bg: #F8FAFC;
+  --surface-1: #FFFFFF;
+  --surface-2: #F1F5F9;
+  --surface-3: #E2E8F0;
+  --line: #E2E8F0;
+  --line-strong: #CBD5E1;
+  --text: #090D16;
+  --text-muted: #475569;
+  --text-subtle: #64748B;
+  --accent: #059669;
+  --accent-hover: #047857;
+  --accent-soft: rgba(5, 150, 105, 0.08);
+  --accent-glow: rgba(5, 150, 105, 0.22);
+  --cyan: #0284C7;
+  --evidence: #0D9488;
+  --evidence-soft: rgba(13, 148, 136, 0.10);
+  --gap: #E11D48;
+  --gap-soft: rgba(225, 29, 72, 0.10);
+  --info: #0284C7;
+  --info-soft: rgba(2, 132, 199, 0.08);
 }
 
 * {
   box-sizing: border-box;
 }
 
-body {
-  color: var(--text-primary);
-  background-color: var(--bg-canvas);
-  min-height: 100vh;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+html {
+  scroll-behavior: smooth;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  text-rendering: geometricPrecision;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Subtle clay card utilities */
-.clay-card {
-  background-color: #FFFFFF;
-  border: 1px solid #E2E5E9;
-  border-radius: 1rem;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 8px 24px -4px rgba(15, 23, 42, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.95);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+body {
+  color: var(--text);
+  background-color: var(--bg);
+  min-height: 100vh;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.6;
+  font-size: 15px;
+  position: relative;
+  overflow-x: hidden;
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-.clay-card-interactive {
-  background-color: #FFFFFF;
-  border: 1px solid #E2E5E9;
-  border-radius: 1rem;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 8px 24px -4px rgba(15, 23, 42, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.95);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.clay-card-interactive:hover {
-  transform: translateY(-2px);
-  border-color: #D1D5DB;
-  box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 12px 28px -4px rgba(15, 23, 42, 0.09), inset 0 1px 0 rgba(255, 255, 255, 1);
+/* Typography Utility Classes */
+.font-display {
+  font-family: 'Space Grotesk', 'Plus Jakarta Sans', sans-serif;
 }
 
-.clay-well {
-  background-color: #EEF0F3;
-  border: 1px solid #E2E5E9;
-  border-radius: 0.75rem;
-  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.05);
+.font-sans {
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
-.clay-input {
-  background-color: #FFFFFF;
-  border: 1px solid #E2E5E9;
-  border-radius: 0.625rem;
-  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
-}
-.clay-input:focus {
-  outline: none;
-  border-color: #3B82F6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15), inset 0 1px 2px rgba(15, 23, 42, 0.04);
+.font-mono {
+  font-family: 'JetBrains Mono', monospace;
 }
 
-/* Restrained scrollbar */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Gradient Text Utilities */
+.text-gradient-aurora {
+  background: linear-gradient(135deg, #059669 0%, #0D9488 40%, #0284C7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-dark {
+  background: linear-gradient(135deg, #090D16 0%, #1E293B 70%, #059669 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Glass Specular Panel */
+.glass-card {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 20px 50px rgba(8, 112, 184, 0.07), inset 0 1px 1px rgba(255, 255, 255, 0.9);
+}
+
+.glass-card-interactive {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1.5px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 20px 50px rgba(8, 112, 184, 0.07), inset 0 1px 1px rgba(255, 255, 255, 0.9);
+  transition: all 250ms var(--ease-lunova);
+}
+
+.glass-card-interactive:hover {
+  transform: translateY(-3px);
+  border-color: rgba(5, 150, 105, 0.4);
+  box-shadow: 0 28px 60px rgba(5, 150, 105, 0.12), inset 0 1px 1px rgba(255, 255, 255, 1);
+}
+
+/* ReactBits Border Beam Animation */
+@keyframes border-beam {
+  0% {
+    offset-distance: 0%;
+  }
+  100% {
+    offset-distance: 100%;
+  }
+}
+
+/* Shimmer Button Effect */
+@keyframes shine {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(200%);
+  }
+}
+
+.animate-shine {
+  animation: shine 3s infinite linear;
+}
+
+/* Hanging Element Pendulum Swing */
+@keyframes hangSwing {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(2deg);
+  }
+  75% {
+    transform: rotate(-2deg);
+  }
+}
+
+.animate-hang {
+  transform-origin: top center;
+  animation: hangSwing 5s ease-in-out infinite;
+}
+
+/* Gentle Float Animation */
+@keyframes gentleFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.animate-float {
+  animation: gentleFloat 4s ease-in-out infinite;
+}
+
+/* Radar Ping Ripple */
+@keyframes radarRipple {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+.animate-radar {
+  animation: radarRipple 2s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+}
+
+/* Custom Crisp Scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #F4F5F7;
+  background: var(--surface-2);
 }
 ::-webkit-scrollbar-thumb {
-  background: #CBD5E1;
+  background: var(--line-strong);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94A3B8;
+  background: var(--text-subtle);
 }
 
-/* Subtle Shimmer for skeletons */
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-.skeleton-shimmer {
-  background: linear-gradient(90deg, #EEF0F3 25%, #E5E8EC 37%, #EEF0F3 63%);
-  background-size: 400% 100%;
-  animation: shimmer 1.8s ease-in-out infinite;
+/* Focus Visible Emerald Ring */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }

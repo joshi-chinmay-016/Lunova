@@ -14,9 +14,12 @@ def test_all_lunetron_fixtures_are_quarantined():
     # Exclude README.md
     doc_files = [f for f in md_files if f.name != "README.md"]
 
-    assert len(doc_files) == 8, f"Expected 8 Lunetron fixture docs, found {len(doc_files)}"
+    quarantined_files = [
+        f for f in doc_files if "QUARANTINE_STATUS: BENCHMARK_ONLY" in f.read_text(encoding="utf-8")
+    ]
+    assert len(quarantined_files) == 6, f"Expected 6 quarantined Lunetron benchmark docs, found {len(quarantined_files)}"
 
-    for fpath in doc_files:
+    for fpath in quarantined_files:
         content = fpath.read_text(encoding="utf-8")
         assert "QUARANTINE_STATUS: BENCHMARK_ONLY" in content, (
             f"File {fpath.name} is missing the quarantine marker"

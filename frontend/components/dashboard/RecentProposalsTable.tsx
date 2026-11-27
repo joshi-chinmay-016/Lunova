@@ -82,9 +82,9 @@ export const RecentProposalsTable: React.FC<RecentProposalsTableProps> = ({ prop
               {/* Action */}
               <td className="py-3 px-4 text-right whitespace-nowrap">
                 <Link href={`/proposals/${prop.id}`}>
-                  <Button variant="ghost" size="sm" className="h-7 px-2.5 text-xs">
+                  <Button variant="ghost" size="sm" className="min-h-[38px] px-4 py-1.5 text-xs font-semibold gap-2">
                     <span>Workspace</span>
-                    <ArrowRight className="w-3.5 h-3.5 ml-1 text-gray-400 group-hover:text-blue-600" />
+                    <ArrowRight className="w-3.5 h-3.5 text-gray-400 group-hover:text-blue-600" />
                   </Button>
                 </Link>
               </td>

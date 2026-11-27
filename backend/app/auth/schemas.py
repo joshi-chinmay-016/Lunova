@@ -20,6 +20,13 @@ class UserLogin(BaseModel):
     password: str
 
 
+class UserRegister(BaseModel):
+    name: str
+    email: EmailStr
+    password: str
+    company_name: Optional[str] = "Lunetron Technologies"
+
+
 class AuthenticatedUser(BaseModel):
     id: UUID
     company_id: UUID
