@@ -8,67 +8,73 @@ import {
   AlertTriangle,
   UserCheck,
   CheckCircle2,
+  Database,
+  Lock,
 } from 'lucide-react';
+import { BorderBeam } from '@/components/ui/BorderBeam';
 
 export const CapabilitiesSection: React.FC = () => {
   return (
-    <section id="capabilities" className="relative py-14 sm:py-16 lg:py-20 bg-gradient-to-b from-slate-50/20 via-blue-50/30 to-white border-b border-blue-100/70 overflow-hidden">
-      {/* Crisp geometric grid (no blur) */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(37,99,235,0.025)_1px,transparent_1px),linear-gradient(to_bottom,rgba(37,99,235,0.025)_1px,transparent_1px)] bg-[size:44px_44px] pointer-events-none" />
+    <section id="capabilities" className="relative py-16 sm:py-20 lg:py-24 border-b border-slate-200/80 overflow-hidden">
+      {/* High-tech dot matrix */}
+      <div className="absolute inset-0 bg-[radial-gradient(#059669_1px,transparent_1px)] [background-size:28px_28px] opacity-[0.05] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Header */}
-        <div className="max-w-2xl mb-8 sm:mb-10">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200/90 text-xs font-semibold uppercase tracking-wider text-blue-700 mb-2.5 shadow-xs">
-            <FileSearch className="w-3.5 h-3.5 text-blue-600" />
-            <span>Core Capabilities</span>
+        <div className="max-w-3xl mb-12 sm:mb-16">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-xs font-mono font-semibold uppercase tracking-wider text-emerald-800 mb-3.5 shadow-xs">
+            <FileSearch className="w-3.5 h-3.5 text-emerald-600" />
+            <span>07 // Core Systems</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-slate-950 mb-2.5 leading-tight">
-            Engineered around evidence, <span className="text-blue-600">not guesswork</span>.
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-display font-extrabold tracking-tight text-slate-950 mb-4 leading-tight">
+            Engineered around verifiable evidence,{' '}
+            <span className="text-gradient-aurora">never approximations</span>.
           </h2>
-          <p className="text-sm sm:text-base text-slate-800 leading-relaxed font-normal">
+          <p className="text-base sm:text-lg text-slate-700 leading-relaxed font-sans">
             Five core capabilities designed specifically for enterprise proposal responses, technical RFPs, and security questionnaires.
           </p>
         </div>
 
-        {/* Varied Editorial Layout: 1 Large Feature + 2 Medium + 2 Typographic */}
+        {/* Feature Grid: 1 Large + 2 Medium + 2 Small */}
         <div className="space-y-6 sm:space-y-8">
-          {/* 1 Large Capability with Detailed Visual */}
-          <div className="p-7 sm:p-9 rounded-3xl bg-white border border-blue-100 hover:border-blue-400/80 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            <div className="lg:col-span-6 space-y-3.5">
-              <span className="text-xs font-mono font-bold uppercase tracking-wider text-blue-600">
-                Capability 01 • Grounded Retrieval
+          {/* 1 Large Capability */}
+          <div className="relative glass-card-interactive p-7 sm:p-9 rounded-3xl border border-emerald-200/90 shadow-xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-white/90">
+            <BorderBeam size={180} duration={8} colorFrom="#10B981" colorTo="#06B6D4" borderWidth={1.5} />
+
+            <div className="lg:col-span-6 space-y-4">
+              <span className="text-xs font-mono font-bold uppercase tracking-wider text-emerald-700">
+                Capability 01 // Air-Gapped Retrieval
               </span>
-              <h3 className="text-lg sm:text-xl font-bold text-slate-900 leading-snug">
+              <h3 className="text-xl sm:text-2xl font-display font-bold text-slate-900 leading-snug">
                 Company knowledge retrieval with strict tenant boundaries.
               </h3>
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
-                Lunova indexes your corporate whitepapers, architecture specifications, and compliance certifications into an isolated vector store. Cosine similarity thresholds prevent low-relevance documents from polluting drafts.
+              <p className="text-sm text-slate-600 leading-relaxed font-sans">
+                Lunova indexes corporate whitepapers, architecture specifications, and compliance certifications into an isolated vector store. Cosine similarity thresholds prevent low-relevance documents from polluting drafts.
               </p>
-              <div className="pt-2 flex flex-wrap gap-2 text-xs font-mono text-slate-600">
-                <span className="px-3 py-1 rounded-lg bg-blue-50/60 border border-blue-100 font-semibold text-blue-700">Multi-page PDF parsing</span>
-                <span className="px-3 py-1 rounded-lg bg-blue-50/60 border border-blue-100 font-semibold text-blue-700">Strict cosine filtering</span>
-                <span className="px-3 py-1 rounded-lg bg-blue-50/60 border border-blue-100 font-semibold text-blue-700">Zero cross-tenant bleed</span>
+              <div className="pt-2 flex flex-wrap gap-2 text-xs font-mono">
+                <span className="px-3 py-1 rounded-lg bg-emerald-50 border border-emerald-200 font-bold text-emerald-800">Multi-page PDF parsing</span>
+                <span className="px-3 py-1 rounded-lg bg-cyan-50 border border-cyan-200 font-bold text-cyan-800">Strict cosine filtering</span>
+                <span className="px-3 py-1 rounded-lg bg-emerald-50 border border-emerald-200 font-bold text-emerald-800">Zero cross-tenant bleed</span>
               </div>
             </div>
 
-            <div className="lg:col-span-6 bg-surface p-6 rounded-xl border border-line space-y-3 shadow-sm">
-              <div className="flex items-center justify-between text-xs pb-2 border-b border-line">
-                <span className="font-semibold text-ink">Indexed Knowledge Base</span>
-                <span className="font-mono text-muted text-[11px]">Tenant: Lunetron Core</span>
+            <div className="lg:col-span-6 bg-slate-50 p-6 rounded-2xl border border-slate-200 space-y-3 shadow-inner">
+              <div className="flex items-center justify-between text-xs pb-2 border-b border-slate-200 font-mono">
+                <span className="font-bold text-slate-900">Isolated Vector Store</span>
+                <span className="text-emerald-700 font-bold">Tenant: Lunetron Core</span>
               </div>
-              <div className="space-y-2 text-xs">
-                <div className="p-2.5 rounded-lg bg-paper/50 border border-line flex items-center justify-between">
-                  <span className="text-ink font-medium">SOC2_Audit_Report_2026.pdf</span>
-                  <span className="text-emerald-700 font-mono text-[10px]">100% Vector Indexed</span>
+              <div className="space-y-2 text-xs font-mono">
+                <div className="p-3 rounded-xl bg-white border border-slate-200 flex items-center justify-between shadow-xs">
+                  <span className="text-slate-800 font-medium">SOC2_Audit_Report_2026.pdf</span>
+                  <span className="text-emerald-700 font-bold">100% Vector Indexed</span>
                 </div>
-                <div className="p-2.5 rounded-lg bg-paper/50 border border-line flex items-center justify-between">
-                  <span className="text-ink font-medium">AWS_Reference_Architecture.docx</span>
-                  <span className="text-emerald-700 font-mono text-[10px]">100% Vector Indexed</span>
+                <div className="p-3 rounded-xl bg-white border border-slate-200 flex items-center justify-between shadow-xs">
+                  <span className="text-slate-800 font-medium">AWS_Reference_Architecture.docx</span>
+                  <span className="text-emerald-700 font-bold">100% Vector Indexed</span>
                 </div>
-                <div className="p-2.5 rounded-lg bg-paper/50 border border-line flex items-center justify-between">
-                  <span className="text-ink font-medium">Enterprise_Support_SLA.pdf</span>
-                  <span className="text-emerald-700 font-mono text-[10px]">100% Vector Indexed</span>
+                <div className="p-3 rounded-xl bg-white border border-slate-200 flex items-center justify-between shadow-xs">
+                  <span className="text-slate-800 font-medium">Enterprise_Support_SLA.pdf</span>
+                  <span className="text-emerald-700 font-bold">100% Vector Indexed</span>
                 </div>
               </div>
             </div>
@@ -76,51 +82,51 @@ export const CapabilitiesSection: React.FC = () => {
 
           {/* 2 Medium Supporting Capabilities */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="p-6 sm:p-8 rounded-2xl bg-paper/60 border border-line space-y-4">
-              <div className="w-10 h-10 rounded-xl bg-surface border border-line flex items-center justify-center text-accent">
+            <div className="glass-card p-6 sm:p-8 rounded-2xl border border-slate-200 space-y-4 shadow-sm hover:shadow-md transition-all">
+              <div className="w-11 h-11 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600">
                 <FileSearch className="w-5 h-5" />
               </div>
-              <span className="text-xs font-mono font-semibold uppercase tracking-wider text-muted">
-                Capability 02 • Understanding
+              <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-500">
+                Capability 02 // Decomposition
               </span>
-              <h3 className="text-lg font-semibold text-ink">
+              <h3 className="text-lg font-display font-bold text-slate-900">
                 Proposal request decomposition
               </h3>
-              <p className="text-xs sm:text-sm text-muted leading-relaxed font-sans">
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-sans">
                 Deconstructs multi-part inquiry letters, questionnaire tables, and attached RFP specifications into categorized technical, security, and operational requirements.
               </p>
             </div>
 
-            <div className="p-6 sm:p-8 rounded-2xl bg-paper/60 border border-line space-y-4">
-              <div className="w-10 h-10 rounded-xl bg-surface border border-line flex items-center justify-center text-amber-700">
+            <div className="glass-card p-6 sm:p-8 rounded-2xl border border-slate-200 space-y-4 shadow-sm hover:shadow-md transition-all">
+              <div className="w-11 h-11 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700">
                 <AlertTriangle className="w-5 h-5" />
               </div>
-              <span className="text-xs font-mono font-semibold uppercase tracking-wider text-muted">
-                Capability 03 • Visibility
+              <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-500">
+                Capability 03 // Gap Visibility
               </span>
-              <h3 className="text-lg font-semibold text-ink">
+              <h3 className="text-lg font-display font-bold text-slate-900">
                 Missing-information visibility
               </h3>
-              <p className="text-xs sm:text-sm text-muted leading-relaxed font-sans">
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-sans">
                 Surfaces ambiguities, omitted timelines, and missing evidence clearly so your solutions team can intervene rather than submitting speculative assertions.
               </p>
             </div>
           </div>
 
-          {/* 2 Typographic Supporting Capabilities */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
-            <div className="p-6 rounded-xl border-l-2 border-accent bg-paper/30 space-y-2">
-              <span className="text-xs font-mono uppercase text-muted font-semibold">Capability 04 • Drafting</span>
-              <h4 className="text-base font-semibold text-ink">Evidence-backed draft synthesis</h4>
-              <p className="text-xs text-muted leading-relaxed">
+          {/* 2 Typographic Capabilities */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-2">
+            <div className="p-6 rounded-2xl border-l-4 border-emerald-500 bg-white/90 border border-slate-200 space-y-2 shadow-xs">
+              <span className="text-xs font-mono uppercase text-emerald-700 font-bold">Capability 04 // Drafting</span>
+              <h4 className="text-base font-display font-bold text-slate-900">Evidence-backed draft synthesis</h4>
+              <p className="text-xs text-slate-600 leading-relaxed font-sans">
                 Assembles professional responses where every statement cites the underlying corporate document, enabling fast verification by subject matter experts.
               </p>
             </div>
 
-            <div className="p-6 rounded-xl border-l-2 border-accent bg-paper/30 space-y-2">
-              <span className="text-xs font-mono uppercase text-muted font-semibold">Capability 05 • Governance</span>
-              <h4 className="text-base font-semibold text-ink">Human review &amp; sign-off workflow</h4>
-              <p className="text-xs text-muted leading-relaxed">
+            <div className="p-6 rounded-2xl border-l-4 border-cyan-500 bg-white/90 border border-slate-200 space-y-2 shadow-xs">
+              <span className="text-xs font-mono uppercase text-cyan-700 font-bold">Capability 05 // Governance</span>
+              <h4 className="text-base font-display font-bold text-slate-900">Human review &amp; sign-off workflow</h4>
+              <p className="text-xs text-slate-600 leading-relaxed font-sans">
                 Empowers technical leads to inspect evidence, edit paragraphs, add internal sign-off notes, and authorize dispatch through an immutable review trail.
               </p>
             </div>

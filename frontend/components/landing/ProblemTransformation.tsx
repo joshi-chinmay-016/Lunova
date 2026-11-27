@@ -1,171 +1,179 @@
 'use client';
 
 import React from 'react';
-import { ArrowRight, FileText, CheckCircle2, AlertCircle, Layers, Sparkles, Clock, ArrowDown } from 'lucide-react';
+import { FileText, CheckCircle2, AlertCircle, Sparkles, Clock, ArrowRight, ShieldCheck, Zap } from 'lucide-react';
+import { BorderBeam } from '@/components/ui/BorderBeam';
 
 export const ProblemTransformation: React.FC = () => {
   return (
-    <section className="relative py-14 sm:py-16 lg:py-20 bg-gradient-to-b from-white via-blue-50/35 to-slate-50/20 border-b border-blue-100/70 overflow-hidden">
-      {/* Subtle crisp geometric background (no blur) */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(37,99,235,0.025)_1px,transparent_1px),linear-gradient(to_bottom,rgba(37,99,235,0.025)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
+    <section className="relative py-16 sm:py-20 lg:py-24 border-b border-slate-200/80 overflow-hidden">
+      {/* High-tech dot-matrix grid with subtle cyan glow */}
+      <div className="absolute inset-0 bg-[radial-gradient(#059669_1px,transparent_1px)] [background-size:24px_24px] opacity-[0.06] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Header */}
-        <div className="max-w-2xl mb-8 sm:mb-10">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200/90 text-xs font-semibold uppercase tracking-wider text-blue-700 mb-2.5 shadow-xs">
-            <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-            <span>The Transformation</span>
+        <div className="max-w-3xl mb-12 sm:mb-16">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-xs font-mono font-semibold uppercase tracking-wider text-emerald-800 mb-3.5 shadow-xs">
+            <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+            <span>01 // System Transformation</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-slate-950 mb-2.5 leading-tight">
-            Proposal requests are <span className="text-blue-600">only the beginning</span>.
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-display font-extrabold tracking-tight text-slate-950 mb-4 leading-tight">
+            Proposal requests are{' '}
+            <span className="text-gradient-aurora">just the entry vector</span>.
           </h2>
-          <p className="text-sm sm:text-base text-slate-800 leading-relaxed font-normal">
-            Finding the right information, connecting it to each requirement, and preparing a reliable response can take more work than writing the final answer.
+          <p className="text-base sm:text-lg text-slate-700 leading-relaxed font-sans">
+            Sifting through stale Confluence pages, disconnected spreadsheets, and fragmented chat history drains engineering velocity. Lunova transforms unstructured inbound requests into cryptographically grounded, review-ready deliverables.
           </p>
         </div>
 
-        {/* Side-by-Side Transformation Visual */}
+        {/* Side-by-Side Comparison */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
-          {/* Left Side: Unstructured Request Friction */}
-          <div className="group bg-white rounded-3xl border border-slate-200/90 p-7 sm:p-9 flex flex-col justify-between space-y-6 shadow-sm hover:shadow-md transition-all duration-300">
+          {/* Left Side: Legacy Chaos */}
+          <div className="glass-card rounded-3xl p-7 sm:p-9 flex flex-col justify-between space-y-6 border border-rose-200/70 bg-gradient-to-b from-white/90 via-rose-50/20 to-white/90 shadow-sm hover:shadow-md transition-all duration-300">
             <div className="space-y-5">
-              <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
-                <span className="text-xs font-mono uppercase tracking-wider text-rose-600/90 font-bold flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-rose-500" />
-                  Before • Manual Assembly
+              <div className="flex items-center justify-between pb-4 border-b border-rose-100">
+                <span className="text-xs font-mono uppercase tracking-wider text-rose-700 font-bold flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse" />
+                  Legacy RFP Chaos • 4-8 Day Delay
                 </span>
-                <span className="text-xs font-mono text-slate-400 bg-slate-100 px-2 py-0.5 rounded">Raw Inquiry</span>
+                <span className="text-xs font-mono text-slate-600 bg-rose-50 border border-rose-200/80 px-2.5 py-1 rounded-md font-medium">
+                  Unstructured Input
+                </span>
               </div>
 
               <div className="space-y-2">
-                <h3 className="text-base sm:text-lg font-bold text-slate-900">
-                  Scattered questions across email threads &amp; PDFs
+                <h3 className="text-lg sm:text-xl font-display font-bold text-slate-900">
+                  Scattered inquiries across buried email threads &amp; PDFs
                 </h3>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                  Engineers search through stale Confluence pages, outdated sales decks, and chat messages trying to reconstruct accurate product specs.
+                <p className="text-sm text-slate-600 leading-relaxed font-sans">
+                  Subject matter experts get pinged repeatedly for the same answers, while teams copy-paste outdated paragraphs that risk customer churn or compliance fines.
                 </p>
               </div>
 
-              {/* Realistic Email Fragment */}
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2 text-xs font-mono text-slate-700 leading-relaxed">
-                <p className="text-slate-500 text-[11px] pb-1.5 border-b border-slate-200 font-semibold flex items-center gap-1.5">
-                  <FileText className="w-3.5 h-3.5 text-slate-400" />
-                  Attachment: Security_Questionnaire_v3_Final.pdf (48 pages)
-                </p>
-                <p className="italic">
-                  &ldquo;...Can you verify whether your customer keys support auto-rotation under AWS KMS? Also, does your high-availability configuration support multi-region cross-cloud failover, and what is your average onboarding velocity for 5,000+ seats?...&rdquo;
+              {/* Realistic Raw Inbound Fragment */}
+              <div className="p-4 rounded-2xl bg-slate-900 text-slate-200 space-y-2.5 text-xs font-mono leading-relaxed shadow-inner">
+                <div className="flex items-center justify-between text-slate-400 text-[11px] pb-2 border-b border-slate-800">
+                  <span className="flex items-center gap-1.5 text-slate-300">
+                    <FileText className="w-3.5 h-3.5 text-rose-400" />
+                    Vendor_Sec_Questionnaire_v4.2.pdf
+                  </span>
+                  <span className="text-rose-400 font-mono">148 Pages</span>
+                </div>
+                <p className="text-slate-300 font-mono text-[12px] leading-relaxed">
+                  <span className="text-rose-400">&gt; Req 4.19:</span> &ldquo;Describe customer KMS key rotation cadence, disaster recovery RTO/RPO guarantees, SOC2 Type II cert boundary, and multi-region cross-cloud active-active failover capabilities...&rdquo;
                 </p>
               </div>
 
-              <div className="space-y-2 text-xs text-slate-600 pt-1">
+              <div className="space-y-2.5 text-xs text-slate-600 pt-1 font-sans">
                 <div className="flex items-center gap-2.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0" />
-                  <span>Ambiguities and missing terms hidden within long paragraphs</span>
+                  <span className="font-medium text-slate-700">Zero cryptographic audit trail for assertions</span>
                 </div>
                 <div className="flex items-center gap-2.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0" />
-                  <span>SMEs repeatedly asked to answer the exact same questions</span>
+                  <span className="font-medium text-slate-700">Ambiguities hidden inside verbose prose</span>
                 </div>
                 <div className="flex items-center gap-2.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0" />
-                  <span>No audit log of which document version supported each claim</span>
+                  <span className="font-medium text-slate-700">SMEs lose 30%+ of engineering sprint capacity</span>
                 </div>
               </div>
             </div>
 
-            <div className="pt-4 border-t border-slate-100 text-xs font-mono text-slate-500 flex items-center justify-between">
-              <span className="flex items-center gap-1.5 text-rose-700 font-semibold">
-                <Clock className="w-3.5 h-3.5" /> Turnaround: 4–8 business days
+            <div className="pt-4 border-t border-rose-100 text-xs font-mono flex items-center justify-between text-slate-500">
+              <span className="flex items-center gap-1.5 text-rose-700 font-bold">
+                <Clock className="w-4 h-4" /> Avg Turnaround: 5 business days
               </span>
-              <span className="text-slate-400">High cognitive friction</span>
+              <span className="text-rose-600/90 font-medium">High Cognitive Drift</span>
             </div>
           </div>
 
-          {/* Right Side: Structured Lunova Intelligence */}
-          <div className="relative group bg-gradient-to-b from-white to-blue-50/20 rounded-3xl border-2 border-blue-200/90 hover:border-blue-500/80 p-7 sm:p-9 flex flex-col justify-between space-y-6 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-            {/* Hanging decorative badge */}
-            <div className="hidden sm:flex absolute -top-5 right-8 flex-col items-center animate-hang origin-top pointer-events-none z-20">
-              <div className="w-1 h-3.5 bg-blue-500" />
-              <span className="px-3 py-1 rounded-full bg-gradient-to-r from-blue-600 to-blue-700 text-white text-[10px] font-mono font-bold tracking-wider uppercase shadow-md flex items-center gap-1.5">
-                <Sparkles className="w-3 h-3 text-blue-200" />
-                Live Structured Output
-              </span>
-            </div>
+          {/* Right Side: Lunova AI Intelligence */}
+          <div className="relative glass-card-interactive rounded-3xl p-7 sm:p-9 flex flex-col justify-between space-y-6 border-2 border-emerald-300/80 bg-gradient-to-b from-white/95 via-emerald-50/25 to-white/95 shadow-xl">
+            <BorderBeam size={180} duration={8} colorFrom="#10B981" colorTo="#0284C7" borderWidth={2} />
 
             <div className="space-y-5">
-              <div className="flex items-center justify-between pb-3.5 border-b border-blue-100">
-                <span className="text-xs font-mono uppercase tracking-wider text-blue-700 font-bold flex items-center gap-1.5">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-600" />
-                  </span>
-                  With Lunova • Grounded &amp; Structured
+              <div className="flex items-center justify-between pb-4 border-b border-emerald-100">
+                <span className="text-xs font-mono uppercase tracking-wider text-emerald-800 font-bold flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Lunova Intelligence Engine
                 </span>
-                <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 font-bold border border-blue-200">
-                  Automated Pipeline
+                <span className="text-xs font-mono text-emerald-800 bg-emerald-100/80 border border-emerald-300 px-3 py-1 rounded-full font-bold">
+                  Zero Hallucination
                 </span>
               </div>
 
               <div className="space-y-2">
-                <h3 className="text-base sm:text-lg font-bold text-slate-900">
-                  Requirements extracted, grounded in company truth
+                <h3 className="text-lg sm:text-xl font-display font-bold text-slate-900">
+                  Decomposed into verifiable claims with linked proof
                 </h3>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                  Lunova decomposes the RFP into discrete requirements, maps each to corporate documentation, and drafts verified responses for SME sign-off.
+                <p className="text-sm text-slate-600 leading-relaxed font-sans">
+                  The parser extracts every contractual obligation, queries tenant-isolated vector stores, and synthesizes answers verified down to the paragraph.
                 </p>
               </div>
 
-              {/* Structured Requirement Cards with alive micro-interactions */}
-              <div className="space-y-3">
-                <div className="p-3.5 rounded-xl bg-white border border-blue-100 hover:border-blue-300 shadow-xs hover:shadow-sm transition-all duration-200 flex items-start justify-between gap-3 text-xs">
+              {/* Structured Requirement Cards */}
+              <div className="space-y-3 font-sans">
+                <div className="p-3.5 rounded-2xl bg-white border border-emerald-200/90 shadow-sm flex items-start justify-between gap-3 text-xs hover:border-emerald-400 transition-all">
                   <div className="space-y-1">
-                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
-                      SECURITY REQ 1
-                    </span>
-                    <p className="font-semibold text-slate-900">KMS customer-managed key rotation</p>
-                    <p className="text-[11px] text-blue-700 font-mono">Evidence: Security Whitepaper 2026 §4.2</p>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-300">
+                        SEC-REQ-01
+                      </span>
+                      <span className="text-[11px] font-mono text-emerald-700 font-medium">99.2% cosine match</span>
+                    </div>
+                    <p className="font-semibold text-slate-900">AWS KMS Customer-Managed Key Rotation</p>
+                    <p className="text-[11px] text-slate-600 font-mono">Source: Security_Architecture_2026.pdf §4.2</p>
                   </div>
-                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full shrink-0 border border-emerald-200 flex items-center gap-1">
-                    <CheckCircle2 className="w-3 h-3" />
-                    Grounded
+                  <span className="text-[11px] font-mono font-bold text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-full shrink-0 border border-emerald-300 flex items-center gap-1">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                    Verified
                   </span>
                 </div>
 
-                <div className="p-3.5 rounded-xl bg-white border border-blue-100 hover:border-blue-300 shadow-xs hover:shadow-sm transition-all duration-200 flex items-start justify-between gap-3 text-xs">
+                <div className="p-3.5 rounded-2xl bg-white border border-cyan-200/90 shadow-sm flex items-start justify-between gap-3 text-xs hover:border-cyan-400 transition-all">
                   <div className="space-y-1">
-                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-purple-50 text-purple-700 border border-purple-200">
-                      ARCHITECTURE REQ 2
-                    </span>
-                    <p className="font-semibold text-slate-900">Multi-region active-passive failover</p>
-                    <p className="text-[11px] text-blue-700 font-mono">Evidence: Disaster Recovery Plan §3.1</p>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-cyan-100 text-cyan-800 border border-cyan-300">
+                        INFRA-REQ-02
+                      </span>
+                      <span className="text-[11px] font-mono text-cyan-700 font-medium">96.8% cosine match</span>
+                    </div>
+                    <p className="font-semibold text-slate-900">Multi-Region Cross-Cloud Active-Passive Failover</p>
+                    <p className="text-[11px] text-slate-600 font-mono">Source: Disaster_Recovery_Runbook.md §1.7</p>
                   </div>
-                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full shrink-0 border border-emerald-200 flex items-center gap-1">
-                    <CheckCircle2 className="w-3 h-3" />
-                    Grounded
+                  <span className="text-[11px] font-mono font-bold text-cyan-800 bg-cyan-100 px-2.5 py-1 rounded-full shrink-0 border border-cyan-300 flex items-center gap-1">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-cyan-600" />
+                    Verified
                   </span>
                 </div>
 
-                <div className="p-3.5 rounded-xl bg-amber-50/60 border border-amber-200 hover:border-amber-300 shadow-xs transition-all duration-200 flex items-start justify-between gap-3 text-xs">
+                <div className="p-3.5 rounded-2xl bg-amber-50/70 border border-amber-300/80 shadow-sm flex items-start justify-between gap-3 text-xs hover:border-amber-400 transition-all">
                   <div className="space-y-1">
-                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-200">
-                      TIMELINE GAP
-                    </span>
-                    <p className="font-semibold text-slate-900">5,000+ seat onboarding velocity</p>
-                    <p className="text-[11px] text-amber-800 font-mono">Flagged: Requires Solutions Lead custom scope</p>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-amber-200 text-amber-900 border border-amber-300">
+                        HUMAN-GATE
+                      </span>
+                      <span className="text-[11px] font-mono text-amber-800 font-medium">Gap Detected</span>
+                    </div>
+                    <p className="font-semibold text-slate-900">5,000+ Seat Onboarding Migration Velocity</p>
+                    <p className="text-[11px] text-amber-900 font-mono">Flagged: Requires Solutions VP Custom Schedule</p>
                   </div>
-                  <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2.5 py-0.5 rounded-full shrink-0 border border-amber-200 flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3" />
-                    Needs Review
+                  <span className="text-[11px] font-mono font-bold text-amber-900 bg-amber-200 px-2.5 py-1 rounded-full shrink-0 border border-amber-300 flex items-center gap-1">
+                    <AlertCircle className="w-3.5 h-3.5 text-amber-700" />
+                    Human Gate
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="pt-4 border-t border-blue-100 text-xs font-mono text-slate-700 flex items-center justify-between">
-              <span className="font-bold text-blue-600 flex items-center gap-1.5">
-                <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" /> Turnaround: Under 15 Minutes
+            <div className="pt-4 border-t border-emerald-100 text-xs font-mono flex items-center justify-between">
+              <span className="font-bold text-emerald-800 flex items-center gap-1.5">
+                <Zap className="w-4 h-4 text-emerald-600" /> Latency: 4.8s per proposal section
               </span>
-              <span className="font-bold text-emerald-600">Zero Hallucinations</span>
+              <span className="font-bold text-slate-900 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200">
+                100% Deterministic Evidence
+              </span>
             </div>
           </div>
         </div>

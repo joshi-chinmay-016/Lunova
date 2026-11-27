@@ -2,54 +2,61 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ArrowRight, ShieldCheck, Sparkles } from 'lucide-react';
-import { MagneticButton } from '@/components/ui/MagneticButton';
+import { ArrowRight, ShieldCheck, Sparkles, Terminal } from 'lucide-react';
+import { ShinyButton } from '@/components/ui/ShinyButton';
+import { BorderBeam } from '@/components/ui/BorderBeam';
 
 export const FinalCTASection: React.FC = () => {
   return (
-    <section className="relative py-14 sm:py-16 lg:py-20 bg-gradient-to-b from-blue-50/70 via-white to-sky-50/50 text-slate-900 border-b border-blue-100/70 overflow-hidden">
-      {/* Crisp geometric grid (no blur) */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(37,99,235,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(37,99,235,0.03)_1px,transparent_1px)] bg-[size:44px_44px] pointer-events-none" />
+    <section className="relative py-16 sm:py-20 lg:py-24 border-b border-slate-200/80 overflow-hidden">
+      {/* High-tech dot matrix */}
+      <div className="absolute inset-0 bg-[radial-gradient(#059669_1px,transparent_1px)] [background-size:28px_28px] opacity-[0.06] pointer-events-none" />
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6 relative z-10">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200/90 text-xs font-semibold uppercase tracking-wider text-blue-700 shadow-xs">
-          <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-          <span>Ready When It Matters</span>
-        </div>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="relative glass-card rounded-3xl p-8 sm:p-14 text-center border-2 border-emerald-300/80 shadow-2xl bg-white/95 overflow-hidden">
+          <BorderBeam size={220} duration={8} colorFrom="#10B981" colorTo="#06B6D4" borderWidth={2} />
 
-        <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-slate-950 leading-tight max-w-2xl mx-auto">
-          Give every proposal request a{' '}
-          <span className="text-blue-600 block sm:inline">more considered response</span>.
-        </h2>
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/90 text-xs font-mono font-semibold uppercase tracking-wider text-emerald-800 shadow-xs mb-6">
+            <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Ready For Production Deployments</span>
+          </div>
 
-        <p className="text-sm sm:text-base text-slate-800 max-w-xl mx-auto leading-relaxed font-normal">
-          Bring company knowledge and human judgment into one controlled proposal-response workflow.
-        </p>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-display font-extrabold tracking-tight text-slate-950 leading-tight max-w-3xl mx-auto mb-4">
+            Give every enterprise proposal request a{' '}
+            <span className="text-gradient-aurora block sm:inline">mathematically verified response</span>.
+          </h2>
 
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
-          <MagneticButton strength={0.2}>
-            <Link
+          <p className="text-base sm:text-lg text-slate-700 max-w-2xl mx-auto leading-relaxed font-sans mb-8">
+            Stop losing engineering cycles to manual questionnaire assembly. Bring corporate documentation and human authority into one controlled, auditable workflow.
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
+            <ShinyButton
               href="/dashboard"
-              className="inline-flex items-center justify-center gap-3 min-h-[52px] px-8 sm:px-9 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm sm:text-base font-bold shadow-md shadow-blue-500/25 hover:shadow-lg transition-all cursor-pointer whitespace-nowrap"
+              className="min-h-[56px] px-8 sm:px-10 py-4 text-base font-display font-bold shadow-lg"
             >
-              <span>Explore the workspace</span>
-              <ArrowRight className="w-4 h-4 shrink-0" />
-            </Link>
-          </MagneticButton>
+              <span>Explore Live Workspace</span>
+              <ArrowRight className="w-5 h-5 shrink-0" />
+            </ShinyButton>
 
-          <MagneticButton strength={0.15}>
-            <a
+            <Link
               href="#how-it-works"
-              className="inline-flex items-center justify-center gap-2.5 min-h-[52px] px-8 sm:px-9 py-3.5 rounded-xl bg-white hover:bg-blue-50/70 text-slate-800 hover:text-blue-700 border border-slate-300 hover:border-blue-300 text-sm sm:text-base font-bold shadow-sm transition-all cursor-pointer whitespace-nowrap"
+              className="inline-flex items-center justify-center gap-2.5 min-h-[56px] px-8 sm:px-9 py-4 rounded-2xl bg-white hover:bg-slate-50 text-slate-800 hover:text-slate-950 border border-slate-300 hover:border-slate-400 text-sm sm:text-base font-display font-bold shadow-sm transition-all cursor-pointer whitespace-nowrap"
             >
-              <span>Explore the workflow</span>
-            </a>
-          </MagneticButton>
-        </div>
+              <span>Review System Architecture</span>
+            </Link>
+          </div>
 
-        <div className="pt-6 flex items-center justify-center gap-2.5 text-xs sm:text-sm font-semibold text-slate-700">
-          <ShieldCheck className="w-5 h-5 text-blue-600 shrink-0" />
-          <span>Strict tenant isolation • Zero autonomous sending • 100% human oversight</span>
+          <div className="pt-8 flex flex-wrap items-center justify-center gap-4 text-xs font-mono text-slate-600">
+            <span className="flex items-center gap-1.5">
+              <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+              Tenant-Isolated Vectors
+            </span>
+            <span className="text-slate-300">•</span>
+            <span>Zero Autonomous Sending</span>
+            <span className="text-slate-300">•</span>
+            <span>100% Deterministic Evidence</span>
+          </div>
         </div>
       </div>
     </section>

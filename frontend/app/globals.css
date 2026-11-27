@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;0,900;1,300;1,400;1,500&family=Roboto+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Space+Grotesk:wght@500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,7 +6,7 @@
 
 :root {
   /* =========================================================================
-     LUNOVA DESIGN TOKENS — CRISP ENTERPRISE LIGHT THEME ONLY
+     LUNOVA NEXT-GEN AI DESIGN TOKENS — GOOGLE AI / REACTBITS TIER
      ========================================================================= */
   --bg: #F8FAFC;            /* Clean light slate canvas */
   --surface-1: #FFFFFF;     /* Solid pure white cards */
@@ -14,25 +14,26 @@
   --surface-3: #E2E8F0;     /* Muted border & accent surface */
   --line: #E2E8F0;          /* Crisp 1px hairline border */
   --line-strong: #CBD5E1;   /* Defined structural dividers */
-  --text: #0F172A;          /* Deep slate ink — Maximum contrast & zero blur */
+  --text: #090D16;          /* Deep Obsidian Ink — Maximum contrast */
   --text-muted: #475569;    /* Crisp secondary slate */
   --text-subtle: #64748B;   /* Subtle labels & metadata */
-  --accent: #2563EB;        /* Primary Lunova Blue */
-  --accent-hover: #1D4ED8;  /* Focused blue */
-  --accent-soft: rgba(37, 99, 235, 0.08);
-  --accent-glow: rgba(37, 99, 235, 0.16);
+  --accent: #059669;        /* Quantum Emerald */
+  --accent-hover: #047857;
+  --accent-soft: rgba(5, 150, 105, 0.08);
+  --accent-glow: rgba(5, 150, 105, 0.22);
+  --cyan: #0284C7;          /* Electric Cyan */
   --evidence: #0D9488;      /* Verified Teal */
   --evidence-soft: rgba(13, 148, 136, 0.10);
-  --gap: #E11D48;           /* Missing info / Attention Coral */
+  --gap: #E11D48;           /* Attention Coral */
   --gap-soft: rgba(225, 29, 72, 0.10);
-  --info: #2563EB;          /* Dusk Blue */
-  --info-soft: rgba(37, 99, 235, 0.08);
+  --info: #0284C7;
+  --info-soft: rgba(2, 132, 199, 0.08);
 
   /* Radius & Motion */
-  --radius-card: 14px;
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
+  --radius-card: 16px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
   --radius-full: 9999px;
 
   --ease-lunova: cubic-bezier(0.16, 1, 0.3, 1);
@@ -43,26 +44,26 @@
 }
 
 [data-theme='day'], [data-theme='night'] {
-  /* Strictly Light Theme Only — Override any legacy dark variables */
   --bg: #F8FAFC;
   --surface-1: #FFFFFF;
   --surface-2: #F1F5F9;
   --surface-3: #E2E8F0;
   --line: #E2E8F0;
   --line-strong: #CBD5E1;
-  --text: #0F172A;
+  --text: #090D16;
   --text-muted: #475569;
   --text-subtle: #64748B;
-  --accent: #2563EB;
-  --accent-hover: #1D4ED8;
-  --accent-soft: rgba(37, 99, 235, 0.08);
-  --accent-glow: rgba(37, 99, 235, 0.16);
+  --accent: #059669;
+  --accent-hover: #047857;
+  --accent-soft: rgba(5, 150, 105, 0.08);
+  --accent-glow: rgba(5, 150, 105, 0.22);
+  --cyan: #0284C7;
   --evidence: #0D9488;
   --evidence-soft: rgba(13, 148, 136, 0.10);
   --gap: #E11D48;
   --gap-soft: rgba(225, 29, 72, 0.10);
-  --info: #2563EB;
-  --info-soft: rgba(37, 99, 235, 0.08);
+  --info: #0284C7;
+  --info-soft: rgba(2, 132, 199, 0.08);
 }
 
 * {
@@ -71,7 +72,7 @@
 
 html {
   scroll-behavior: smooth;
-  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   text-rendering: geometricPrecision;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -81,7 +82,7 @@ body {
   color: var(--text);
   background-color: var(--bg);
   min-height: 100vh;
-  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   line-height: 1.6;
   font-size: 15px;
   position: relative;
@@ -91,100 +92,130 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Tabular Numerals for metrics, numbers and citations */
+/* Typography Utility Classes */
+.font-display {
+  font-family: 'Space Grotesk', 'Plus Jakarta Sans', sans-serif;
+}
+
+.font-sans {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.font-mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
 
-.font-mono {
-  font-family: 'Roboto Mono', monospace;
+/* Gradient Text Utilities */
+.text-gradient-aurora {
+  background: linear-gradient(135deg, #059669 0%, #0D9488 40%, #0284C7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-/* Eyebrow Micro-Label */
-.eyebrow {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-muted);
+.text-gradient-dark {
+  background: linear-gradient(135deg, #090D16 0%, #1E293B 70%, #059669 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-/* Crisp Solid Cards — No blurry backdrop filter */
-.lunar-card {
-  background-color: var(--surface-1);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-card);
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 1px 2px rgba(15, 23, 42, 0.02);
-  transition: transform var(--duration-normal) var(--ease-lunova),
-              border-color var(--duration-normal) var(--ease-lunova),
-              box-shadow var(--duration-normal) var(--ease-lunova);
+/* Glass Specular Panel */
+.glass-card {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 20px 50px rgba(8, 112, 184, 0.07), inset 0 1px 1px rgba(255, 255, 255, 0.9);
 }
 
-.lunar-card-interactive {
-  background-color: var(--surface-1);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-card);
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 1px 2px rgba(15, 23, 42, 0.02);
-  transition: transform var(--duration-normal) var(--ease-lunova),
-              border-color var(--duration-normal) var(--ease-lunova),
-              box-shadow var(--duration-normal) var(--ease-lunova);
-  cursor: pointer;
+.glass-card-interactive {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1.5px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 20px 50px rgba(8, 112, 184, 0.07), inset 0 1px 1px rgba(255, 255, 255, 0.9);
+  transition: all 250ms var(--ease-lunova);
 }
 
-.lunar-card-interactive:hover {
-  transform: translateY(-2px);
-  border-color: var(--accent);
-  box-shadow: 0 6px 20px -4px rgba(37, 99, 235, 0.12);
+.glass-card-interactive:hover {
+  transform: translateY(-3px);
+  border-color: rgba(5, 150, 105, 0.4);
+  box-shadow: 0 28px 60px rgba(5, 150, 105, 0.12), inset 0 1px 1px rgba(255, 255, 255, 1);
 }
 
-/* Generous Button Base Styles to comfortably hold text */
-.btn-solid-primary {
-  min-height: 46px;
-  padding: 0.65rem 1.5rem;
-  font-size: 0.875rem;
-  font-weight: 700;
-  border-radius: 0.75rem;
-  background-color: var(--accent);
-  color: #FFFFFF;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.625rem;
-  white-space: nowrap;
-  box-shadow: 0 2px 8px -2px rgba(37, 99, 235, 0.25);
-  transition: all 150ms ease;
-  cursor: pointer;
+/* ReactBits Border Beam Animation */
+@keyframes border-beam {
+  0% {
+    offset-distance: 0%;
+  }
+  100% {
+    offset-distance: 100%;
+  }
 }
 
-.btn-solid-primary:hover {
-  background-color: var(--accent-hover);
-  box-shadow: 0 4px 14px -2px rgba(37, 99, 235, 0.35);
-  transform: translateY(-1px);
+/* Shimmer Button Effect */
+@keyframes shine {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(200%);
+  }
 }
 
-.btn-solid-secondary {
-  min-height: 46px;
-  padding: 0.65rem 1.5rem;
-  font-size: 0.875rem;
-  font-weight: 700;
-  border-radius: 0.75rem;
-  background-color: #FFFFFF;
-  color: var(--text);
-  border: 1.5px solid var(--line);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.625rem;
-  white-space: nowrap;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
-  transition: all 150ms ease;
-  cursor: pointer;
+.animate-shine {
+  animation: shine 3s infinite linear;
 }
 
-.btn-solid-secondary:hover {
-  background-color: var(--surface-2);
-  border-color: var(--line-strong);
-  color: var(--accent);
+/* Hanging Element Pendulum Swing */
+@keyframes hangSwing {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(2deg);
+  }
+  75% {
+    transform: rotate(-2deg);
+  }
+}
+
+.animate-hang {
+  transform-origin: top center;
+  animation: hangSwing 5s ease-in-out infinite;
+}
+
+/* Gentle Float Animation */
+@keyframes gentleFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.animate-float {
+  animation: gentleFloat 4s ease-in-out infinite;
+}
+
+/* Radar Ping Ripple */
+@keyframes radarRipple {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+.animate-radar {
+  animation: radarRipple 2s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
 }
 
 /* Custom Crisp Scrollbars */
@@ -203,38 +234,8 @@ body {
   background: var(--text-subtle);
 }
 
-/* Focus Visible Blue Ring */
+/* Focus Visible Emerald Ring */
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
-}
-
-/* Pulse / Shimmer Animations */
-@keyframes moonShimmer {
-  0% {
-    opacity: 0.7;
-  }
-  50% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0.7;
-  }
-}
-
-.animate-moon-shimmer {
-  animation: moonShimmer 3s ease-in-out infinite;
-}
-
-@keyframes eclipsePulse {
-  0%, 100% {
-    opacity: 0.8;
-  }
-  50% {
-    opacity: 1;
-  }
-}
-
-.animate-eclipse-pulse {
-  animation: eclipsePulse 2.5s ease-in-out infinite;
 }
