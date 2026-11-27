@@ -1,78 +1,28 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 import Link from 'next/link';
-import { ArrowRight, ShieldCheck, Play, Pause, Sparkles, Activity } from 'lucide-react';
+import { ArrowRight, ShieldCheck, Sparkles, Activity, FileCheck, Database, CheckCircle2 } from 'lucide-react';
 import { TypewriterText } from './TypewriterText';
 import { MagneticButton } from '@/components/ui/MagneticButton';
 
-const VIDEO_URL =
-  'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260518_003132_8b7edcb6-c64d-4a52-a9ca-879942e122ad.mp4';
-
 export const LandingHero: React.FC = () => {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [isPlaying, setIsPlaying] = useState(true);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    video.muted = true;
-    const startPlayback = () => {
-      const playPromise = video.play();
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => setIsPlaying(true))
-          .catch((err) => {
-            console.warn('Autoplay pending user interaction:', err);
-          });
-      }
-    };
-
-    startPlayback();
-
-    const onUserInteract = () => {
-      startPlayback();
-    };
-
-    window.addEventListener('click', onUserInteract, { once: true, passive: true });
-    window.addEventListener('scroll', onUserInteract, { once: true, passive: true });
-    window.addEventListener('touchstart', onUserInteract, { once: true, passive: true });
-
-    return () => {
-      window.removeEventListener('click', onUserInteract);
-      window.removeEventListener('scroll', onUserInteract);
-      window.removeEventListener('touchstart', onUserInteract);
-    };
-  }, []);
-
-  const togglePlay = () => {
-    if (!videoRef.current) return;
-    if (videoRef.current.paused) {
-      videoRef.current.play();
-      setIsPlaying(true);
-    } else {
-      videoRef.current.pause();
-      setIsPlaying(false);
-    }
-  };
-
   return (
-    <section className="relative pt-28 pb-14 sm:pt-32 sm:pb-16 md:pt-36 md:pb-20 bg-gradient-to-b from-blue-50/90 via-sky-50/40 to-slate-50/30 border-b border-blue-100 overflow-hidden">
-      {/* Crisp non-blurry geometric background grid */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(37,99,235,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(37,99,235,0.04)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
+    <section className="relative pt-28 pb-16 sm:pt-32 sm:pb-20 md:pt-36 md:pb-24 border-b border-blue-100/60 overflow-hidden bg-transparent">
+      {/* Subtle geometric grid overlay accent (pure pointer-events-none) */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(37,99,235,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(37,99,235,0.03)_1px,transparent_1px)] bg-[size:44px_44px] pointer-events-none" />
 
-      {/* Crisp light blue subtle geometric corner accents (no blur) */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-blue-100/50 via-sky-50/30 to-transparent pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-blue-100/40 via-slate-50/30 to-transparent pointer-events-none" />
+      {/* Gentle light ambient corner glow */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-blue-100/30 via-sky-50/10 to-transparent pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-blue-100/20 via-slate-50/10 to-transparent pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Asymmetric Editorial Hero Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-          {/* Left Column (7 Cols): Refined, Professional Typography & Action */}
+          {/* Left Column (7 Cols): High-contrast, sharp typography over background */}
           <div className="lg:col-span-7 space-y-6 z-10">
             {/* Eyebrow Label with alive pulse */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50/95 border border-blue-200 text-xs font-bold text-blue-800 tracking-wide shadow-sm">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/95 backdrop-blur-sm border border-blue-200/90 text-xs font-bold text-blue-900 tracking-wide shadow-sm">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-600" />
@@ -81,7 +31,7 @@ export const LandingHero: React.FC = () => {
             </div>
 
             {/* Restrained Enterprise Headline */}
-            <h1 className="text-3xl sm:text-4xl md:text-[42px] lg:text-[46px] font-extrabold tracking-tight text-slate-950 leading-[1.15]">
+            <h1 className="text-3xl sm:text-4xl md:text-[42px] lg:text-[48px] font-extrabold tracking-tight text-slate-950 leading-[1.12]">
               Your company&apos;s knowledge.{' '}
               <span className="text-blue-600 block sm:inline">
                 Ready for the next proposal.
@@ -89,7 +39,7 @@ export const LandingHero: React.FC = () => {
             </h1>
 
             {/* Typewriter Accent */}
-            <div className="text-slate-800 font-medium">
+            <div className="text-slate-900 font-semibold text-base sm:text-lg">
               <TypewriterText />
             </div>
 
@@ -113,7 +63,7 @@ export const LandingHero: React.FC = () => {
               <MagneticButton strength={0.15}>
                 <a
                   href="#how-it-works"
-                  className="inline-flex items-center justify-center gap-2.5 min-h-[54px] px-8 sm:px-10 py-3.5 rounded-xl bg-white hover:bg-blue-50/80 text-slate-800 hover:text-blue-700 border-2 border-slate-200 hover:border-blue-300 text-base font-bold shadow-sm transition-all duration-200 cursor-pointer whitespace-nowrap"
+                  className="inline-flex items-center justify-center gap-2.5 min-h-[54px] px-8 sm:px-10 py-3.5 rounded-xl bg-white/95 hover:bg-white text-slate-900 hover:text-blue-700 border-2 border-slate-200/90 hover:border-blue-300 text-base font-bold shadow-sm backdrop-blur-sm transition-all duration-200 cursor-pointer whitespace-nowrap"
                 >
                   <span>See how it works</span>
                 </a>
@@ -121,13 +71,13 @@ export const LandingHero: React.FC = () => {
             </div>
 
             {/* Trust Micro-Assurance */}
-            <div className="pt-2 flex items-center gap-2 text-xs font-semibold text-slate-700">
+            <div className="pt-2 flex items-center gap-2 text-xs sm:text-sm font-semibold text-slate-800">
               <ShieldCheck className="w-4.5 h-4.5 text-blue-600 shrink-0" />
               <span>Human review stays in control — Zero ungrounded claims fabricated.</span>
             </div>
           </div>
 
-          {/* Right Column (5 Cols): Cinematic Atmospheric Video Panel with Alive Movement */}
+          {/* Right Column (5 Cols): Live Grounding Station with Frosted Glass Surface */}
           <div className="lg:col-span-5 relative">
             {/* Hanging Status Badge with subtle pendulum swing */}
             <div className="hidden sm:flex absolute -top-8 right-8 z-30 flex-col items-center animate-hang origin-top pointer-events-none">
@@ -149,62 +99,70 @@ export const LandingHero: React.FC = () => {
               </div>
             </div>
 
-            {/* Video Container Card - Autoplay Always Running */}
-            <div className="group relative rounded-2xl border-2 border-slate-200 hover:border-blue-400 bg-slate-900 overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 aspect-[4/3] sm:aspect-[16/11] lg:aspect-[4/5]">
-              <video
-                ref={videoRef}
-                src={VIDEO_URL}
-                autoPlay
-                muted
-                loop
-                playsInline
-                preload="auto"
-                onCanPlay={() => {
-                  if (videoRef.current && videoRef.current.paused) {
-                    videoRef.current.play().catch(() => {});
-                  }
-                }}
-                onPlay={() => setIsPlaying(true)}
-                onPause={() => setIsPlaying(false)}
-                className="w-full h-full object-cover opacity-90 transition-opacity"
-                aria-label="Cinematic background atmosphere"
-              />
-
-              {/* Atmospheric Scrim */}
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/10 to-slate-950/20 pointer-events-none" />
-
-              {/* Video Overlay Info & Control */}
-              <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between text-white z-20">
-                <div className="space-y-0.5">
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-ping" />
-                    <span className="text-[10px] font-mono uppercase tracking-wider text-blue-200 block font-semibold">
-                      Cinematic Atmosphere
-                    </span>
-                  </div>
-                  <span className="text-xs sm:text-sm font-bold text-white">
-                    Intelligence in Motion
+            {/* Live Intelligence Grounding Station Card */}
+            <div className="group relative rounded-3xl border-2 border-white/90 hover:border-blue-400/80 bg-white/92 backdrop-blur-md p-6 sm:p-7 shadow-2xl transition-all duration-300 space-y-4">
+              {/* Card Header */}
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3.5">
+                <div className="flex items-center gap-2">
+                  <span className="relative flex h-2.5 w-2.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-600" />
+                  </span>
+                  <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-900">
+                    Live Grounding Station
                   </span>
                 </div>
-
-                <button
-                  onClick={togglePlay}
-                  className="p-2.5 rounded-full bg-slate-900/80 hover:bg-blue-600 text-white border border-white/20 transition-all hover:scale-110 active:scale-95 shadow-md cursor-pointer"
-                  title={isPlaying ? 'Pause atmosphere' : 'Play atmosphere'}
-                  aria-label={isPlaying ? 'Pause video' : 'Play video'}
-                >
-                  {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-                </button>
+                <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-md bg-blue-50 border border-blue-200 text-blue-700 font-bold">
+                  Lunetron Scoped
+                </span>
               </div>
-            </div>
 
-            {/* Video Label */}
-            <div className="mt-2.5 text-[11px] font-mono text-slate-500 font-medium flex items-center justify-between px-1">
-              <span className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                Lunova Atmospheric Engine
-              </span>
-              <span>Proprietary Visual Identity</span>
+              {/* Inbound Requirement Block */}
+              <div className="space-y-3">
+                <div className="p-3.5 rounded-xl bg-slate-50/90 border border-slate-200/80 space-y-1">
+                  <div className="text-[10px] font-mono uppercase tracking-wider text-slate-500 font-bold flex items-center justify-between">
+                    <span className="flex items-center gap-1.5">
+                      <FileCheck className="w-3.5 h-3.5 text-blue-600" />
+                      Inbound Client Requirement
+                    </span>
+                    <span className="text-blue-700 font-bold">RFP-2026-NW-894</span>
+                  </div>
+                  <p className="text-xs font-medium text-slate-800 leading-relaxed pt-0.5">
+                    &ldquo;Does your cloud architecture support automated AWS KMS key rotation and cross-region failover?&rdquo;
+                  </p>
+                </div>
+
+                {/* Grounded Evidence Citation */}
+                <div className="p-3.5 rounded-xl bg-emerald-50/90 border border-emerald-200/80 space-y-1.5">
+                  <div className="text-[10px] font-mono uppercase tracking-wider text-emerald-800 font-bold flex items-center justify-between">
+                    <span className="flex items-center gap-1.5">
+                      <Database className="w-3.5 h-3.5 text-emerald-600" />
+                      Verified Corporate Evidence
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-100/80 text-emerald-800 text-[10px] font-bold">
+                      98.4% Confidence
+                    </span>
+                  </div>
+                  <p className="text-xs text-emerald-950 font-semibold">
+                    <strong className="text-emerald-700">[1]</strong> Lunetron_Cloud_Architecture_Whitepaper_v4.2.pdf (§4.2)
+                  </p>
+                  <p className="text-[11px] text-emerald-900/80 italic leading-relaxed">
+                    &ldquo;Automated annual key rotation is natively enforced under AWS KMS with multi-region replication and sub-second failover.&rdquo;
+                  </p>
+                </div>
+              </div>
+
+              {/* Human Oversight Gate Telemetry */}
+              <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-600">
+                <span className="flex items-center gap-1.5">
+                  <Activity className="w-3.5 h-3.5 text-blue-600" />
+                  <span>Retrieval: 142ms</span>
+                </span>
+                <span className="flex items-center gap-1 text-emerald-700 font-bold">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>100% Traceable</span>
+                </span>
+              </div>
             </div>
           </div>
         </div>
