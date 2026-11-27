@@ -90,3 +90,19 @@ class DocumentService:
                 logger.error(f"Failed to process document {document_id}: {e}")
                 doc.status = "FAILED"
                 await db.commit()
+
+    @staticmethod
+    async def delete_document(db: AsyncSession, document_id: UUID, company_id: UUID) -> bool:
+        stmt = select(KnowledgeDocument).filter(
+            KnowledgeDocument.id == document_id,
+            KnowledgeDocument.company_id == company_id
+        )
+        result = await db.execute(stmt)
+        doc = result.scalar_one_or_none()
+        if not doc:
+            return False
+        from sqlalchemy import delete
+        await db.execute(delete(DocumentChunk).filter(DocumentChunk.document_id == document_id))
+        await db.delete(doc)
+        await db.commit()
+        return True

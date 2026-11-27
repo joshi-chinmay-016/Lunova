@@ -20,6 +20,7 @@ import {
   ShieldCheck,
   CheckCircle2,
   LogOut,
+  Inbox,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -37,6 +38,7 @@ interface NavItem {
 
 const MAIN_NAV: NavItem[] = [
   { label: 'Dashboard', href: '/', icon: LayoutDashboard },
+  { label: 'Response Center', href: '/response-center', icon: Inbox },
   { label: 'Proposals', href: '/proposals', icon: FileSpreadsheet },
   { label: 'Knowledge Base', href: '/knowledge-base', icon: BookOpen },
 ];

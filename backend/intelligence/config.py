@@ -6,10 +6,12 @@ from typing import Optional
 try:
     from dotenv import load_dotenv
 
-    load_dotenv()
     _repo_root = Path(__file__).resolve().parents[2]
-    load_dotenv(_repo_root / ".env")
-    load_dotenv(_repo_root / "backend" / ".env")
+    _root_env = _repo_root / ".env"
+    if _root_env.exists():
+        load_dotenv(_root_env)
+    else:
+        load_dotenv()
 except ImportError:
     pass
 

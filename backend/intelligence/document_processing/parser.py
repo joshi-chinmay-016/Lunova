@@ -160,6 +160,8 @@ class AttachmentParser:
                 return self._parse_pdf(raw_bytes, filename, resolved_mime)
             elif detected_format == "docx":
                 return self._parse_docx(raw_bytes, filename, resolved_mime)
+            elif detected_format == "xlsx":
+                return self._parse_xlsx(raw_bytes, filename, resolved_mime)
             elif detected_format == "txt":
                 return self._parse_txt(raw_bytes, filename, resolved_mime)
             else:
@@ -168,7 +170,7 @@ class AttachmentParser:
                     content_type=resolved_mime,
                     text="",
                     status=DocumentParseStatus.UNSUPPORTED,
-                    error_message=f"Unsupported document format '{detected_format}'. Supported formats: PDF, DOCX, TXT.",
+                    error_message=f"Unsupported document format '{detected_format}'. Supported formats: PDF, DOCX, XLSX, TXT.",
                     metadata={"detected_format": detected_format, "size_bytes": file_size},
                 )
         except Exception as exc:
@@ -198,16 +200,21 @@ class AttachmentParser:
         if raw_bytes.startswith(b"%PDF-"):
             return "pdf", "application/pdf"
 
-        # Check DOCX / ZIP magic bytes (PK\x03\x04)
+        # Check DOCX / XLSX / ZIP magic bytes (PK\x03\x04)
         if raw_bytes.startswith(b"PK\x03\x04"):
             # Could be docx or another zip archive
             if lower_fn.endswith(".docx") or "wordprocessingml" in lower_mime:
                 return "docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-            # Inspect internal zip structure for word/document.xml
+            if lower_fn.endswith(".xlsx") or "spreadsheetml" in lower_mime:
+                return "xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            # Inspect internal zip structure for word/document.xml or xl/workbook.xml
             try:
                 with zipfile.ZipFile(io.BytesIO(raw_bytes)) as zf:
-                    if "word/document.xml" in zf.namelist():
+                    names = zf.namelist()
+                    if "word/document.xml" in names:
                         return "docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    if "xl/workbook.xml" in names or any(n.startswith("xl/") for n in names):
+                        return "xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             except Exception:
                 pass
 
@@ -232,6 +239,8 @@ class AttachmentParser:
             return "pdf", "application/pdf"
         elif lower_fn.endswith(".docx"):
             return "docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        elif lower_fn.endswith(".xlsx"):
+            return "xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
         return "unknown", "application/octet-stream"
 
@@ -384,6 +393,111 @@ class AttachmentParser:
 
         # Fallback to direct XML parsing via zipfile (zero external dependencies)
         return self._parse_docx_xml_fallback(raw_bytes, filename, content_type)
+
+    def _parse_xlsx(self, raw_bytes: bytes, filename: str, content_type: str) -> ParsedDocument:
+        """Extract tabular data and cell text from an XLSX spreadsheet using standard library zipfile and XML."""
+        import xml.etree.ElementTree as ET
+
+        try:
+            with zipfile.ZipFile(io.BytesIO(raw_bytes)) as zf:
+                namelist = zf.namelist()
+                if not any("xl/worksheets/" in name for name in namelist):
+                    return ParsedDocument(
+                        filename=filename,
+                        content_type=content_type,
+                        text="",
+                        status=DocumentParseStatus.CORRUPTED,
+                        error_message="Invalid XLSX archive: missing worksheets",
+                    )
+
+                # Parse shared strings if present
+                shared_strings: List[str] = []
+                if "xl/sharedStrings.xml" in namelist:
+                    try:
+                        s_tree = ET.fromstring(zf.read("xl/sharedStrings.xml"))
+                        ns_main = "{http://schemas.openxmlformats.org/spreadsheetml/2006/main}"
+                        for si in s_tree.findall(f"{ns_main}si"):
+                            si_text = "".join(si.itertext())
+                            shared_strings.append(si_text)
+                    except Exception:
+                        pass
+
+                # Parse sheet files
+                sheet_files = sorted([n for n in namelist if n.startswith("xl/worksheets/sheet") and n.endswith(".xml")])
+                pages: List[DocumentPage] = []
+                sheet_texts: List[str] = []
+
+                for idx, sheet_file in enumerate(sheet_files):
+                    sheet_tree = ET.fromstring(zf.read(sheet_file))
+                    ns_main = "{http://schemas.openxmlformats.org/spreadsheetml/2006/main}"
+                    sheet_rows: List[str] = []
+
+                    for row in sheet_tree.findall(f".//{ns_main}row"):
+                        cells: List[str] = []
+                        for c in row.findall(f"{ns_main}c"):
+                            c_type = c.attrib.get("t")
+                            v_elem = c.find(f"{ns_main}v")
+                            val = ""
+                            if c_type == "s" and v_elem is not None and v_elem.text:
+                                try:
+                                    s_idx = int(v_elem.text)
+                                    if 0 <= s_idx < len(shared_strings):
+                                        val = shared_strings[s_idx]
+                                except ValueError:
+                                    pass
+                            elif c_type == "inlineStr":
+                                is_elem = c.find(f"{ns_main}is")
+                                if is_elem is not None:
+                                    val = "".join(is_elem.itertext())
+                            elif v_elem is not None and v_elem.text:
+                                val = v_elem.text.strip()
+
+                            if val:
+                                cells.append(val)
+
+                        if cells:
+                            sheet_rows.append(" | ".join(cells))
+
+                    if sheet_rows:
+                        sheet_content = f"[Sheet {idx + 1}]\n" + "\n".join(sheet_rows)
+                        sheet_texts.append(sheet_content)
+                        pages.append(
+                            DocumentPage(
+                                page_number=idx + 1,
+                                text=sheet_content,
+                                metadata={"sheet_file": sheet_file, "rows_count": len(sheet_rows)},
+                            )
+                        )
+
+                full_text = "\n\n".join(sheet_texts).strip()
+                if not full_text:
+                    return ParsedDocument(
+                        filename=filename,
+                        content_type=content_type,
+                        text="",
+                        status=DocumentParseStatus.EMPTY,
+                        error_message="XLSX spreadsheet contains no text or numeric data.",
+                    )
+
+                return ParsedDocument(
+                    filename=filename,
+                    content_type=content_type,
+                    text=full_text,
+                    status=DocumentParseStatus.SUCCESS,
+                    pages=pages,
+                    page_count=len(pages) or 1,
+                    character_count=len(full_text),
+                    word_count=len(full_text.split()),
+                    metadata={"sheets_count": len(sheet_files)},
+                )
+        except Exception as exc:
+            return ParsedDocument(
+                filename=filename,
+                content_type=content_type,
+                text="",
+                status=DocumentParseStatus.CORRUPTED,
+                error_message=f"Failed to parse XLSX spreadsheet: {str(exc)}",
+            )
 
     def _parse_docx_xml_fallback(self, raw_bytes: bytes, filename: str, content_type: str) -> ParsedDocument:
         """Parse DOCX word/document.xml directly without external dependencies."""

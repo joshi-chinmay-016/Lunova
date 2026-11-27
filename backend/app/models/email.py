@@ -18,6 +18,7 @@ class Email(Base):
     proposal_id = Column(UUID(as_uuid=True), ForeignKey("proposals.id", ondelete="SET NULL"), nullable=True, index=True)
     email_account_id = Column(UUID(as_uuid=True), ForeignKey("email_accounts.id", ondelete="SET NULL"), nullable=True, index=True)
     direction = Column(Enum(EmailDirection), nullable=False)
+    classification = Column(String, nullable=True, index=True)
     sender_address = Column(String, nullable=False)
     recipient_address = Column(String, nullable=False)
     subject = Column(String, nullable=True)

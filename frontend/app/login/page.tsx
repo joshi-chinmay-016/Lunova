@@ -6,7 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardHeader, CardContent } from '@/components/ui/Card';
-import { Sparkles, Mail, Lock, ShieldCheck, AlertCircle, ArrowRight, Zap } from 'lucide-react';
+import { Sparkles, Mail, Lock, ShieldCheck, AlertCircle, ArrowRight, Zap, Check } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -15,20 +15,21 @@ export default function LoginPage() {
   const [email, setEmail] = useState('admin@lunetron.com');
   const [password, setPassword] = useState('lunetron2026!');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [autoFilled, setAutoFilled] = useState(false);
 
   // If already authenticated, redirect to dashboard
   useEffect(() => {
     if (isAuthenticated) {
-      router.push('/');
+      router.replace('/');
     }
   }, [isAuthenticated, router]);
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleLogin = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setErrorMsg(null);
     try {
-      await login({ email, password });
-      router.push('/');
+      await login({ email: email.trim(), password });
+      window.location.href = '/';
     } catch (err: any) {
       const msg = err?.message || 'Login failed. Please check your credentials.';
       if (msg.includes('500') || msg.includes('Failed to fetch') || msg.includes('Internal Server Error')) {
@@ -41,21 +42,34 @@ export default function LoginPage() {
     }
   };
 
-  const handleBootstrap = async () => {
+  const handle1ClickLogin = async () => {
     setErrorMsg(null);
     try {
+      // Try bootstrap first, then login fallback
       await bootstrap();
-      router.push('/');
+      window.location.href = '/';
     } catch (err: any) {
-      const msg = err?.message || 'Bootstrap failed.';
-      if (msg.includes('500') || msg.includes('Failed to fetch') || msg.includes('Internal Server Error')) {
-        setErrorMsg(
-          'Database unreachable: PostgreSQL port 5432 is offline. Ensure PostgreSQL or Docker Desktop is running.'
-        );
-      } else {
-        setErrorMsg(msg);
+      try {
+        await login({ email: 'admin@lunetron.com', password: 'lunetron2026!' });
+        window.location.href = '/';
+      } catch (loginErr: any) {
+        const msg = loginErr?.message || '1-Click Login failed.';
+        if (msg.includes('500') || msg.includes('Failed to fetch')) {
+          setErrorMsg(
+            'Database unreachable: PostgreSQL port 5432 is offline. Ensure PostgreSQL or Docker Desktop is running.'
+          );
+        } else {
+          setErrorMsg(msg);
+        }
       }
     }
+  };
+
+  const fillCredentials = () => {
+    setEmail('admin@lunetron.com');
+    setPassword('lunetron2026!');
+    setAutoFilled(true);
+    setTimeout(() => setAutoFilled(false), 2000);
   };
 
   return (
@@ -140,21 +154,31 @@ export default function LoginPage() {
             <Button
               type="button"
               variant="secondary"
-              className="w-full border-dashed border-blue-300 bg-blue-50/50 hover:bg-blue-100/50 text-blue-700"
-              isLoading={isBootstrapping}
-              onClick={handleBootstrap}
+              className="w-full border-dashed border-blue-300 bg-blue-50/50 hover:bg-blue-100/50 text-blue-700 font-medium"
+              isLoading={isBootstrapping || isLoggingIn}
+              onClick={handle1ClickLogin}
               leftIcon={<Zap className="w-4 h-4 text-blue-600" />}
             >
               Quick Dev Admin Bootstrap (1-Click)
             </Button>
 
-            <div className="pt-2 text-[11px] text-gray-500 bg-gray-50 p-3 rounded-xl border border-gray-200/80 space-y-1">
-              <div className="flex items-center gap-1.5 font-semibold text-gray-700">
-                <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
-                <span>Local Development Credentials:</span>
+            <div className="pt-2 text-[11px] text-gray-600 bg-gray-50 p-3 rounded-xl border border-gray-200/80 space-y-1.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 font-semibold text-gray-800">
+                  <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
+                  <span>Local Development Credentials:</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={fillCredentials}
+                  className="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1"
+                >
+                  {autoFilled ? <Check className="w-3 h-3 text-green-600" /> : null}
+                  {autoFilled ? 'Filled!' : 'Fill Fields'}
+                </button>
               </div>
-              <p>Email: <code className="font-mono text-gray-800">admin@lunetron.com</code></p>
-              <p>Password: <code className="font-mono text-gray-800">lunetron2026!</code></p>
+              <p>Email: <code className="font-mono font-medium text-gray-900 bg-gray-200/60 px-1 py-0.5 rounded">admin@lunetron.com</code></p>
+              <p>Password: <code className="font-mono font-medium text-gray-900 bg-gray-200/60 px-1 py-0.5 rounded">lunetron2026!</code></p>
             </div>
           </CardContent>
         </Card>
@@ -162,4 +186,3 @@ export default function LoginPage() {
     </div>
   );
 }
-

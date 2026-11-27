@@ -1,4 +1,12 @@
 export type ProposalStatus =
+  | 'RECEIVED'
+  | 'PROCESSING'
+  | 'CLASSIFIED'
+  | 'DRAFT_GENERATED'
+  | 'NEEDS_INFORMATION'
+  | 'NEEDS_ADMIN_REVIEW'
+  | 'REVIEW_REQUIRED'
+  | 'ANALYZED'
   | 'NEW'
   | 'ANALYZING'
   | 'AI_DRAFTED'
@@ -7,6 +15,8 @@ export type ProposalStatus =
   | 'SENDING'
   | 'DISPATCH_UNCERTAIN'
   | 'REJECTED'
+  | 'FAILED'
+  | 'SEND_FAILED'
   | 'SENT';
 
 export type RequirementCategory =
@@ -68,6 +78,7 @@ export interface Proposal {
   title: string;
   customer: string;
   status: ProposalStatus;
+  classification?: string;
   deadline: string;
   created_at: string;
   updated_at: string;

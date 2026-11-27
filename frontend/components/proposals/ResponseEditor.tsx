@@ -52,6 +52,7 @@ export const ResponseEditor: React.FC<ResponseEditorProps> = ({
     initialResponse?.implementation_plan ||
       'Implementation plan outlines key phase deliverables, security milestones, and production go-live timelines.'
   );
+  const [draftEmail, setDraftEmail] = useState(initialResponse?.draft_email_body || '');
   const [reqResponses, setReqResponses] = useState(initialResponse?.requirement_responses || []);
 
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -61,6 +62,7 @@ export const ResponseEditor: React.FC<ResponseEditorProps> = ({
       setExecSummary(initialResponse.executive_summary || '');
       setTechApproach(initialResponse.technical_approach || '');
       setImplPlan(initialResponse.implementation_plan || '');
+      setDraftEmail(initialResponse.draft_email_body || '');
       setReqResponses(initialResponse.requirement_responses || []);
     }
   }, [initialResponse]);
@@ -70,6 +72,7 @@ export const ResponseEditor: React.FC<ResponseEditorProps> = ({
       executive_summary: execSummary,
       technical_approach: techApproach,
       implementation_plan: implPlan,
+      draft_email_body: draftEmail,
       requirement_responses: reqResponses,
     };
     await onSaveDraft(updated);
@@ -209,6 +212,38 @@ export const ResponseEditor: React.FC<ResponseEditorProps> = ({
             </div>
           )}
         </div>
+
+        {/* Section: Outgoing Draft Email */}
+        {(draftEmail || isEditing) && (
+          <div className="space-y-2 pt-2">
+            <div className="flex items-center justify-between">
+              <h4 className="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center gap-1.5">
+                <span>Outgoing Email Response Draft</span>
+                <span className="text-[10px] font-mono text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100">
+                  Gmail Dispatch Preview
+                </span>
+              </h4>
+              <span className="text-[10px] text-gray-400 font-mono">Dispatched upon Approval</span>
+            </div>
+
+            {isEditing ? (
+              <textarea
+                rows={6}
+                value={draftEmail}
+                onChange={(e) => {
+                  setDraftEmail(e.target.value);
+                  setHasUnsavedChanges(true);
+                }}
+                placeholder="Draft email body dispatched to the client upon formal approval..."
+                className="w-full bg-white text-gray-900 text-xs sm:text-sm rounded-xl border border-[#E2E5E9] p-3.5 leading-relaxed whitespace-pre-wrap focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 shadow-[inset_0_1px_2px_rgba(15,23,42,0.04)] font-mono"
+              />
+            ) : (
+              <div className="p-4 rounded-xl bg-blue-50/30 border border-blue-200 text-xs sm:text-sm text-gray-800 leading-relaxed font-sans whitespace-pre-wrap shadow-[inset_0_1px_2px_rgba(15,23,42,0.02)]">
+                {draftEmail || 'No email draft text populated.'}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Section 4: Requirement-by-Requirement Responses */}
         {reqResponses && reqResponses.length > 0 && (

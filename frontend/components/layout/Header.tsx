@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Menu, Search, Bell, Plus, CheckCircle2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { NewProposalModal } from '@/components/proposals/NewProposalModal';
+import { useAuth } from '@/hooks/useAuth';
 
 interface HeaderProps {
   onOpenMobileMenu: () => void;
@@ -12,9 +13,17 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ onOpenMobileMenu }) => {
   const router = useRouter();
+  const { user, isAuthenticated } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [backendStatus, setBackendStatus] = useState<'checking' | 'connected' | 'offline'>('checking');
+
+  const userInitials = (user?.name || user?.email || 'AU')
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .substring(0, 2)
+    .toUpperCase();
 
   // Check health against FastAPI backend
   useEffect(() => {
@@ -113,11 +122,26 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMobileMenu }) => {
           <div className="h-6 w-px bg-gray-200 hidden sm:block" />
 
           {/* User Profile Mini */}
-          <div className="flex items-center gap-2 pl-1 cursor-pointer">
-            <div className="w-8 h-8 rounded-full bg-blue-600 text-white font-semibold text-xs flex items-center justify-center shadow-sm">
-              SJ
+          {isAuthenticated && user ? (
+            <div
+              className="flex items-center gap-2 pl-1 cursor-pointer"
+              title={`${user.name || user.email} (${user.role})`}
+              onClick={() => router.push('/settings')}
+            >
+              <div className="w-8 h-8 rounded-full bg-blue-600 text-white font-semibold text-xs flex items-center justify-center shadow-sm">
+                {userInitials}
+              </div>
             </div>
-          </div>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push('/login')}
+              className="text-xs"
+            >
+              Sign In
+            </Button>
+          )}
         </div>
       </header>
 

@@ -75,3 +75,6 @@ powershell.cmd
 # Next.js generated TypeScript files
 next-env.d.ts
 *.tsbuildinfo
+
+.build_dist
+frontend/.build_dist

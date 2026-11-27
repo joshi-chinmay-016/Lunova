@@ -4,7 +4,7 @@ import React, { useState, useRef } from 'react';
 import { Card, CardHeader, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { UploadDocumentPayload } from '@/types/knowledge';
-import { UploadCloud, FileText, CheckCircle2, Loader2, Sparkles } from 'lucide-react';
+import { UploadCloud, FileText, CheckCircle2, Loader2, Sparkles, AlertCircle, X } from 'lucide-react';
 
 interface DocumentUploadCardProps {
   onUpload: (payload: UploadDocumentPayload) => Promise<any>;
@@ -15,6 +15,7 @@ export const DocumentUploadCard: React.FC<DocumentUploadCardProps> = ({ onUpload
   const [isDragging, setIsDragging] = useState(false);
   const [uploadState, setUploadState] = useState<'idle' | 'processing' | 'success'>('idle');
   const [statusMessage, setStatusMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [lastUploadedName, setLastUploadedName] = useState('');
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -29,6 +30,7 @@ export const DocumentUploadCard: React.FC<DocumentUploadCardProps> = ({ onUpload
   const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
+    setErrorMessage(null);
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const file = e.dataTransfer.files[0];
       await processSelectedFile(file);
@@ -38,6 +40,9 @@ export const DocumentUploadCard: React.FC<DocumentUploadCardProps> = ({ onUpload
   const handleFileInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
+      // Reset input value so re-selecting the same file fires change event
+      e.target.value = '';
+      setErrorMessage(null);
       await processSelectedFile(file);
     }
   };
@@ -45,18 +50,26 @@ export const DocumentUploadCard: React.FC<DocumentUploadCardProps> = ({ onUpload
   const processSelectedFile = async (file: File) => {
     setLastUploadedName(file.name);
     setUploadState('processing');
+    setErrorMessage(null);
     setStatusMessage('Uploading & indexing document into tenant vector store...');
 
     // Determine type
-    const ext = file.name.split('.').pop()?.toUpperCase() || 'PDF';
+    const lower = file.name.split('.').pop()?.toLowerCase() || 'pdf';
     const docType: 'PDF' | 'DOCX' | 'XLSX' | 'TXT' =
-      ext === 'DOCX' ? 'DOCX' : ext === 'XLSX' ? 'XLSX' : ext === 'TXT' ? 'TXT' : 'PDF';
+      lower === 'docx'
+        ? 'DOCX'
+        : lower === 'xlsx'
+        ? 'XLSX'
+        : ['txt', 'csv', 'md', 'json'].includes(lower)
+        ? 'TXT'
+        : 'PDF';
 
     try {
       await onUpload({
         name: file.name,
         type: docType,
         category: 'Enterprise Documentation',
+        file: file,
         content: `Indexed content from ${file.name}`,
       });
 
@@ -68,7 +81,16 @@ export const DocumentUploadCard: React.FC<DocumentUploadCardProps> = ({ onUpload
       }, 4000);
     } catch (err: any) {
       setUploadState('idle');
-      alert(`Upload failed: ${err.message}`);
+      const msg = err?.message || 'Failed to upload document. Please check the file and try again.';
+      setErrorMessage(msg);
+    }
+  };
+
+  const openFilePicker = () => {
+    setErrorMessage(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+      fileInputRef.current.click();
     }
   };
 
@@ -78,10 +100,37 @@ export const DocumentUploadCard: React.FC<DocumentUploadCardProps> = ({ onUpload
         <input
           ref={fileInputRef}
           type="file"
-          accept=".pdf,.docx,.xlsx,.txt"
+          accept=".pdf,.docx,.xlsx,.txt,.csv,.md"
           onChange={handleFileInputChange}
           className="hidden"
         />
+
+        {errorMessage && (
+          <div className="mb-4 p-3.5 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 flex items-start justify-between gap-3 animate-in fade-in">
+            <div className="flex items-start gap-2.5">
+              <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+              <div className="space-y-0.5">
+                <p className="font-semibold text-red-900">Upload Failed</p>
+                <p className="leading-relaxed text-red-700">
+                  {errorMessage}
+                  {errorMessage.toLowerCase().includes('sign in') || errorMessage.toLowerCase().includes('authenticated') || errorMessage.toLowerCase().includes('session') ? (
+                    <a href="/login" className="ml-1.5 font-bold underline text-blue-700 hover:text-blue-900">
+                      Sign in to workspace &rarr;
+                    </a>
+                  ) : null}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setErrorMessage(null)}
+              className="text-red-500 hover:text-red-700 p-0.5 rounded transition-colors shrink-0"
+              title="Dismiss error"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
 
         {uploadState === 'processing' ? (
           <div className="py-8 text-center flex flex-col items-center justify-center space-y-3 animate-in fade-in duration-150">
@@ -111,7 +160,7 @@ export const DocumentUploadCard: React.FC<DocumentUploadCardProps> = ({ onUpload
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            onClick={() => fileInputRef.current?.click()}
+            onClick={openFilePicker}
             className={`py-8 text-center flex flex-col items-center justify-center cursor-pointer rounded-xl transition-all ${
               isDragging ? 'bg-blue-50/60 border-blue-400' : 'hover:bg-gray-50/60'
             }`}
