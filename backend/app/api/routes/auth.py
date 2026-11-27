@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
-from app.auth.schemas import Token, UserLogin, LoginResponse, UserResponse, AuthenticatedUser
+from app.auth.schemas import Token, UserLogin, UserRegister, LoginResponse, UserResponse, AuthenticatedUser
 from app.auth.services.auth_service import AuthService
 from app.auth.services.jwt_service import JWTService
 from app.api.dependencies.auth import get_current_active_user
@@ -61,6 +61,58 @@ async def login(
     }
 
 
+@router.post("/register", response_model=LoginResponse, summary="Register new enterprise account")
+async def register(
+    data: UserRegister,
+    db: AsyncSession = Depends(get_db)
+):
+    # 1. Check if email already registered
+    stmt = select(User).where(User.email == str(data.email))
+    res = await db.execute(stmt)
+    if res.scalar_one_or_none():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="An enterprise account with this email already exists."
+        )
+
+    # 2. Check or create Company
+    company_name = data.company_name or "Lunetron Technologies"
+    stmt_co = select(Company).where(Company.name == company_name)
+    res_co = await db.execute(stmt_co)
+    company = res_co.scalar_one_or_none()
+    if not company:
+        company = Company(name=company_name)
+        db.add(company)
+        await db.flush()
+
+    # 3. Hash password securely (never expose plaintext)
+    hashed_pwd = AuthService.get_password_hash(data.password)
+
+    # 4. Create new User
+    new_user = User(
+        company_id=company.id,
+        email=str(data.email),
+        name=data.name,
+        role=UserRole.MEMBER,
+        hashed_password=hashed_pwd,
+    )
+    db.add(new_user)
+    await db.commit()
+    await db.refresh(new_user)
+
+    access_token = JWTService.create_access_token(
+        subject=str(new_user.id),
+        company_id=str(new_user.company_id),
+        role=new_user.role.value
+    )
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": new_user,
+    }
+
+
 @router.get("/me", response_model=UserResponse, summary="Current user profile")
 async def get_current_user_profile(
     db: AsyncSession = Depends(get_db),
@@ -78,11 +130,6 @@ async def get_current_user_profile(
 async def bootstrap_local_admin(
     db: AsyncSession = Depends(get_db)
 ):
-    """
-    Development-only convenience route to ensure default tenant 'Lunetron' and
-    admin user exist, returning a valid authenticated session for local UI development.
-    Strictly disabled in production.
-    """
     from app.core.config import settings
     if settings.ENVIRONMENT != "development":
         raise HTTPException(
@@ -90,7 +137,6 @@ async def bootstrap_local_admin(
             detail="Bootstrap is only permitted in local development environment."
         )
 
-    # 1. Check or create Company
     stmt = select(Company).where(Company.name == "Lunetron")
     result = await db.execute(stmt)
     company = result.scalar_one_or_none()
@@ -99,7 +145,6 @@ async def bootstrap_local_admin(
         db.add(company)
         await db.flush()
 
-    # 2. Check or create default Admin User
     admin_email = "admin@lunetron.com"
     stmt_user = select(User).where(User.email == admin_email)
     user_res = await db.execute(stmt_user)
@@ -116,7 +161,6 @@ async def bootstrap_local_admin(
         await db.commit()
         await db.refresh(user)
     else:
-        # Ensure password is set for local dev login if previously null
         if not user.hashed_password:
             user.hashed_password = AuthService.get_password_hash("lunetron2026!")
             await db.commit()

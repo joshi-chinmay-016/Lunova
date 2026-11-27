@@ -67,7 +67,7 @@ export default function AnalyticsPage() {
         title="Proposal Analytics"
         description="Operational throughput, turnaround velocity, and requirement category distribution."
         breadcrumbs={[
-          { label: 'Dashboard', href: '/' },
+          { label: 'Observatory', href: '/dashboard' },
           { label: 'Analytics' },
         ]}
       />

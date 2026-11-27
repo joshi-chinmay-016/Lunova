@@ -179,7 +179,7 @@ function SettingsContent() {
         title="Settings & Workspace Configuration"
         description="Manage workspace identity, user permissions, generative parameters, and external data feeds."
         breadcrumbs={[
-          { label: 'Dashboard', href: '/' },
+          { label: 'Observatory', href: '/dashboard' },
           { label: 'Settings' },
         ]}
       />

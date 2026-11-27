@@ -99,7 +99,7 @@ export default function KnowledgeBasePage() {
         title="Knowledge Base"
         description="Manage company case studies, compliance certifications, and architecture blueprints for evidence-backed generation."
         breadcrumbs={[
-          { label: 'Dashboard', href: '/' },
+          { label: 'Observatory', href: '/dashboard' },
           { label: 'Knowledge Base' },
         ]}
       />

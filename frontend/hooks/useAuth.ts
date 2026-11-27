@@ -4,12 +4,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useEffect, useCallback } from 'react';
 import {
   loginUser,
+  registerUser,
   fetchCurrentUser,
   bootstrapLocalAdmin,
   logoutUser,
 } from '@/lib/api/client';
 import { getAuthToken } from '@/services/api';
-import { UserProfile, LoginResponse } from '@/types/auth';
+import { UserProfile, LoginResponse, RegisterPayload } from '@/types/auth';
 
 export function useAuth() {
   const queryClient = useQueryClient();
@@ -32,6 +33,15 @@ export function useAuth() {
 
   const loginMutation = useMutation<LoginResponse, Error, { email: string; password: string }>({
     mutationFn: ({ email, password }) => loginUser(email, password),
+    onSuccess: (data) => {
+      setTokenState(data.access_token);
+      queryClient.setQueryData(['auth', 'me', data.access_token], data.user);
+      queryClient.invalidateQueries();
+    },
+  });
+
+  const registerMutation = useMutation<LoginResponse, Error, RegisterPayload>({
+    mutationFn: (payload) => registerUser(payload),
     onSuccess: (data) => {
       setTokenState(data.access_token);
       queryClient.setQueryData(['auth', 'me', data.access_token], data.user);
@@ -68,9 +78,11 @@ export function useAuth() {
     user: userQuery.data || (token ? defaultUser : null),
     isLoading: !mounted || (!!token && userQuery.isLoading),
     isAuthenticated: !!token,
-    error: userQuery.error || loginMutation.error || bootstrapMutation.error,
+    error: userQuery.error || loginMutation.error || registerMutation.error || bootstrapMutation.error,
     login: loginMutation.mutateAsync,
     isLoggingIn: loginMutation.isPending,
+    register: registerMutation.mutateAsync,
+    isRegistering: registerMutation.isPending,
     bootstrap: bootstrapMutation.mutateAsync,
     isBootstrapping: bootstrapMutation.isPending,
     logout,
