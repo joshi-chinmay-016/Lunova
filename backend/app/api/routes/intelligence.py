@@ -159,6 +159,8 @@ async def analyze_proposal_text(payload: AnalyzeRequest):
         context = ProposalContext(
             proposal_id=payload.proposal_id or "prop-custom-live",
             company_id=payload.company_id or "lunetron",
+            subject=payload.subject or payload.title or "RFP Proposal Inquiry",
+            body=payload.text,
             text=payload.text
         )
 
