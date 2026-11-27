@@ -4,6 +4,7 @@ import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
+import { getAuthToken } from '@/services/api';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import {
@@ -24,9 +25,6 @@ import { BorderBeam } from '@/components/ui/BorderBeam';
 function AuthForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const rawRedirect = searchParams.get('redirect');
-  const redirectPath = rawRedirect && rawRedirect.startsWith('/') && rawRedirect !== '/login' ? rawRedirect : '/dashboard';
-
   const { login, isLoggingIn, register, isRegistering, isAuthenticated } = useAuth();
 
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
@@ -41,12 +39,12 @@ function AuthForm() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // If already authenticated, redirect to destination
+  // If already authenticated, redirect straight to /dashboard
   useEffect(() => {
-    if (isAuthenticated) {
-      router.replace(redirectPath);
+    if (isAuthenticated || getAuthToken()) {
+      window.location.href = '/dashboard';
     }
-  }, [isAuthenticated, redirectPath, router]);
+  }, [isAuthenticated]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,7 +57,7 @@ function AuthForm() {
 
     try {
       await login({ email: email.trim(), password });
-      router.replace(redirectPath);
+      window.location.href = '/dashboard';
     } catch (err: any) {
       setErrorMsg(err?.message || 'Authentication failed. Please check your email and password.');
     }
@@ -93,7 +91,8 @@ function AuthForm() {
         password,
         company_name: companyName.trim() || 'Lunetron Technologies',
       });
-      router.replace(redirectPath);
+      // Direct hard redirect to dashboard ensures fresh session load
+      window.location.href = '/dashboard';
     } catch (err: any) {
       setErrorMsg(err?.message || 'Account registration failed. Please try again.');
     }
@@ -185,11 +184,9 @@ function AuthForm() {
                 />
 
                 <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <label className="block text-xs font-bold text-slate-800">
-                      Password
-                    </label>
-                  </div>
+                  <label className="block text-xs font-bold text-slate-800">
+                    Password
+                  </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                       <Lock className="w-4 h-4" />
@@ -220,7 +217,7 @@ function AuthForm() {
                   isLoading={isLoggingIn}
                   rightIcon={<ArrowRight className="w-4 h-4" />}
                 >
-                  Sign In with Password
+                  Sign In to Workspace
                 </Button>
               </form>
             ) : (
@@ -316,7 +313,7 @@ function AuthForm() {
                   isLoading={isRegistering}
                   rightIcon={<ArrowRight className="w-4 h-4" />}
                 >
-                  Create Account &amp; Sign In
+                  Create Account &amp; Access Dashboard
                 </Button>
               </form>
             )}

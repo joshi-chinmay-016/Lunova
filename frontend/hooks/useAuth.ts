@@ -14,7 +14,7 @@ import { UserProfile, LoginResponse, RegisterPayload } from '@/types/auth';
 
 export function useAuth() {
   const queryClient = useQueryClient();
-  const [token, setTokenState] = useState<string | null>(null);
+  const [token, setTokenState] = useState<string | null>(() => getAuthToken());
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -28,7 +28,7 @@ export function useAuth() {
     queryFn: fetchCurrentUser,
     enabled: !!token,
     retry: false,
-    staleTime: 1000 * 60 * 15, // 15 minutes
+    staleTime: 1000 * 60 * 15,
   });
 
   const loginMutation = useMutation<LoginResponse, Error, { email: string; password: string }>({
@@ -73,11 +73,14 @@ export function useAuth() {
     role: 'ADMIN',
   };
 
+  const activeToken = token || getAuthToken();
+  const isAuthenticated = !!activeToken;
+
   return {
-    token,
-    user: userQuery.data || (token ? defaultUser : null),
-    isLoading: !mounted || (!!token && userQuery.isLoading),
-    isAuthenticated: !!token,
+    token: activeToken,
+    user: userQuery.data || (isAuthenticated ? defaultUser : null),
+    isLoading: !mounted && !activeToken,
+    isAuthenticated,
     error: userQuery.error || loginMutation.error || registerMutation.error || bootstrapMutation.error,
     login: loginMutation.mutateAsync,
     isLoggingIn: loginMutation.isPending,

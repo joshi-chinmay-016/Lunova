@@ -1,4 +1,5 @@
-export const API_BASE_URL = 'http://localhost:8000/api/v1';
+export const API_BASE_URL =
+  typeof window !== 'undefined' ? '/api/v1' : 'http://127.0.0.1:8000/api/v1';
 
 const TOKEN_STORAGE_KEY = 'lunova_auth_token';
 let _token: string | null = null;
@@ -56,21 +57,20 @@ export const fetchApi = async (endpoint: string, options: RequestInit = {}) => {
     headers.set('Authorization', `Bearer ${token}`);
   }
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+  const url = `${API_BASE_URL}${endpoint}`;
+
+  const response = await fetch(url, {
     ...options,
     headers,
   });
 
   if (response.status === 401) {
-    // Clear expired or invalid credentials
     setAuthToken(null);
     let message = 'Session expired or unauthorized';
     try {
       const errorData = await response.json();
       message = errorData.detail || message;
-    } catch {
-      // Ignore
-    }
+    } catch {}
     throw new Error(message);
   }
 
@@ -79,9 +79,7 @@ export const fetchApi = async (endpoint: string, options: RequestInit = {}) => {
     try {
       const errorData = await response.json();
       message = errorData.detail || message;
-    } catch {
-      // Ignore
-    }
+    } catch {}
     throw new Error(message);
   }
 
