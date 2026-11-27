@@ -41,5 +41,6 @@ app.include_router(intelligence_router, prefix="/api/v1")
 app.include_router(integrations_router, prefix="/api/v1")
 
 @app.get("/health")
+@app.get("/api/v1/health")
 async def health_check():
     return {"status": "ok", "project": settings.PROJECT_NAME}

@@ -89,10 +89,10 @@ export default function ReviewStationPage() {
 
       {/* Control Filters */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-xs">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => setFilter('ACTION_REQUIRED')}
-            className={`px-4 py-2 rounded-xl text-xs font-display font-bold transition-all cursor-pointer ${
+            className={`px-5 py-2.5 min-h-[40px] rounded-xl text-xs sm:text-sm font-display font-bold transition-all cursor-pointer whitespace-nowrap inline-flex items-center justify-center ${
               filter === 'ACTION_REQUIRED'
                 ? 'bg-emerald-600 text-white shadow-sm'
                 : 'bg-slate-100 text-slate-600 hover:text-slate-900'
@@ -102,7 +102,7 @@ export default function ReviewStationPage() {
           </button>
           <button
             onClick={() => setFilter('APPROVED')}
-            className={`px-4 py-2 rounded-xl text-xs font-display font-bold transition-all cursor-pointer ${
+            className={`px-5 py-2.5 min-h-[40px] rounded-xl text-xs sm:text-sm font-display font-bold transition-all cursor-pointer whitespace-nowrap inline-flex items-center justify-center ${
               filter === 'APPROVED'
                 ? 'bg-emerald-600 text-white shadow-sm'
                 : 'bg-slate-100 text-slate-600 hover:text-slate-900'
@@ -112,7 +112,7 @@ export default function ReviewStationPage() {
           </button>
           <button
             onClick={() => setFilter('ALL')}
-            className={`px-4 py-2 rounded-xl text-xs font-display font-bold transition-all cursor-pointer ${
+            className={`px-5 py-2.5 min-h-[40px] rounded-xl text-xs sm:text-sm font-display font-bold transition-all cursor-pointer whitespace-nowrap inline-flex items-center justify-center ${
               filter === 'ALL'
                 ? 'bg-emerald-600 text-white shadow-sm'
                 : 'bg-slate-100 text-slate-600 hover:text-slate-900'
@@ -129,7 +129,7 @@ export default function ReviewStationPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Filter by customer or title..."
-            className="w-full pl-9 pr-4 py-1.5 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 focus:outline-none transition-colors"
+            className="w-full pl-9 pr-4 py-2 min-h-[40px] text-xs sm:text-sm rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 focus:outline-none transition-colors"
           />
         </div>
       </div>
@@ -195,17 +195,17 @@ export default function ReviewStationPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 shrink-0">
+                  <div className="flex flex-wrap items-center gap-3 shrink-0">
                     <Link
                       href={`/proposals/${proposal.id}`}
-                      className="px-4 py-2.5 rounded-xl border border-slate-300 hover:border-slate-400 bg-white text-slate-700 hover:text-slate-900 text-xs sm:text-sm font-display font-bold transition-all shadow-xs"
+                      className="inline-flex items-center justify-center px-5 py-2.5 min-h-[44px] rounded-xl border border-slate-300 hover:border-slate-400 bg-white text-slate-700 hover:text-slate-900 text-xs sm:text-sm font-display font-bold transition-all shadow-xs whitespace-nowrap cursor-pointer"
                     >
                       Inspect Evidence
                     </Link>
 
                     <Link
                       href={`/proposals/${proposal.id}/review`}
-                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-display font-bold shadow-md shadow-emerald-600/20 hover:shadow-lg transition-all"
+                      className="inline-flex items-center justify-center gap-2 px-6 py-2.5 min-h-[44px] rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-display font-bold shadow-md shadow-emerald-600/20 hover:shadow-lg transition-all whitespace-nowrap cursor-pointer"
                     >
                       <span>{isApproved ? 'Review Record' : 'Launch Review'}</span>
                       <ArrowRight className="w-4 h-4 shrink-0" />

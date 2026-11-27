@@ -88,20 +88,20 @@ export const NewProposalModal: React.FC<NewProposalModalProps> = ({ isOpen, onCl
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Quick Sample Presets */}
-        <div className="p-3 bg-[#EEF0F3] rounded-xl border border-[#E2E5E9] flex items-center justify-between">
-          <span className="text-xs text-gray-600 font-medium">Quick sample RFP:</span>
-          <div className="flex gap-2">
+        <div className="p-3.5 bg-[#EEF0F3] rounded-2xl border border-[#E2E5E9] flex flex-wrap items-center justify-between gap-2.5">
+          <span className="text-xs text-gray-600 font-semibold">Quick sample RFP:</span>
+          <div className="flex flex-wrap gap-2">
             <button
               type="button"
               onClick={() => handleFillTemplate('cloud')}
-              className="text-xs px-2.5 py-1 bg-white hover:bg-gray-50 border border-gray-200 rounded-lg text-blue-700 font-medium transition-colors shadow-sm"
+              className="text-xs px-4 py-2 min-h-[36px] bg-white hover:bg-gray-50 border border-gray-200 rounded-xl text-blue-700 font-semibold transition-colors shadow-xs cursor-pointer whitespace-nowrap inline-flex items-center justify-center"
             >
               Cloud Migration
             </button>
             <button
               type="button"
               onClick={() => handleFillTemplate('security')}
-              className="text-xs px-2.5 py-1 bg-white hover:bg-gray-50 border border-gray-200 rounded-lg text-blue-700 font-medium transition-colors shadow-sm"
+              className="text-xs px-4 py-2 min-h-[36px] bg-white hover:bg-gray-50 border border-gray-200 rounded-xl text-blue-700 font-semibold transition-colors shadow-xs cursor-pointer whitespace-nowrap inline-flex items-center justify-center"
             >
               Security Governance
             </button>

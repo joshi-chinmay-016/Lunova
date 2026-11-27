@@ -25,9 +25,10 @@ import { BorderBeam } from '@/components/ui/BorderBeam';
 function AuthForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { login, isLoggingIn, register, isRegistering, isAuthenticated } = useAuth();
+  const { login, isLoggingIn, register, isRegistering, isAuthenticated, user } = useAuth();
 
-  const [mode, setMode] = useState<'signin' | 'signup'>('signin');
+  const initialMode = searchParams.get('mode') === 'signup' ? 'signup' : 'signin';
+  const [mode, setMode] = useState<'signin' | 'signup'>(initialMode);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -39,12 +40,13 @@ function AuthForm() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // If already authenticated, redirect straight to /dashboard
+  // Sync mode if query param changes
   useEffect(() => {
-    if (isAuthenticated || getAuthToken()) {
-      window.location.href = '/dashboard';
+    const queryMode = searchParams.get('mode');
+    if (queryMode === 'signup' || queryMode === 'signin') {
+      setMode(queryMode);
     }
-  }, [isAuthenticated]);
+  }, [searchParams]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,7 +93,7 @@ function AuthForm() {
         password,
         company_name: companyName.trim() || 'Lunetron Technologies',
       });
-      // Direct hard redirect to dashboard ensures fresh session load
+      // Direct hard redirect to dashboard ensures fresh session load after account creation
       window.location.href = '/dashboard';
     } catch (err: any) {
       setErrorMsg(err?.message || 'Account registration failed. Please try again.');
@@ -135,10 +137,10 @@ function AuthForm() {
                 setMode('signin');
                 setErrorMsg(null);
               }}
-              className={`flex-1 py-2.5 rounded-xl transition-all cursor-pointer text-center ${
+              className={`flex-1 min-h-[44px] px-6 py-2.5 rounded-xl transition-all cursor-pointer text-center text-xs sm:text-sm ${
                 mode === 'signin'
-                  ? 'bg-white text-slate-950 shadow-xs'
-                  : 'text-slate-500 hover:text-slate-900'
+                  ? 'bg-white text-slate-950 shadow-xs font-bold'
+                  : 'text-slate-500 hover:text-slate-900 font-semibold'
               }`}
             >
               Sign In
@@ -149,15 +151,30 @@ function AuthForm() {
                 setMode('signup');
                 setErrorMsg(null);
               }}
-              className={`flex-1 py-2.5 rounded-xl transition-all cursor-pointer text-center ${
+              className={`flex-1 min-h-[44px] px-6 py-2.5 rounded-xl transition-all cursor-pointer text-center text-xs sm:text-sm ${
                 mode === 'signup'
-                  ? 'bg-white text-slate-950 shadow-xs'
-                  : 'text-slate-500 hover:text-slate-900'
+                  ? 'bg-white text-slate-950 shadow-xs font-bold'
+                  : 'text-slate-500 hover:text-slate-900 font-semibold'
               }`}
             >
               Create Account
             </button>
           </div>
+
+          {isAuthenticated && (
+            <div className="mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs flex items-center justify-between">
+              <span className="text-emerald-900 font-medium">
+                Signed in as <strong className="font-mono">{user?.email || 'Active User'}</strong>
+              </span>
+              <button
+                type="button"
+                onClick={() => { window.location.href = '/dashboard'; }}
+                className="text-emerald-700 hover:text-emerald-950 font-bold underline cursor-pointer"
+              >
+                Go to Dashboard &rarr;
+              </button>
+            </div>
+          )}
 
           <div className="space-y-4 font-sans">
             {errorMsg && (
@@ -213,9 +230,10 @@ function AuthForm() {
                 <Button
                   type="submit"
                   variant="primary"
-                  className="w-full min-h-[48px] font-display font-bold text-sm bg-emerald-600 hover:bg-emerald-700 shadow-md cursor-pointer mt-2"
+                  size="lg"
+                  className="w-full min-h-[50px] px-7 py-3 font-display font-bold text-sm sm:text-base bg-emerald-600 hover:bg-emerald-700 shadow-md cursor-pointer mt-2"
                   isLoading={isLoggingIn}
-                  rightIcon={<ArrowRight className="w-4 h-4" />}
+                  rightIcon={<ArrowRight className="w-4 h-4 ml-1" />}
                 >
                   Sign In to Workspace
                 </Button>
@@ -309,9 +327,10 @@ function AuthForm() {
                 <Button
                   type="submit"
                   variant="primary"
-                  className="w-full min-h-[48px] font-display font-bold text-sm bg-emerald-600 hover:bg-emerald-700 shadow-md cursor-pointer mt-2"
+                  size="lg"
+                  className="w-full min-h-[50px] px-7 py-3 font-display font-bold text-sm sm:text-base bg-emerald-600 hover:bg-emerald-700 shadow-md cursor-pointer mt-2"
                   isLoading={isRegistering}
-                  rightIcon={<ArrowRight className="w-4 h-4" />}
+                  rightIcon={<ArrowRight className="w-4 h-4 ml-1" />}
                 >
                   Create Account &amp; Access Dashboard
                 </Button>

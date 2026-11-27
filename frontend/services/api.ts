@@ -65,7 +65,6 @@ export const fetchApi = async (endpoint: string, options: RequestInit = {}) => {
   });
 
   if (response.status === 401) {
-    setAuthToken(null);
     let message = 'Session expired or unauthorized';
     try {
       const errorData = await response.json();

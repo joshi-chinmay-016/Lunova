@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useLunovaStore } from '@/lib/lunovaStore';
 import { useAuth } from '@/hooks/useAuth';
+import { getAuthToken } from '@/services/api';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { ToastContainer } from '@/components/ui/ToastContainer';
@@ -32,9 +33,10 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   // Public routes: landing page and login page
   const isPublicPage = pathname === '/' || pathname === '/login';
 
-  // Route Protection & Redirect: if not on public route and not authenticated
+  // Route Protection & Redirect: if not on public route and definitely not authenticated
   useEffect(() => {
-    if (mounted && !isLoading && !isAuthenticated && !isPublicPage) {
+    const hasToken = typeof window !== 'undefined' ? (!!getAuthToken() || isAuthenticated) : isAuthenticated;
+    if (mounted && !isLoading && !isAuthenticated && !hasToken && !isPublicPage) {
       router.replace(`/login?redirect=${encodeURIComponent(pathname)}`);
     }
   }, [mounted, isLoading, isAuthenticated, isPublicPage, pathname, router]);

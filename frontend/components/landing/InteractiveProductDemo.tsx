@@ -245,7 +245,7 @@ export const InteractiveProductDemo: React.FC = () => {
           </p>
 
           {/* Scenario Selector Pills */}
-          <div className="pt-2 flex items-center justify-center gap-2">
+          <div className="pt-2 flex flex-wrap items-center justify-center gap-2.5">
             <span className="text-xs text-slate font-medium mr-1">Demo Case:</span>
             {DEMO_SCENARIOS.map((scen, idx) => (
               <button
@@ -256,9 +256,9 @@ export const InteractiveProductDemo: React.FC = () => {
                   setActiveSourceId(scen.sources[0]?.id || '');
                   setReviewState('PENDING');
                 }}
-                className={`text-xs font-semibold px-3 py-1.5 rounded-xl border transition-all ${
+                className={`text-xs sm:text-sm font-semibold px-4.5 py-2 min-h-[38px] rounded-xl border transition-all cursor-pointer inline-flex items-center justify-center whitespace-nowrap ${
                   selectedScenarioIndex === idx
-                    ? 'bg-white text-brand border-brand shadow-sm'
+                    ? 'bg-white text-brand border-brand shadow-sm font-bold'
                     : 'bg-white/60 text-slate border-border-subtle hover:bg-white'
                 }`}
               >
@@ -288,16 +288,16 @@ export const InteractiveProductDemo: React.FC = () => {
                 <>
                   <button
                     onClick={() => setReviewState('REVISION')}
-                    className="text-xs font-semibold px-3 py-1.5 rounded-xl border border-border-subtle bg-white text-slate hover:text-ink transition-colors"
+                    className="text-xs sm:text-sm font-semibold px-5 py-2.5 min-h-[40px] rounded-xl border border-border-subtle bg-white text-slate hover:text-ink transition-colors inline-flex items-center justify-center whitespace-nowrap cursor-pointer"
                   >
                     Request Revision
                   </button>
                   <Button
                     size="sm"
                     onClick={() => setReviewState('APPROVED')}
-                    className="text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+                    className="text-xs sm:text-sm font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm min-h-[40px] px-5"
                   >
-                    <Check className="w-3.5 h-3.5 mr-1" />
+                    <Check className="w-4 h-4 mr-1.5" />
                     <span>Approve Draft</span>
                   </Button>
                 </>

@@ -155,10 +155,10 @@ export const CoverageMoonWidget: React.FC<CoverageMoonWidgetProps> = ({
               </div>
             </div>
 
-            <div className="pt-2 flex justify-end gap-2.5 border-t border-line">
+            <div className="pt-3 flex justify-end gap-3 border-t border-line">
               <button
                 onClick={() => setIsGapDrawerOpen(false)}
-                className="px-4 py-2 rounded-md bg-surface-2 hover:bg-surface-3 text-xs font-semibold text-text transition-colors"
+                className="px-5 py-2.5 min-h-[42px] rounded-xl bg-surface-2 hover:bg-surface-3 text-xs sm:text-sm font-semibold text-text transition-colors inline-flex items-center justify-center cursor-pointer whitespace-nowrap"
               >
                 Close
               </button>
@@ -167,7 +167,7 @@ export const CoverageMoonWidget: React.FC<CoverageMoonWidgetProps> = ({
                   setIsGapDrawerOpen(false);
                   window.location.href = '/knowledge-base';
                 }}
-                className="px-4 py-2 rounded-md bg-accent text-bg text-xs font-bold hover:opacity-90 transition-opacity flex items-center gap-1.5"
+                className="px-6 py-2.5 min-h-[42px] rounded-xl bg-accent text-bg text-xs sm:text-sm font-bold hover:opacity-90 transition-opacity inline-flex items-center justify-center gap-2 cursor-pointer whitespace-nowrap"
               >
                 <span>Upload Missing Docs</span>
                 <ArrowRight className="w-3.5 h-3.5" />

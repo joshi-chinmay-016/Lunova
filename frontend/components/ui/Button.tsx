@@ -29,9 +29,9 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       'inline-flex items-center justify-center font-medium transition-all duration-150 rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98] select-none cursor-pointer whitespace-nowrap shrink-0';
 
     const sizeStyles = {
-      sm: 'text-xs sm:text-sm px-4.5 py-2 gap-2 min-h-[38px] font-semibold',
-      md: 'text-sm sm:text-base px-6 py-2.5 gap-2.5 min-h-[46px] font-semibold',
-      lg: 'text-base px-8 py-3.5 gap-3 min-h-[52px] font-bold',
+      sm: 'text-xs sm:text-sm px-5 py-2.5 gap-2.5 min-h-[42px] font-semibold tracking-normal',
+      md: 'text-sm sm:text-base px-7 py-3 gap-3 min-h-[48px] font-semibold tracking-normal',
+      lg: 'text-base px-9 py-3.5 gap-3.5 min-h-[54px] font-bold tracking-normal',
     };
 
     const variantStyles = {
@@ -57,11 +57,11 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         {isLoading ? (
-          <Loader2 className="w-4 h-4 animate-spin text-current" />
+          <Loader2 className="w-4 h-4 animate-spin text-current shrink-0" />
         ) : (
           leftIcon
         )}
-        <span>{children}</span>
+        <span className="px-0.5 inline-flex items-center justify-center leading-relaxed whitespace-nowrap">{children}</span>
         {!isLoading && rightIcon}
       </button>
     );

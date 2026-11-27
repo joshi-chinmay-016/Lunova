@@ -79,13 +79,13 @@ export const LandingNavbar: React.FC = () => {
         {/* Action CTAs */}
         <div className="flex items-center gap-3 shrink-0">
           <Link href="/login">
-            <button className="text-sm font-display font-bold text-slate-800 hover:text-emerald-700 px-4 py-2.5 transition-colors cursor-pointer whitespace-nowrap">
+            <button className="text-sm font-display font-bold text-slate-800 hover:text-emerald-700 px-5 py-2.5 min-h-[44px] inline-flex items-center justify-center transition-colors cursor-pointer whitespace-nowrap rounded-xl">
               Sign In
             </button>
           </Link>
 
           <Link href="/dashboard">
-            <button className="relative inline-flex items-center justify-center gap-2 min-h-[44px] px-6 py-2.5 rounded-xl font-display font-bold text-sm text-white overflow-hidden shadow-[0_4px_16px_rgba(5,150,105,0.25)] hover:shadow-[0_8px_24px_rgba(5,150,105,0.35)] transition-all duration-300 group cursor-pointer border border-emerald-400/30 active:scale-[0.98]">
+            <button className="relative inline-flex items-center justify-center gap-2.5 min-h-[46px] px-7 py-2.5 rounded-xl font-display font-bold text-sm text-white overflow-hidden shadow-[0_4px_16px_rgba(5,150,105,0.25)] hover:shadow-[0_8px_24px_rgba(5,150,105,0.35)] transition-all duration-300 group cursor-pointer border border-emerald-400/30 active:scale-[0.98]">
               <span className="absolute inset-0 bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 transition-transform duration-300 group-hover:scale-105" />
               <span className="absolute -inset-full top-0 block h-full w-1/2 -skew-x-12 bg-gradient-to-r from-transparent via-white/35 to-transparent group-hover:animate-shine pointer-events-none" />
               <span className="relative z-10 flex items-center gap-2">

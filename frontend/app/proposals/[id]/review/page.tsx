@@ -332,53 +332,53 @@ export default function ProposalReviewPage() {
         <div className="lg:col-span-2 space-y-6">
           <Card className="overflow-hidden">
             {/* Tab Navigation */}
-            <div className="flex items-center border-b border-border-subtle bg-canvas/60 px-4 pt-3 overflow-x-auto gap-2">
+            <div className="flex items-center border-b border-border-subtle bg-canvas/60 px-4 pt-3 overflow-x-auto gap-2.5">
               <button
                 onClick={() => setActiveTab('email')}
-                className={`flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-t-lg transition-all border-b-2 -mb-px ${
+                className={`flex items-center gap-2.5 px-5 py-2.5 min-h-[40px] text-xs sm:text-sm font-semibold rounded-t-xl transition-all border-b-2 -mb-px whitespace-nowrap cursor-pointer ${
                   activeTab === 'email'
                     ? 'border-brand text-brand bg-white'
                     : 'border-transparent text-slate hover:text-ink'
                 }`}
               >
-                <Mail className="w-3.5 h-3.5" />
-                Outgoing Response Email
+                <Mail className="w-4 h-4" />
+                <span>Outgoing Response Email</span>
               </button>
 
               <button
                 onClick={() => setActiveTab('sections')}
-                className={`flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-t-lg transition-all border-b-2 -mb-px ${
+                className={`flex items-center gap-2.5 px-5 py-2.5 min-h-[40px] text-xs sm:text-sm font-semibold rounded-t-xl transition-all border-b-2 -mb-px whitespace-nowrap cursor-pointer ${
                   activeTab === 'sections'
                     ? 'border-brand text-brand bg-white'
                     : 'border-transparent text-slate hover:text-ink'
                 }`}
               >
-                <FileText className="w-3.5 h-3.5" />
-                Technical & Execution Sections
+                <FileText className="w-4 h-4" />
+                <span>Technical &amp; Execution Sections</span>
               </button>
 
               <button
                 onClick={() => setActiveTab('requirements')}
-                className={`flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-t-lg transition-all border-b-2 -mb-px ${
+                className={`flex items-center gap-2.5 px-5 py-2.5 min-h-[40px] text-xs sm:text-sm font-semibold rounded-t-xl transition-all border-b-2 -mb-px whitespace-nowrap cursor-pointer ${
                   activeTab === 'requirements'
                     ? 'border-brand text-brand bg-white'
                     : 'border-transparent text-slate hover:text-ink'
                 }`}
               >
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                Requirement Coverage ({fulfilledCount}/{requirements.length})
+                <CheckCircle2 className="w-4 h-4" />
+                <span>Requirement Coverage ({fulfilledCount}/{requirements.length})</span>
               </button>
 
               <button
                 onClick={() => setActiveTab('history')}
-                className={`flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-t-lg transition-all border-b-2 -mb-px ${
+                className={`flex items-center gap-2.5 px-5 py-2.5 min-h-[40px] text-xs sm:text-sm font-semibold rounded-t-xl transition-all border-b-2 -mb-px whitespace-nowrap cursor-pointer ${
                   activeTab === 'history'
                     ? 'border-brand text-brand bg-white'
                     : 'border-transparent text-slate hover:text-ink'
                 }`}
               >
-                <UserCheck className="w-3.5 h-3.5" />
-                Review Log
+                <UserCheck className="w-4 h-4" />
+                <span>Review Log</span>
               </button>
             </div>
 

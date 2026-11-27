@@ -84,40 +84,40 @@ export const LiveGroundingSimulator: React.FC = () => {
         </div>
 
         {/* Interactive Mode Selector Tabs */}
-        <div className="pt-3 pb-2 grid grid-cols-3 gap-1.5 p-1 bg-slate-100/80 rounded-xl border border-slate-200/80">
+        <div className="pt-3 pb-2 grid grid-cols-3 gap-2 p-1.5 bg-slate-100/80 rounded-2xl border border-slate-200/80">
           <button
             onClick={() => setActiveTab('extraction')}
-            className={`py-2 px-2 rounded-lg text-xs font-display font-bold tracking-tight transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer ${
+            className={`py-2.5 px-3 sm:px-4 min-h-[42px] rounded-xl text-xs sm:text-sm font-display font-bold tracking-normal transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer whitespace-nowrap ${
               activeTab === 'extraction'
                 ? 'bg-white text-slate-950 shadow-sm border border-slate-200/80'
                 : 'text-slate-600 hover:text-slate-950'
             }`}
           >
-            <FileCheck className="w-3.5 h-3.5 text-blue-600" />
+            <FileCheck className="w-4 h-4 text-blue-600" />
             <span>01 Extraction</span>
           </button>
 
           <button
             onClick={() => setActiveTab('retrieval')}
-            className={`py-2 px-2 rounded-lg text-xs font-display font-bold tracking-tight transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer ${
+            className={`py-2.5 px-3 sm:px-4 min-h-[42px] rounded-xl text-xs sm:text-sm font-display font-bold tracking-normal transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer whitespace-nowrap ${
               activeTab === 'retrieval'
                 ? 'bg-white text-slate-950 shadow-sm border border-slate-200/80'
                 : 'text-slate-600 hover:text-slate-950'
             }`}
           >
-            <Database className="w-3.5 h-3.5 text-emerald-600" />
+            <Database className="w-4 h-4 text-emerald-600" />
             <span>02 Vector RAG</span>
           </button>
 
           <button
             onClick={() => setActiveTab('veracity')}
-            className={`py-2 px-2 rounded-lg text-xs font-display font-bold tracking-tight transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer ${
+            className={`py-2.5 px-3 sm:px-4 min-h-[42px] rounded-xl text-xs sm:text-sm font-display font-bold tracking-normal transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer whitespace-nowrap ${
               activeTab === 'veracity'
                 ? 'bg-white text-slate-950 shadow-sm border border-slate-200/80'
                 : 'text-slate-600 hover:text-slate-950'
             }`}
           >
-            <ShieldCheck className="w-3.5 h-3.5 text-teal-600" />
+            <ShieldCheck className="w-4 h-4 text-teal-600" />
             <span>03 Veracity</span>
           </button>
         </div>

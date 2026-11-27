@@ -77,20 +77,20 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         {description}
       </p>
 
-      <div className="flex flex-col sm:flex-row items-center gap-2.5 w-full justify-center">
+      <div className="flex flex-col sm:flex-row items-center gap-3 w-full justify-center">
         {actionLabel && onAction && (
           <button
             onClick={onAction}
-            className="w-full sm:w-auto px-4 py-2 rounded-md bg-accent text-bg text-xs font-bold hover:opacity-90 transition-opacity"
+            className="w-full sm:w-auto px-6 py-2.5 min-h-[42px] rounded-xl bg-accent text-bg text-xs sm:text-sm font-bold hover:opacity-90 transition-opacity shadow-sm whitespace-nowrap inline-flex items-center justify-center cursor-pointer"
           >
             {actionLabel}
           </button>
         )}
         <button
           onClick={handleReset}
-          className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-md bg-surface-2 hover:bg-surface-3 border border-line text-xs font-medium text-text-muted hover:text-text transition-colors"
+          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 min-h-[42px] rounded-xl bg-surface-2 hover:bg-surface-3 border border-line text-xs sm:text-sm font-semibold text-text-muted hover:text-text transition-colors whitespace-nowrap cursor-pointer"
         >
-          <RotateCcw className="w-3.5 h-3.5" />
+          <RotateCcw className="w-4 h-4" />
           <span>Load sample data</span>
         </button>
       </div>

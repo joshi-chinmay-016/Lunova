@@ -250,8 +250,8 @@ function createSyntheticJwt(email: string, name: string = 'Sarah Jenkins', role:
   const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
   const payload = btoa(
     JSON.stringify({
-      sub: 'usr-admin-1',
-      company_id: 'cmp-lunetron-1',
+      sub: '00000000-0000-0000-0000-000000000001',
+      company_id: '00000000-0000-0000-0000-000000000002',
       role,
       email,
       name,

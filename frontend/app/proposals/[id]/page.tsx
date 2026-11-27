@@ -203,10 +203,10 @@ export default function ProposalWorkspacePage() {
             {(proposal.status === 'DISPATCH_UNCERTAIN' || proposal.status === 'SENDING') && (
               <Button
                 variant="outline"
-                size="sm"
+                size="md"
                 onClick={() => setIsReconcileOpen(true)}
                 className="border-amber-400 text-amber-800 hover:bg-amber-50"
-                leftIcon={<AlertTriangle className="w-3.5 h-3.5 text-amber-600" />}
+                leftIcon={<AlertTriangle className="w-4 h-4 text-amber-600" />}
               >
                 Reconcile Dispatch
               </Button>
@@ -218,7 +218,7 @@ export default function ProposalWorkspacePage() {
               proposal.status !== 'SENDING' && (
                 <Button
                   variant="outline"
-                  size="sm"
+                  size="md"
                   onClick={() => setIsRejectOpen(true)}
                   className="text-red-700 hover:bg-red-50 hover:border-red-300"
                 >
@@ -232,21 +232,21 @@ export default function ProposalWorkspacePage() {
               proposal.status !== 'SENDING' && (
                 <Button
                   variant="success"
-                  size="sm"
+                  size="md"
                   onClick={() => setIsApproveOpen(true)}
-                  leftIcon={<CheckCircle className="w-3.5 h-3.5" />}
+                  leftIcon={<CheckCircle className="w-4 h-4" />}
                 >
-                  Approve
+                  Approve Proposal
                 </Button>
               )}
 
             {proposal.status === 'APPROVED' && (
               <Button
                 variant="primary"
-                size="sm"
+                size="md"
                 onClick={() => setIsSendOpen(true)}
                 isLoading={sendMutation.isPending}
-                leftIcon={<Send className="w-3.5 h-3.5" />}
+                leftIcon={<Send className="w-4 h-4" />}
               >
                 Send via Gmail
               </Button>
