@@ -43,6 +43,24 @@ class GmailOAuthService:
     """
 
     @classmethod
+    def get_oauth_scopes(cls) -> list[str]:
+        """Returns the configured OAuth scopes list, defaulting to GMAIL_SCOPES."""
+        return settings.oauth_scopes
+
+    @classmethod
+    def decrypt_token(
+        cls,
+        encrypted_token: str,
+        encryption_service: Optional[TokenEncryptionService] = None,
+    ) -> str:
+        """
+        Decrypts an encrypted token string into plaintext in-memory.
+        Plaintext is never logged or written to storage.
+        """
+        enc = encryption_service or get_encryption_service()
+        return enc.decrypt(encrypted_token)
+
+    @classmethod
     def validate_configuration(cls) -> None:
         """
         Validates that required Gmail OAuth client credentials and encryption key
@@ -149,7 +167,7 @@ class GmailOAuthService:
             "client_id": settings.GMAIL_CLIENT_ID,
             "redirect_uri": settings.GMAIL_REDIRECT_URI,
             "response_type": "code",
-            "scope": " ".join(GMAIL_SCOPES),
+            "scope": " ".join(cls.get_oauth_scopes()),
             "access_type": "offline",
             "prompt": "consent",
             "state": state,

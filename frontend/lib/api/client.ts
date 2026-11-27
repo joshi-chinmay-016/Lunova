@@ -572,13 +572,18 @@ export async function analyzeProposalText(
   }
 }
 
-export async function approveProposal(id: string, notes: string): Promise<Proposal> {
+export async function approveProposal(id: string, notes: string = 'Approved for client dispatch'): Promise<Proposal> {
   try {
-    await fetchApi(`/proposals/${id}/approve`, {
+    const res = await fetchApi(`/proposals/${id}/approve`, {
       method: 'POST',
       body: JSON.stringify({ comments: notes }),
     });
-  } catch {}
+    if (res?.id) {
+      return await fetchProposalById(res.id);
+    }
+  } catch (err) {
+    console.warn(`Backend /proposals/${id}/approve failed, updating local state:`, err);
+  }
 
   inMemoryProposals = inMemoryProposals.map((p) =>
     p.id === id ? { ...p, status: 'APPROVED' as const, updated_at: new Date().toISOString() } : p
@@ -586,13 +591,18 @@ export async function approveProposal(id: string, notes: string): Promise<Propos
   return await fetchProposalById(id);
 }
 
-export async function rejectProposal(id: string, notes: string): Promise<Proposal> {
+export async function rejectProposal(id: string, notes: string = 'Rejected during review'): Promise<Proposal> {
   try {
-    await fetchApi(`/proposals/${id}/reject`, {
+    const res = await fetchApi(`/proposals/${id}/reject`, {
       method: 'POST',
       body: JSON.stringify({ comments: notes }),
     });
-  } catch {}
+    if (res?.id) {
+      return await fetchProposalById(res.id);
+    }
+  } catch (err) {
+    console.warn(`Backend /proposals/${id}/reject failed, updating local state:`, err);
+  }
 
   inMemoryProposals = inMemoryProposals.map((p) =>
     p.id === id ? { ...p, status: 'REJECTED' as const, updated_at: new Date().toISOString() } : p
@@ -657,35 +667,54 @@ export async function fetchDocuments(): Promise<KnowledgeDocument[]> {
 
 export async function uploadDocument(payload: UploadDocumentPayload): Promise<KnowledgeDocument> {
   try {
-    const res = await fetchApi('/knowledge/documents', {
-      method: 'POST',
-      body: JSON.stringify({
-        name: payload.name,
-        doc_type: payload.type.toLowerCase(),
-        content: payload.content || 'Standard enterprise document content.',
-      }),
-    });
-    if (res && res.id) {
-      return {
-        id: res.id,
-        name: res.name,
-        type: payload.type,
-        status: 'READY',
-        file_size: '1.4 MB',
-        uploaded_at: res.created_at,
-        last_updated: res.updated_at,
-        chunks_count: 14,
-        category: payload.category,
-      };
+    let res: any;
+    if (payload.file) {
+      const formData = new FormData();
+      formData.append('file', payload.file);
+      if (payload.category) {
+        formData.append('category', payload.category);
+      }
+      res = await fetchApi('/knowledge/upload', {
+        method: 'POST',
+        body: formData,
+      });
+    } else {
+      res = await fetchApi('/knowledge/documents', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: payload.name,
+          doc_type: payload.type.toLowerCase(),
+          content: payload.content || 'Standard enterprise document content.',
+          source: payload.category || 'Documentation',
+        }),
+      });
     }
-  } catch {}
+
+    if (res && res.id) {
+      const doc: KnowledgeDocument = {
+        id: res.id,
+        name: res.name || payload.name,
+        type: payload.type,
+        status: (res.status as any) || 'READY',
+        file_size: payload.file ? `${(payload.file.size / 1024).toFixed(1)} KB` : '850 KB',
+        uploaded_at: res.created_at || new Date().toISOString(),
+        last_updated: res.updated_at || new Date().toISOString(),
+        chunks_count: res.chunks_count || 8,
+        category: payload.category || 'Documentation',
+      };
+      inMemoryDocuments = [doc, ...inMemoryDocuments];
+      return doc;
+    }
+  } catch (err) {
+    console.warn('Backend document upload failed, saving to local in-memory store:', err);
+  }
 
   const newDoc: KnowledgeDocument = {
     id: `doc-${Date.now()}`,
     name: payload.name,
     type: payload.type,
     status: 'READY',
-    file_size: '1.4 MB',
+    file_size: payload.file ? `${(payload.file.size / 1024).toFixed(1)} KB` : '1.4 MB',
     uploaded_at: new Date().toISOString(),
     last_updated: new Date().toISOString(),
     chunks_count: 18,
@@ -698,6 +727,13 @@ export async function uploadDocument(payload: UploadDocumentPayload): Promise<Kn
 }
 
 export async function deleteDocument(id: string): Promise<void> {
+  try {
+    await fetchApi(`/knowledge/documents/${id}`, {
+      method: 'DELETE',
+    });
+  } catch (err) {
+    console.warn(`Backend delete /knowledge/documents/${id} failed:`, err);
+  }
   inMemoryDocuments = inMemoryDocuments.filter((d) => d.id !== id);
 }
 
@@ -876,7 +912,35 @@ export async function refreshGmailToken(): Promise<any> {
   return await fetchApi('/integrations/gmail/refresh', { method: 'POST' });
 }
 
-export async function syncGmailInbox(): Promise<any> {
+export interface SyncDurationMetrics {
+  gmail_api_fetch_ms: number;
+  message_normalization_ms: number;
+  database_persistence_ms: number;
+  attachment_processing_ms: number;
+  document_extraction_ms: number;
+  embedding_generation_ms: number;
+  rag_retrieval_ms: number;
+  gemini_generation_ms: number;
+  total_duration_ms: number;
+}
+
+export interface GmailSyncResult {
+  account_id: string;
+  email_address: string;
+  messages_examined: number;
+  new_emails_count: number;
+  proposals_created_count: number;
+  skipped_duplicates_count: number;
+  attachments_discovered_count?: number;
+  failed_messages_count?: number;
+  sync_status?: string;
+  synced_at: string;
+  history_id?: string;
+  sync_strategy?: string;
+  durations?: SyncDurationMetrics;
+}
+
+export async function syncGmailInbox(): Promise<GmailSyncResult> {
   return await fetchApi('/integrations/gmail/sync', { method: 'POST' });
 }
 
@@ -920,3 +984,94 @@ export async function fetchIntegrations(): Promise<IntegrationItem[]> {
     },
   ];
 }
+// ==========================================
+// Response Center & Workflow API
+// ==========================================
+
+export interface ResponseCenterMetrics {
+  total_inbox: number;
+  customer_requests: number;
+  drafts_generated: number;
+  awaiting_review: number;
+  approved: number;
+  sent: number;
+  needs_info: number;
+}
+
+export interface ProposalDetail extends Proposal {
+  classification?: string;
+  requirements?: any;
+  sources?: any;
+  generated_response?: any;
+  confidence?: any;
+  missing_information?: any;
+  clarification_questions?: any;
+  incoming_email?: {
+    id: string;
+    direction: string;
+    sender_address: string;
+    recipient_address: string;
+    subject?: string;
+    body?: string;
+    classification?: string;
+    thread_id?: string;
+    created_at: string;
+  };
+  outgoing_email?: {
+    id: string;
+    direction: string;
+    sender_address: string;
+    recipient_address: string;
+    subject?: string;
+    body?: string;
+    classification?: string;
+    thread_id?: string;
+    created_at: string;
+  };
+  attachments?: Array<{
+    id: string;
+    filename: string;
+    content_type?: string;
+    file_size_bytes?: number;
+    parsing_status: string;
+  }>;
+}
+
+export async function fetchResponseCenterMetrics(): Promise<ResponseCenterMetrics> {
+  try {
+    return await fetchApi('/proposals/metrics');
+  } catch (err) {
+    console.warn('Failed to fetch /proposals/metrics, falling back to defaults:', err);
+    return {
+      total_inbox: 0,
+      customer_requests: 0,
+      drafts_generated: 0,
+      awaiting_review: 0,
+      approved: 0,
+      sent: 0,
+      needs_info: 0,
+    };
+  }
+}
+
+export async function fetchProposalDetail(id: string): Promise<ProposalDetail> {
+  return await fetchApi(`/proposals/${id}/detail`);
+}
+
+export async function updateProposalDraft(
+  id: string,
+  payload: { subject?: string; body: string }
+): Promise<Proposal> {
+  return await fetchApi(`/proposals/${id}/draft`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function regenerateProposal(id: string): Promise<{ detail: string }> {
+  return await fetchApi(`/proposals/${id}/regenerate`, {
+    method: 'POST',
+  });
+}
+
+export const sendProposalToClient = sendProposal;

@@ -16,9 +16,9 @@ This repository contains the FastAPI backend for the AI Proposal Agent.
 
 2. **Setup Environment Variables**
    ```bash
-   cp .env.example .env
+   cp ../.env.example ../.env
    ```
-   *Modify the `.env` file if your local setup requires different credentials.*
+   *The project root `.env` serves as the single source of truth for all services.*
 
 3. **Install Dependencies**
    ```bash

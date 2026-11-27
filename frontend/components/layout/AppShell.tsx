@@ -51,7 +51,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   }
 
   // Loading state while verifying enterprise JWT session
-  if (!mounted || isLoading || !isAuthenticated) {
+  if (!mounted || isLoading || (!isAuthenticated && (typeof window !== 'undefined' && !getAuthToken()))) {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
         <div className="flex flex-col items-center gap-3 text-center">
@@ -66,6 +66,9 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
               Redirecting to secure login station if unauthenticated
             </p>
           </div>
+          <a href="/login" className="text-xs text-emerald-600 font-medium hover:underline mt-2">
+            Sign in with admin credentials &rarr;
+          </a>
         </div>
       </div>
     );

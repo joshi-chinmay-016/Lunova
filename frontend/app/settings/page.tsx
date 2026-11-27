@@ -97,6 +97,54 @@ function SettingsContent() {
     }
   }, [ai.data]);
 
+  const refetchGmail = gmailStatus.refetch;
+  const refetchIntegrations = integrations.refetch;
+
+  // Handle OAuth callback parameters (connected=gmail or error=...)
+  React.useEffect(() => {
+    const connected = searchParams.get('connected');
+    const err = searchParams.get('error');
+
+    if (connected === 'gmail') {
+      setActiveTab('integrations');
+      setGmailActionMsg({
+        type: 'success',
+        text: 'Gmail account connected and authorized successfully!',
+      });
+      refetchGmail();
+      refetchIntegrations();
+
+      if (typeof window !== 'undefined') {
+        const cleanUrl = window.location.pathname + '?tab=integrations';
+        window.history.replaceState({}, '', cleanUrl);
+      }
+    } else if (err) {
+      setActiveTab('integrations');
+      let friendlyError = 'Gmail connection failed. Please check your credentials and try again.';
+      if (err === 'access_denied') {
+        friendlyError = 'Gmail connection cancelled: Permissions were not granted by the user.';
+      } else if (err === 'missing_code') {
+        friendlyError = 'Gmail connection failed: Authorization code was missing.';
+      } else if (err === 'invalid_state') {
+        friendlyError = 'Gmail connection failed: Authorization session expired or was invalid.';
+      } else if (err === 'token_exchange_failed') {
+        friendlyError = 'Gmail connection failed: Google token exchange could not be completed.';
+      } else {
+        friendlyError = `Gmail connection failed (${decodeURIComponent(err)}). Please try again.`;
+      }
+
+      setGmailActionMsg({
+        type: 'error',
+        text: friendlyError,
+      });
+
+      if (typeof window !== 'undefined') {
+        const cleanUrl = window.location.pathname + '?tab=integrations';
+        window.history.replaceState({}, '', cleanUrl);
+      }
+    }
+  }, [searchParams, refetchGmail, refetchIntegrations]);
+
   const handleSaveCompany = (e: React.FormEvent) => {
     e.preventDefault();
     company.update(companyForm as any);
@@ -150,13 +198,29 @@ function SettingsContent() {
     }
   };
 
+  const [lastSyncResult, setLastSyncResult] = useState<any>(null);
+
   const handleSyncInbox = async () => {
     try {
       setGmailActionMsg(null);
-      await syncMutation.mutateAsync();
+      setLastSyncResult(null);
+      const res = await syncMutation.mutateAsync();
+      setLastSyncResult(res);
+
+      const newEmails = res?.new_emails_count ?? 0;
+      const newProps = res?.proposals_created_count ?? 0;
+      const skipped = res?.skipped_duplicates_count ?? 0;
+      const failed = res?.failed_messages_count ?? 0;
+      const latency = res?.durations?.total_duration_ms ? `${Math.round(res.durations.total_duration_ms)}ms` : '';
+      const strat = res?.sync_strategy === 'history' ? 'Incremental History' : 'Full Inbox Scan';
+
+      let msg = `Inbox synchronized in ${latency || '<1s'} (${strat}): ${newEmails} new email(s) ingested, ${newProps} inquiry(ies) created, ${skipped} duplicate(s) skipped.`;
+      if (failed > 0) {
+        msg += ` ${failed} message(s) failed.`;
+      }
       setGmailActionMsg({
         type: 'success',
-        text: 'Inbox synchronized. New RFPs and proposal inquiries have been ingested.',
+        text: msg,
       });
     } catch (err: any) {
       setGmailActionMsg({
@@ -524,9 +588,10 @@ function SettingsContent() {
                       size="md"
                       onClick={handleSyncInbox}
                       isLoading={syncMutation.isPending}
-                      leftIcon={<RefreshCw className="w-4 h-4" />}
+                      disabled={syncMutation.isPending}
+                      leftIcon={<RefreshCw className={`w-4 h-4 ${syncMutation.isPending ? 'animate-spin' : ''}`} />}
                     >
-                      Sync Inbox
+                      {syncMutation.isPending ? 'Syncing Inbox...' : 'Sync Inbox'}
                     </Button>
                     <Button
                       variant="ghost"
@@ -551,6 +616,61 @@ function SettingsContent() {
                 )}
               </div>
             </div>
+
+            {syncMutation.isPending && (
+              <div className="p-3 bg-blue-50/70 border border-blue-200/80 rounded-xl flex items-center gap-2.5 text-xs text-blue-800 animate-pulse">
+                <RefreshCw className="w-4 h-4 text-blue-600 animate-spin shrink-0" />
+                <div className="space-y-0.5">
+                  <p className="font-semibold text-blue-900">Synchronizing Gmail inbox...</p>
+                  <p className="text-[11px] text-blue-600">
+                    Ingesting incoming emails incrementally, extracting attachments, and identifying actionable RFP inquiries.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {lastSyncResult && !syncMutation.isPending && (
+              <div className="p-3.5 bg-gray-50/80 border border-gray-200/90 rounded-xl space-y-2 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-gray-800 flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                    Last Sync Breakdown
+                  </span>
+                  <span className="text-[11px] text-gray-500 font-mono">
+                    {lastSyncResult.durations?.total_duration_ms ? `${Math.round(lastSyncResult.durations.total_duration_ms)}ms total` : ''}
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-[11px]">
+                  <div className="p-2 rounded-lg bg-white border border-gray-200/60">
+                    <p className="text-gray-400">Examined</p>
+                    <p className="font-bold text-gray-800">{lastSyncResult.messages_examined}</p>
+                  </div>
+                  <div className="p-2 rounded-lg bg-white border border-gray-200/60">
+                    <p className="text-gray-400">New Ingested</p>
+                    <p className="font-bold text-emerald-600">+{lastSyncResult.new_emails_count}</p>
+                  </div>
+                  <div className="p-2 rounded-lg bg-white border border-gray-200/60">
+                    <p className="text-gray-400">Inquiries Created</p>
+                    <p className="font-bold text-blue-600">{lastSyncResult.proposals_created_count}</p>
+                  </div>
+                  <div className="p-2 rounded-lg bg-white border border-gray-200/60">
+                    <p className="text-gray-400">Duplicates Skipped</p>
+                    <p className="font-bold text-gray-600">{lastSyncResult.skipped_duplicates_count}</p>
+                  </div>
+                </div>
+                {lastSyncResult.durations && (
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-gray-400 font-mono pt-1">
+                    <span>API Fetch: {Math.round(lastSyncResult.durations.gmail_api_fetch_ms)}ms</span>
+                    <span>•</span>
+                    <span>Normalize: {Math.round(lastSyncResult.durations.message_normalization_ms)}ms</span>
+                    <span>•</span>
+                    <span>DB Persistence: {Math.round(lastSyncResult.durations.database_persistence_ms)}ms</span>
+                    <span>•</span>
+                    <span>Strategy: {lastSyncResult.sync_strategy}</span>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Other Coming Soon Integrations */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">

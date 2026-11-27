@@ -20,6 +20,7 @@ import {
   Sparkles,
   BarChart3,
   LogOut,
+  Inbox,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -42,6 +43,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const navItems = [
     { label: 'Observatory', href: '/dashboard', icon: Compass },
+    { label: 'Response Center', href: '/response-center', icon: Inbox },
     {
       label: 'Proposals',
       href: '/proposals',
@@ -56,7 +58,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   ];
 
   const isActive = (href: string) => {
-    if (href === '/dashboard') return pathname === '/dashboard';
+    if (href === '/dashboard') return pathname === '/dashboard' || pathname === '/';
     return pathname.startsWith(href);
   };
 

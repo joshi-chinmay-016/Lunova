@@ -1,9 +1,11 @@
 from typing import Optional
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request, status
+from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependencies.auth import get_current_active_user, RoleChecker
 from app.auth.schemas import AuthenticatedUser
+from app.core.config import settings
 from app.core.database import get_db
 from app.core.security import MissingEncryptionKeyError, InvalidEncryptionKeyError
 from app.models.user import UserRole
@@ -11,6 +13,7 @@ from app.platform.schemas.email_account import (
     EmailAccountResponse,
     GmailAuthUrlResponse,
     GmailConnectionStatusResponse,
+    GmailSyncResponse,
 )
 from app.platform.services.gmail_oauth_service import GmailOAuthService
 from app.platform.services.gmail_sync_service import GmailSyncService
@@ -52,10 +55,12 @@ async def get_authorization_url(
     summary="Handle Gmail OAuth callback",
 )
 async def oauth_callback(
+    request: Request,
     code: Optional[str] = Query(None, description="Google OAuth authorization code"),
     state: Optional[str] = Query(None, description="CSRF state token"),
     error: Optional[str] = Query(None, description="OAuth error code from Google"),
     error_description: Optional[str] = Query(None, description="OAuth error description"),
+    redirect: Optional[bool] = Query(None, description="Explicitly toggle browser redirect"),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -65,28 +70,51 @@ async def oauth_callback(
     - Verifies user and company authorization under the membership model.
     - Exchanges authorization code for tokens.
     - Saves encrypted tokens in the database with company tenant isolation.
+    - Redirects browser to frontend settings page or returns JSON for API clients.
     """
+    accept = request.headers.get("accept", "")
+    is_browser = False
+    if redirect is True:
+        is_browser = True
+    elif redirect is False:
+        is_browser = False
+    elif "text/html" in accept or request.headers.get("sec-fetch-dest") == "document":
+        is_browser = True
+
+    frontend_base = settings.FRONTEND_URL.rstrip("/")
+
+    def handle_error(status_code: int, detail: str, safe_error_code: str = "gmail_oauth_failed"):
+        if is_browser:
+            return RedirectResponse(
+                url=f"{frontend_base}/settings?tab=integrations&error={safe_error_code}",
+                status_code=status.HTTP_302_FOUND,
+            )
+        raise HTTPException(status_code=status_code, detail=detail)
+
     if error:
-        # Provider error from Google: fail safely without exchanging tokens
         safe_msg = error_description or error
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Google OAuth provider error: {safe_msg}",
+        safe_code = "access_denied" if error == "access_denied" else "gmail_oauth_failed"
+        return handle_error(
+            status.HTTP_400_BAD_REQUEST,
+            f"Google OAuth provider error: {safe_msg}",
+            safe_code,
         )
 
     if not code or not code.strip():
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Authorization code is missing from Google OAuth callback.",
+        return handle_error(
+            status.HTTP_400_BAD_REQUEST,
+            "Authorization code is missing from Google OAuth callback.",
+            "missing_code",
         )
 
     # Validate and atomically consume single-use state
     try:
         state_data = await GmailOAuthService.validate_and_consume_oauth_state(db=db, state=state)
     except ValueError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid OAuth state: {str(exc)}",
+        return handle_error(
+            status.HTTP_400_BAD_REQUEST,
+            f"Invalid OAuth state: {str(exc)}",
+            "invalid_state",
         )
 
     company_id = state_data["company_id"]
@@ -95,18 +123,20 @@ async def oauth_callback(
     try:
         token_data = await GmailOAuthService.exchange_code_for_tokens(code)
     except ValueError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Token exchange failed: {str(exc)}",
+        return handle_error(
+            status.HTTP_400_BAD_REQUEST,
+            f"Token exchange failed: {str(exc)}",
+            "token_exchange_failed",
         )
 
     # Fetch verified user email from Google UserInfo
     try:
         user_email = await GmailOAuthService.fetch_user_email(token_data.get("access_token", ""))
     except ValueError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Could not identify Gmail account email: {str(exc)}",
+        return handle_error(
+            status.HTTP_400_BAD_REQUEST,
+            f"Could not identify Gmail account email: {str(exc)}",
+            "profile_fetch_failed",
         )
 
     # Persist or update account with encrypted tokens
@@ -118,14 +148,22 @@ async def oauth_callback(
             token_data=token_data,
         )
     except (MissingEncryptionKeyError, InvalidEncryptionKeyError) as exc:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Token encryption configuration error: {str(exc)}",
+        return handle_error(
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+            f"Token encryption configuration error: {str(exc)}",
+            "encryption_error",
         )
     except Exception:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to persist email account credentials.",
+        return handle_error(
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+            "Failed to persist email account credentials.",
+            "persistence_error",
+        )
+
+    if is_browser:
+        return RedirectResponse(
+            url=f"{frontend_base}/settings?tab=integrations&connected=gmail",
+            status_code=status.HTTP_302_FOUND,
         )
 
     return account
@@ -214,20 +252,21 @@ async def refresh_token(
 
 @router.post(
     "/sync",
+    response_model=GmailSyncResponse,
     summary="Synchronize incoming emails from connected Gmail inbox",
 )
 async def sync_inbox(
     background_tasks: BackgroundTasks,
     max_messages: int = Query(10, ge=1, le=50),
+    process_in_background: bool = Query(True, description="Run Stage B AI processing in background tasks after fast ingestion"),
     db: AsyncSession = Depends(get_db),
     current_user: AuthenticatedUser = Depends(RoleChecker([UserRole.ADMIN, UserRole.MEMBER])),
 ):
     """
     Manually triggers inbox synchronization from the company's connected Gmail account:
-    - Fetches unread/inbox messages
-    - Extracts body text, HTML, and attachments
-    - Creates Proposal records and schedules background AI analysis
-    - Avoids importing duplicate messages
+    - Stage A (Inbox Ingestion): Fetches new messages incrementally or via scan, normalizes, extracts attachments, and creates incoming records.
+    - Stage B (Request Processing): RAG retrieval and Gemini draft generation executed in background tasks (or synchronously if requested).
+    - Prevents concurrent duplicate sync runs (HTTP 409).
     """
     try:
         sync_result, created_ids = await GmailSyncService.sync_company_inbox(
@@ -236,16 +275,27 @@ async def sync_inbox(
             max_messages=max_messages,
         )
     except ValueError as exc:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+        msg = str(exc)
+        if "already in progress" in msg.lower():
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=msg)
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=msg)
     except RuntimeError as exc:
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(exc))
 
-    # Trigger background intelligence pipeline for each newly created proposal
-    for proposal_id in created_ids:
-        background_tasks.add_task(
-            ProposalService.process_proposal_bg,
-            proposal_id,
-            current_user.company_id,
-        )
+    if process_in_background:
+        # Stage B executed via BackgroundTasks: returns Stage A result immediately!
+        for proposal_id in created_ids:
+            background_tasks.add_task(
+                ProposalService.process_proposal_bg,
+                proposal_id,
+                current_user.company_id,
+            )
+    else:
+        # Synchronous execution for testing or batch operations
+        for proposal_id in created_ids:
+            await ProposalService.process_proposal_bg(
+                proposal_id,
+                current_user.company_id,
+            )
 
     return sync_result

@@ -3,6 +3,7 @@ Implements durable dispatch states (SENDING, DISPATCH_UNCERTAIN), concurrent sen
 safe timeout handling, and out-of-band reconciliation workflows.
 """
 
+import asyncio
 import email.message
 import logging
 from typing import Optional
@@ -83,7 +84,36 @@ class GmailSendService:
         )
         outgoing_email = (await db.execute(stmt_out)).scalars().first()
         if not outgoing_email or not outgoing_email.body or not outgoing_email.body.strip():
-            raise ValueError("No outgoing proposal draft found to send.")
+            # Check if generated_response contains a draft email body to materialize
+            gen_resp = proposal.generated_response or {}
+            draft_body = gen_resp.get("draft_email_body") if isinstance(gen_resp, dict) else None
+            if draft_body and str(draft_body).strip():
+                stmt_in = (
+                    select(Email)
+                    .filter(
+                        Email.proposal_id == proposal_id,
+                        Email.company_id == company_id,
+                        Email.direction == EmailDirection.INCOMING,
+                    )
+                    .order_by(Email.created_at.asc())
+                )
+                incoming_tmp = (await db.execute(stmt_in)).scalars().first()
+                outgoing_email = Email(
+                    company_id=company_id,
+                    proposal_id=proposal_id,
+                    email_account_id=incoming_tmp.email_account_id if incoming_tmp else None,
+                    thread_id=incoming_tmp.thread_id if incoming_tmp else None,
+                    subject=gen_resp.get("subject_line") or (f"Re: {incoming_tmp.subject}" if incoming_tmp and incoming_tmp.subject else "Proposal Response"),
+                    body=str(draft_body).strip(),
+                    direction=EmailDirection.OUTGOING,
+                    sender_address=incoming_tmp.recipient_address if incoming_tmp else "",
+                    recipient_address=incoming_tmp.sender_address if incoming_tmp else "",
+                )
+                db.add(outgoing_email)
+                await db.commit()
+                await db.refresh(outgoing_email)
+            else:
+                raise ValueError("No outgoing proposal draft found to send. Please write or regenerate a response draft first.")
 
         # 4. Retrieve incoming email to obtain recipient address and thread context
         stmt_in = (
@@ -140,11 +170,11 @@ class GmailSendService:
         # 7. Dispatch via Gmail API
         client = custom_client
         if not client:
-            decrypted_access_token = GmailOAuthService.decrypt_token(account.encrypted_access_token)
-            client = GmailClient(access_token=decrypted_access_token)
+            valid_access_token = await GmailOAuthService.get_valid_access_token(db, account)
+            client = GmailClient(access_token=valid_access_token)
 
         try:
-            send_res = client.send_message(raw_email_bytes, thread_id=thread_id)
+            send_res = await asyncio.to_thread(client.send_message, raw_email_bytes, thread_id=thread_id)
         except Exception as exc:
             logger.error(f"Failed to dispatch Gmail message for proposal {proposal_id}: {exc}")
             exc_str = str(exc).lower()

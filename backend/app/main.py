@@ -1,3 +1,17 @@
+import socket
+
+# Force IPv4 first in getaddrinfo to prevent 3.5-minute dead timeouts on IPv6 NAT64 routes
+_original_getaddrinfo = socket.getaddrinfo
+
+def _ipv4_first_getaddrinfo(host, port, family=0, type=0, proto=0, flags=0):
+    try:
+        res = _original_getaddrinfo(host, port, family, type, proto, flags)
+        return sorted(res, key=lambda x: 0 if x[0] == socket.AF_INET else 1)
+    except Exception:
+        return _original_getaddrinfo(host, port, family, type, proto, flags)
+
+socket.getaddrinfo = _ipv4_first_getaddrinfo
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings

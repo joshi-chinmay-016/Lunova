@@ -58,12 +58,13 @@ export const CoverageMoonWidget: React.FC<CoverageMoonWidgetProps> = ({
       renderer.render(scene, camera);
     };
 
+    const container = containerRef.current;
     animate();
 
     return () => {
       cancelAnimationFrame(animationId);
-      if (containerRef.current && renderer.domElement) {
-        containerRef.current.removeChild(renderer.domElement);
+      if (container && renderer.domElement) {
+        container.removeChild(renderer.domElement);
       }
       geometry.dispose();
       material.dispose();

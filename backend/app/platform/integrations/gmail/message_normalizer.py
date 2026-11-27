@@ -1,5 +1,6 @@
 import base64
 import email.utils
+import html
 import re
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -30,8 +31,11 @@ class NormalizedEmailMessage:
     body_text: str
     body_html: Optional[str]
     received_at: datetime
+    cc: List[str] = field(default_factory=list)
+    bcc: List[str] = field(default_factory=list)
     attachments: List[NormalizedAttachmentMetadata] = field(default_factory=list)
     raw_snippet: Optional[str] = None
+
 
 
 class GmailMessageNormalizer:
@@ -152,6 +156,23 @@ class GmailMessageNormalizer:
         for sub_part in parts:
             cls._extract_parts(sub_part, text_parts, html_parts, attachments)
 
+    @staticmethod
+    def html_to_plain_text(html_content: str) -> str:
+        """Converts HTML content to clean plain text fallback."""
+        if not html_content:
+            return ""
+        # Replace block tags with newline
+        text = re.sub(r"<(?:br|p|div|tr|li|h[1-6])[\s/>]", "\n", html_content, flags=re.IGNORECASE)
+        # Remove scripts, styles, and other metadata
+        text = re.sub(r"<(script|style|head|title)[^>]*>[\s\S]*?</\1>", "", text, flags=re.IGNORECASE)
+        # Remove remaining tags
+        text = re.sub(r"<[^>]+>", "", text)
+        # Unescape HTML entities
+        text = html.unescape(text)
+        # Strip consecutive blank lines
+        lines = [line.strip() for line in text.splitlines()]
+        return "\n".join(line for line in lines if line)
+
     @classmethod
     def normalize_message(cls, raw_msg: Dict[str, Any]) -> NormalizedEmailMessage:
         """Normalizes a raw Gmail message dict into NormalizedEmailMessage."""
@@ -167,6 +188,12 @@ class GmailMessageNormalizer:
         to_hdr = cls.parse_header(headers, "To")
         recipients = [r.strip() for r in to_hdr.split(",") if r.strip()] if to_hdr else []
 
+        cc_hdr = cls.parse_header(headers, "Cc")
+        cc = [r.strip() for r in cc_hdr.split(",") if r.strip()] if cc_hdr else []
+
+        bcc_hdr = cls.parse_header(headers, "Bcc")
+        bcc = [r.strip() for r in bcc_hdr.split(",") if r.strip()] if bcc_hdr else []
+
         date_hdr = cls.parse_header(headers, "Date")
         received_at = cls.parse_date(date_hdr, raw_msg.get("internalDate"))
 
@@ -180,7 +207,13 @@ class GmailMessageNormalizer:
         body_text = "\n\n".join(text_parts).strip()
         body_html = "\n\n".join(html_parts).strip() if html_parts else None
 
-        # Fallback to snippet if body text is completely empty
+        # Fallback 1: Extract plain text from HTML if body_text is empty
+        if not body_text and body_html:
+            extracted_html_text = cls.html_to_plain_text(body_html)
+            if extracted_html_text:
+                body_text = extracted_html_text
+
+        # Fallback 2: Fallback to snippet if body text is still completely empty
         if not body_text:
             body_text = raw_msg.get("snippet", "").strip()
 
@@ -194,7 +227,8 @@ class GmailMessageNormalizer:
             body_text=body_text,
             body_html=body_html,
             received_at=received_at,
+            cc=cc,
+            bcc=bcc,
             attachments=attachments,
             raw_snippet=raw_msg.get("snippet"),
         )
-

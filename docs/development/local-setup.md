@@ -15,17 +15,14 @@ This guide describes how to configure, run, and test Lunova entirely on a local 
 
 ## 2. Environment Configuration
 
-Copy the sanitized environment configuration template:
+Copy the sanitized environment configuration template in the repository root (the single source of truth for all services):
 
 ```bash
 # In the repository root
 copy .env.example .env
-
-# In the backend directory
-copy backend\.env.example backend\.env
 ```
 
-### Key Environment Variables (`backend/.env`)
+### Key Environment Variables (`.env`)
 
 ```ini
 PROJECT_NAME="Lunova API"

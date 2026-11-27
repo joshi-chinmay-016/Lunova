@@ -21,4 +21,5 @@ export interface UploadDocumentPayload {
   type: DocumentType;
   category: string;
   content?: string;
+  file?: File;
 }

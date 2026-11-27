@@ -19,13 +19,24 @@ import {
   Building2,
   CheckCircle2,
   Sparkles,
+  Zap,
+  Check,
 } from 'lucide-react';
 import { BorderBeam } from '@/components/ui/BorderBeam';
 
 function AuthForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { login, isLoggingIn, register, isRegistering, isAuthenticated, user } = useAuth();
+  const {
+    login,
+    isLoggingIn,
+    register,
+    isRegistering,
+    bootstrap,
+    isBootstrapping,
+    isAuthenticated,
+    user,
+  } = useAuth();
 
   const initialMode = searchParams.get('mode') === 'signup' ? 'signup' : 'signin';
   const [mode, setMode] = useState<'signin' | 'signup'>(initialMode);
@@ -39,6 +50,7 @@ function AuthForm() {
   const [companyName, setCompanyName] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [autoFilled, setAutoFilled] = useState(false);
 
   // Sync mode if query param changes
   useEffect(() => {
@@ -47,6 +59,16 @@ function AuthForm() {
       setMode(queryMode);
     }
   }, [searchParams]);
+
+  // If already authenticated and there's a redirect, handle it
+  useEffect(() => {
+    if (isAuthenticated) {
+      const redirect = searchParams.get('redirect');
+      if (redirect && redirect !== '/login') {
+        router.replace(redirect);
+      }
+    }
+  }, [isAuthenticated, router, searchParams]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,7 +81,8 @@ function AuthForm() {
 
     try {
       await login({ email: email.trim(), password });
-      window.location.href = '/dashboard';
+      const redirect = searchParams.get('redirect') || '/dashboard';
+      window.location.href = redirect;
     } catch (err: any) {
       setErrorMsg(err?.message || 'Authentication failed. Please check your email and password.');
     }
@@ -93,11 +116,42 @@ function AuthForm() {
         password,
         company_name: companyName.trim() || 'Lunetron Technologies',
       });
-      // Direct hard redirect to dashboard ensures fresh session load after account creation
-      window.location.href = '/dashboard';
+      const redirect = searchParams.get('redirect') || '/dashboard';
+      window.location.href = redirect;
     } catch (err: any) {
       setErrorMsg(err?.message || 'Account registration failed. Please try again.');
     }
+  };
+
+  const handle1ClickLogin = async () => {
+    setErrorMsg(null);
+    try {
+      await bootstrap();
+      const redirect = searchParams.get('redirect') || '/dashboard';
+      window.location.href = redirect;
+    } catch (err: any) {
+      try {
+        await login({ email: 'admin@lunetron.com', password: 'lunetron2026!' });
+        const redirect = searchParams.get('redirect') || '/dashboard';
+        window.location.href = redirect;
+      } catch (loginErr: any) {
+        const msg = loginErr?.message || '1-Click Login failed.';
+        if (msg.includes('500') || msg.includes('Failed to fetch')) {
+          setErrorMsg(
+            'Database unreachable: PostgreSQL port 5432 is offline. Ensure PostgreSQL or Docker Desktop is running.'
+          );
+        } else {
+          setErrorMsg(msg);
+        }
+      }
+    }
+  };
+
+  const fillCredentials = () => {
+    setEmail('admin@lunetron.com');
+    setPassword('lunetron2026!');
+    setAutoFilled(true);
+    setTimeout(() => setAutoFilled(false), 2000);
   };
 
   return (
@@ -168,7 +222,10 @@ function AuthForm() {
               </span>
               <button
                 type="button"
-                onClick={() => { window.location.href = '/dashboard'; }}
+                onClick={() => {
+                  const redirect = searchParams.get('redirect') || '/dashboard';
+                  window.location.href = redirect;
+                }}
                 className="text-emerald-700 hover:text-emerald-950 font-bold underline cursor-pointer"
               >
                 Go to Dashboard &rarr;
@@ -344,6 +401,40 @@ function AuthForm() {
               </span>
               <span>Encrypted via Argon2/BCrypt</span>
             </div>
+
+            {/* 1-Click Dev Admin Bootstrap & Quick Fill */}
+            <div className="pt-2 space-y-2">
+              <Button
+                type="button"
+                variant="secondary"
+                size="md"
+                className="w-full border-dashed border-blue-300 bg-blue-50/60 hover:bg-blue-100/60 text-blue-700 font-medium text-xs cursor-pointer"
+                isLoading={isBootstrapping || isLoggingIn}
+                onClick={handle1ClickLogin}
+                leftIcon={<Zap className="w-3.5 h-3.5 text-blue-600" />}
+              >
+                Quick Dev Admin Bootstrap (1-Click)
+              </Button>
+
+              <div className="text-[11px] text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-200/80 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 font-semibold text-slate-800">
+                    <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Local Development Credentials:</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={fillCredentials}
+                    className="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1 cursor-pointer"
+                  >
+                    {autoFilled ? <Check className="w-3 h-3 text-emerald-600" /> : null}
+                    {autoFilled ? 'Filled!' : 'Fill Fields'}
+                  </button>
+                </div>
+                <p>Email: <code className="font-mono font-medium text-slate-900 bg-slate-200/60 px-1 py-0.5 rounded">admin@lunetron.com</code></p>
+                <p>Password: <code className="font-mono font-medium text-slate-900 bg-slate-200/60 px-1 py-0.5 rounded">lunetron2026!</code></p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -353,7 +444,13 @@ function AuthForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-slate-50 flex items-center justify-center font-display text-sm font-bold text-slate-700">Loading Enterprise Portal...</div>}>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-slate-50 flex items-center justify-center font-display text-sm font-bold text-slate-700">
+          Loading Enterprise Portal...
+        </div>
+      }
+    >
       <AuthForm />
     </Suspense>
   );

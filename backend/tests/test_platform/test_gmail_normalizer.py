@@ -138,3 +138,65 @@ def test_fallback_to_snippet_when_body_empty():
 
     norm = GmailMessageNormalizer.normalize_message(raw_msg)
     assert norm.body_text == "This is a snippet fallback"
+
+
+def test_normalize_cc_and_bcc_headers():
+    raw_msg = {
+        "id": "msg_cc_bcc",
+        "threadId": "thread_cc_bcc",
+        "payload": {
+            "headers": [
+                {"name": "Subject", "value": "CC & BCC Proposal RFP"},
+                {"name": "From", "value": "procurement@acme.org"},
+                {"name": "To", "value": "proposals@lunetron.com"},
+                {"name": "Cc", "value": "compliance@acme.org, legal@acme.org"},
+                {"name": "Bcc", "value": "audit-archive@acme.org"},
+            ],
+            "mimeType": "text/plain",
+            "body": {
+                "size": 10,
+                "data": base64.urlsafe_b64encode(b"RFP content").decode("ascii"),
+            },
+        },
+    }
+
+    norm = GmailMessageNormalizer.normalize_message(raw_msg)
+    assert norm.cc == ["compliance@acme.org", "legal@acme.org"]
+    assert norm.bcc == ["audit-archive@acme.org"]
+
+
+def test_fallback_to_html_when_body_text_empty():
+    html_body = """
+    <html>
+        <head><style>body { color: black; }</style></head>
+        <body>
+            <h1>Project RFP Invitation</h1>
+            <p>Please review our <b>cloud migration</b> requirements &amp; timeline.</p>
+            <script>console.log('hidden script');</script>
+            <div>Estimated budget: &dollar;500,000</div>
+        </body>
+    </html>
+    """
+    b64_html = base64.urlsafe_b64encode(html_body.encode("utf-8")).decode("ascii")
+
+    raw_msg = {
+        "id": "msg_html_only",
+        "threadId": "thread_html_only",
+        "snippet": "Project RFP Invitation...",
+        "payload": {
+            "headers": [
+                {"name": "Subject", "value": "HTML Inbound RFP"},
+                {"name": "From", "value": "client@enterprise.com"},
+            ],
+            "mimeType": "text/html",
+            "body": {"size": len(html_body), "data": b64_html},
+        },
+    }
+
+    norm = GmailMessageNormalizer.normalize_message(raw_msg)
+    assert "hidden script" not in norm.body_text
+    assert "color: black" not in norm.body_text
+    assert "Project RFP Invitation" in norm.body_text
+    assert "cloud migration" in norm.body_text
+    assert "requirements & timeline" in norm.body_text
+    assert "$500,000" in norm.body_text

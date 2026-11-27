@@ -1,5 +1,7 @@
 import abc
 import base64
+import random
+import time
 from typing import Any, Dict, List, Optional
 import httpx
 
@@ -8,8 +10,23 @@ class BaseGmailClient(abc.ABC):
     """Abstract interface for interacting with Gmail API."""
 
     @abc.abstractmethod
-    def list_messages(self, query: str = "label:INBOX", max_results: int = 20) -> List[Dict[str, Any]]:
+    def list_messages(
+        self,
+        query: str = "label:INBOX",
+        max_results: int = 20,
+        page_token: Optional[str] = None,
+    ) -> List[Dict[str, Any]]:
         """Lists message stubs matching query."""
+        pass
+
+    @abc.abstractmethod
+    def list_history(
+        self,
+        start_history_id: str,
+        max_results: int = 100,
+        page_token: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Lists history changes since start_history_id."""
         pass
 
     @abc.abstractmethod
@@ -36,6 +53,7 @@ class GmailClient(BaseGmailClient):
     def __init__(self, access_token: str, client: Optional[httpx.Client] = None):
         self.access_token = access_token
         self._client = client or httpx.Client(timeout=30.0)
+        self.next_page_token: Optional[str] = None
 
     def _get_headers(self) -> Dict[str, str]:
         return {
@@ -43,28 +61,81 @@ class GmailClient(BaseGmailClient):
             "Accept": "application/json",
         }
 
-    def list_messages(self, query: str = "label:INBOX", max_results: int = 20) -> List[Dict[str, Any]]:
+    def _request_with_retry(self, method: str, url: str, **kwargs) -> httpx.Response:
+        """Executes HTTP request with exponential backoff for rate limits (429) and server errors (503)."""
+        max_retries = 3
+        base_delay = 0.5
+        for attempt in range(max_retries + 1):
+            try:
+                res = self._client.request(method, url, headers=self._get_headers(), **kwargs)
+                if res.status_code in (429, 503) and attempt < max_retries:
+                    retry_after = res.headers.get("Retry-After")
+                    if retry_after and retry_after.isdigit():
+                        delay = float(retry_after)
+                    else:
+                        delay = base_delay * (2 ** attempt) + random.uniform(0.05, 0.2)
+                    time.sleep(delay)
+                    continue
+                return res
+            except (httpx.ConnectError, httpx.ReadTimeout):
+                if attempt < max_retries:
+                    time.sleep(base_delay * (2 ** attempt) + random.uniform(0.05, 0.2))
+                    continue
+                raise
+
+    def list_messages(
+        self,
+        query: str = "label:INBOX",
+        max_results: int = 20,
+        page_token: Optional[str] = None,
+    ) -> List[Dict[str, Any]]:
         url = f"{self.GMAIL_API_BASE}/messages"
-        params = {"q": query, "maxResults": max_results}
-        res = self._client.get(url, headers=self._get_headers(), params=params)
+        params: Dict[str, Any] = {"q": query, "maxResults": max_results}
+        if page_token:
+            params["pageToken"] = page_token
+
+        res = self._request_with_retry("GET", url, params=params)
         if res.status_code == 401:
             raise ValueError("Gmail access token has expired.")
         if not res.is_success:
             raise RuntimeError(f"Gmail API list_messages error ({res.status_code}): {res.text}")
+
         data = res.json()
+        self.next_page_token = data.get("nextPageToken")
         return data.get("messages", [])
+
+    def list_history(
+        self,
+        start_history_id: str,
+        max_results: int = 100,
+        page_token: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        url = f"{self.GMAIL_API_BASE}/history"
+        params: Dict[str, Any] = {"startHistoryId": start_history_id, "maxResults": max_results}
+        if page_token:
+            params["pageToken"] = page_token
+
+        res = self._request_with_retry("GET", url, params=params)
+        if res.status_code == 404:
+            raise ValueError(f"Gmail history ID {start_history_id} expired or invalid.")
+        if res.status_code == 401:
+            raise ValueError("Gmail access token has expired.")
+        if not res.is_success:
+            raise RuntimeError(f"Gmail API list_history error ({res.status_code}): {res.text}")
+
+        return res.json()
 
     def get_message(self, message_id: str) -> Dict[str, Any]:
         url = f"{self.GMAIL_API_BASE}/messages/{message_id}"
         params = {"format": "full"}
-        res = self._client.get(url, headers=self._get_headers(), params=params)
+        res = self._request_with_retry("GET", url, params=params)
         if not res.is_success:
             raise RuntimeError(f"Gmail API get_message error ({res.status_code}): {res.text}")
         return res.json()
 
     def get_attachment(self, message_id: str, attachment_id: str) -> bytes:
         url = f"{self.GMAIL_API_BASE}/messages/{message_id}/attachments/{attachment_id}"
-        res = self._client.get(url, headers=self._get_headers())
+        res = self._request_with_retry("GET", url)
         if not res.is_success:
             raise RuntimeError(f"Gmail API get_attachment error ({res.status_code}): {res.text}")
         data = res.json()
@@ -82,7 +153,7 @@ class GmailClient(BaseGmailClient):
         if thread_id:
             payload["threadId"] = thread_id
 
-        res = self._client.post(url, headers=self._get_headers(), json=payload)
+        res = self._request_with_retry("POST", url, json=payload)
         if not res.is_success:
             raise RuntimeError(f"Gmail API send_message error ({res.status_code}): {res.text}")
         return res.json()
@@ -95,6 +166,7 @@ class MockGmailClient(BaseGmailClient):
         self.messages: Dict[str, Dict[str, Any]] = {}
         self.attachments: Dict[str, bytes] = {}
         self.sent_messages: List[Dict[str, Any]] = []
+        self.next_page_token: Optional[str] = None
 
         if initial_messages:
             for msg in initial_messages:
@@ -109,6 +181,7 @@ class MockGmailClient(BaseGmailClient):
         body_text: str,
         thread_id: Optional[str] = None,
         attachments: Optional[List[Dict[str, Any]]] = None,
+        history_id: Optional[str] = None,
     ) -> None:
         """Helper to inject a synthetic message into mock store."""
         t_id = thread_id or f"thread_{message_id}"
@@ -144,6 +217,7 @@ class MockGmailClient(BaseGmailClient):
             "threadId": t_id,
             "labelIds": ["INBOX"],
             "snippet": body_text[:100],
+            "historyId": history_id or "10001",
             "internalDate": "1730720000000",
             "payload": {
                 "headers": [
@@ -158,8 +232,46 @@ class MockGmailClient(BaseGmailClient):
         }
         self.messages[message_id] = raw_msg
 
-    def list_messages(self, query: str = "label:INBOX", max_results: int = 20) -> List[Dict[str, Any]]:
-        return [{"id": m_id, "threadId": msg.get("threadId")} for m_id, msg in list(self.messages.items())[:max_results]]
+    def list_messages(
+        self,
+        query: str = "label:INBOX",
+        max_results: int = 20,
+        page_token: Optional[str] = None,
+    ) -> List[Dict[str, Any]]:
+        all_items = list(self.messages.items())
+        offset = 0
+        if page_token and page_token.startswith("page_"):
+            try:
+                offset = int(page_token.replace("page_", ""))
+            except ValueError:
+                offset = 0
+
+        paged_items = all_items[offset : offset + max_results]
+        next_offset = offset + max_results
+        self.next_page_token = f"page_{next_offset}" if next_offset < len(all_items) else None
+
+        return [{"id": m_id, "threadId": msg.get("threadId")} for m_id, msg in paged_items]
+
+    def list_history(
+        self,
+        start_history_id: str,
+        max_results: int = 100,
+        page_token: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        if start_history_id == "expired":
+            raise ValueError(f"Gmail history ID {start_history_id} expired or invalid.")
+        return {
+            "historyId": "10050",
+            "history": [
+                {
+                    "id": "hist_1",
+                    "messagesAdded": [
+                        {"message": {"id": m_id, "threadId": msg.get("threadId")}}
+                        for m_id, msg in self.messages.items()
+                    ],
+                }
+            ],
+        }
 
     def get_message(self, message_id: str) -> Dict[str, Any]:
         if message_id not in self.messages:
@@ -180,4 +292,3 @@ class MockGmailClient(BaseGmailClient):
         }
         self.sent_messages.append(record)
         return {"id": sent_id, "threadId": record["threadId"], "labelIds": ["SENT"]}
-

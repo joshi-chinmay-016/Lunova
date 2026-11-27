@@ -59,12 +59,31 @@ export const ProposalOverviewCard: React.FC<ProposalOverviewCardProps> = ({ prop
           </div>
         </div>
 
+        {/* Client Contact */}
+        {proposal.sender_address && (
+          <div className="space-y-1">
+            <span className="text-[11px] font-semibold text-gray-700 block">Inquiry Sender Address</span>
+            <p className="text-xs text-gray-600 font-mono px-3 py-2 bg-gray-50 rounded-xl border border-gray-200 truncate">
+              {proposal.sender_address}
+            </p>
+          </div>
+        )}
+
         {/* Client RFP Summary / Scope */}
         {proposal.summary && (
           <div className="space-y-1.5 pt-1">
             <span className="text-xs font-semibold text-gray-700 block">RFP Scope & Context</span>
             <p className="text-xs text-gray-600 leading-relaxed p-3 bg-gray-50 rounded-xl border border-gray-200">
               {proposal.summary}
+            </p>
+          </div>
+        )}
+
+        {proposal.raw_content && !proposal.summary && (
+          <div className="space-y-1.5 pt-1">
+            <span className="text-xs font-semibold text-gray-700 block">Original Incoming Inquiry</span>
+            <p className="text-xs text-gray-600 leading-relaxed p-3 bg-gray-50 rounded-xl border border-gray-200 whitespace-pre-wrap max-h-40 overflow-y-auto">
+              {proposal.raw_content}
             </p>
           </div>
         )}

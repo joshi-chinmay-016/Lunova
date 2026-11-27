@@ -21,7 +21,6 @@ try:
     from dotenv import load_dotenv
 
     load_dotenv(repo_root / ".env")
-    load_dotenv(repo_root / "backend" / ".env")
 except ImportError:
     pass
 
